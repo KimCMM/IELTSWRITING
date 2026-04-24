@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, AlertCircle, Clock3, FileText, Sparkles, Wand2, Workflow, Image as ImageIcon, Info } from "lucide-react";
+import { CheckCircle2, AlertCircle, Clock3, FileText, Sparkles, Wand2, Workflow } from "lucide-react";
 
-const LEVEL_LABELS = {
+const LEVEL_LABELS: Record<string, string> = {
   band55: "Band 5.5",
   band6: "Band 6",
   band65: "Band 6.5"
@@ -152,23 +152,21 @@ function buildPractice1(steps: Step[], level: string): Practice1Item[] {
 }
 
 function buildPractice2(steps: Step[], level: string): Practice2Item[] {
-  const linkers55 = ["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"];
-  const linkers6 = ["Firstly", "Next", "Subsequently", "After that", "Subsequently", "Then", "After that", "Finally"];
-
   if (level === "band55") {
+    const linkers = ["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"];
     return steps.map((step, index) => ({
       type: "fill",
       sentence: `__________, ${lowerFirst(step.passive)}`,
-      answer: linkers55[Math.min(index, linkers55.length - 1)],
+      answer: linkers[Math.min(index, linkers.length - 1)],
       explanation: "Fill in a suitable sequencing expression."
     }));
   }
-
   if (level === "band6") {
+    const fillLinkers = ["Firstly", "Next", "Subsequently", "After that", "Subsequently", "Then", "After that", "Finally"];
     const fillItems = steps.map((step, index) => ({
       type: "fill",
       sentence: `__________, ${lowerFirst(step.passive)}`,
-      answer: linkers6[Math.min(index, linkers6.length - 1)],
+      answer: fillLinkers[Math.min(index, fillLinkers.length - 1)],
       explanation: "Fill in a sequencing expression."
     }));
     const combineItems = steps.slice(0, -1).map((step, index) => {
@@ -178,60 +176,36 @@ function buildPractice2(steps: Step[], level: string): Practice2Item[] {
         type: "combine",
         prompt: useBefore ? "Combine the sentences using 'before doing':" : "Combine the sentences using 'after doing':",
         parts: [step.passive, nextStep.passive],
-        answer: useBefore
-          ? `${step.passive.slice(0, -1)} before ${nextStep.gerund}.`
-          : `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`,
+        answer: useBefore ? `${step.passive.slice(0, -1)} before ${nextStep.gerund}.` : `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`,
         explanation: "Check both sequence and verb form after before/after."
       };
     });
     return [...fillItems, ...combineItems];
   }
-
   return steps.slice(0, -1).map((step, index) => {
     const nextStep = steps[index + 1];
     const pattern = index % 3;
     if (pattern === 0) {
-      return {
-        type: "combine",
-        prompt: "Combine the sentences using 'after doing':",
-        parts: [step.passive, nextStep.passive],
-        answer: `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`,
-        explanation: "Use after + doing / being done."
-      };
+      return { type: "combine", prompt: "Combine the sentences using 'after doing':", parts: [step.passive, nextStep.passive], answer: `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`, explanation: "Use after + doing / being done." };
     }
     if (pattern === 1) {
-      return {
-        type: "combine",
-        prompt: "Combine the ideas using 'followed by':",
-        parts: [step.passive, nextStep.passive],
-        answer: `${step.passive.slice(0, -1)}, followed by ${nextStep.nounPhrase}.`,
-        explanation: "Use followed by + noun or gerund phrase."
-      };
+      return { type: "combine", prompt: "Combine the ideas using 'followed by':", parts: [step.passive, nextStep.passive], answer: `${step.passive.slice(0, -1)}, followed by ${nextStep.nounPhrase}.`, explanation: "Use followed by + noun or gerund phrase." };
     }
-    return {
-      type: "combine",
-      prompt: "Combine the sentences using 'after which':",
-      parts: [step.passive, nextStep.passive],
-      answer: `${step.passive.slice(0, -1)}, after which ${lowerFirst(nextStep.passive)}.`,
-      explanation: "Use after which to link two clauses."
-    };
+    return { type: "combine", prompt: "Combine the sentences using 'after which':", parts: [step.passive, nextStep.passive], answer: `${step.passive.slice(0, -1)}, after which ${lowerFirst(nextStep.passive)}.`, explanation: "Use after which to link two clauses." };
   });
 }
 
 function buildPractice3(steps: Step[], level: string): ParagraphTask {
-  const linkers55 = ["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"];
-
   if (level === "band55") {
     return {
       title: "Band 5.5 Timed Paragraph Writing",
       instruction: "Write one factual body paragraph about the process using the passive sentences and basic sequencing expressions from the earlier practices.",
       notes: steps.map((s) => s.passive),
       hint: "Use basic sequencing expressions such as firstly, next, after that, then, and finally. Do not add information that is not shown in the diagram.",
-      model: steps.map((s, i) => `${linkers55[Math.min(i, 7)]}, ${lowerFirst(s.passive)}`).join(" "),
+      model: steps.map((s, i) => `${["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"][Math.min(i, 7)]}, ${lowerFirst(s.passive)}`).join(" "),
       targetLength: "100+ words"
     };
   }
-
   if (level === "band6") {
     return {
       title: "Band 6 Timed Paragraph Writing",
@@ -246,7 +220,6 @@ function buildPractice3(steps: Step[], level: string): ParagraphTask {
       targetLength: "100+ words"
     };
   }
-
   return {
     title: "Band 6.5 Timed Paragraph Writing",
     instruction: "Write one factual body paragraph in a more academic style using after doing, followed by, and after which from Practice 2.",
@@ -278,11 +251,10 @@ function scoreParagraph(text: string, level: string, process: ProcessData): stri
   const lower = text.toLowerCase();
   const sequencingWords = ["firstly", "next", "after that", "in the next stage", "then", "finally", "subsequently", "followed by", "after which"];
   const passiveMarkers = [" is ", " are ", " was ", " were ", " being ", " been "];
-  const keywords = process.steps.flatMap((s) => s.passive.toLowerCase().split(/[^a-z0-9-]+/)).filter((w: string) => w.length > 3);
-  const keywordCount = [...new Set(keywords)].filter((w: string) => lower.includes(w)).length;
+  const keywords = process.steps.flatMap((s) => s.passive.toLowerCase().split(/[^a-z0-9-]+/)).filter((w) => w.length > 3);
+  const keywordCount = [...new Set(keywords)].filter((w) => lower.includes(w)).length;
   const wordCount = getWordCount(text);
   const feedback: string[] = [];
-
   if (keywordCount >= 6) feedback.push("You included several key stages from the process.");
   else feedback.push("Try to include more important stages from the diagram.");
   if (sequencingWords.some((w) => lower.includes(w))) feedback.push("Your paragraph uses sequencing language clearly.");
@@ -298,27 +270,15 @@ function DiagramPanel({ process }: { process: ProcessData }) {
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl"><Workflow className="h-5 w-5" /> Process Overview</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl"><Workflow className="h-5 w-5" /> Process Diagram Overview</CardTitle>
         <CardDescription>{process.diagramLabel}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border bg-slate-100 p-4">
-          <div className="flex items-center gap-3 text-slate-600">
-            <Info className="h-5 w-5 flex-shrink-0" />
-            <div className="text-sm">
-              <p className="font-medium">IELTS Process Diagram Reference</p>
-              <p className="mt-1">The steps below represent all stages shown in the original diagram. Each step is clickable and shows the correct passive sentence.</p>
-            </div>
-          </div>
-        </div>
+      <CardContent>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {process.steps.map((step, index) => (
-            <div key={index} className="rounded-2xl border bg-white p-4 text-sm text-slate-700 transition-all hover:border-blue-300 hover:shadow-md">
-              <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{index + 1}</span>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Step {index + 1}</p>
-              </div>
-              <p className="mt-2 font-medium text-slate-800">{step.label}</p>
+            <div key={index} className="rounded-2xl border bg-slate-50 p-3 text-sm text-slate-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Step {index + 1}</p>
+              <p className="mt-2 font-medium">{step.label}</p>
               <p className="mt-2 leading-6 text-slate-600">{step.passive}</p>
             </div>
           ))}
@@ -328,7 +288,7 @@ function DiagramPanel({ process }: { process: ProcessData }) {
   );
 }
 
-export default function ProcessWritingTrainingWebappWithDiagrams() {
+export default function ProcessWritingTrainingWebapp() {
   const [selectedProcess, setSelectedProcess] = useState("bamboo");
   const [level, setLevel] = useState("band55");
   const [passiveAnswers, setPassiveAnswers] = useState<Record<number, string>>({});
@@ -383,11 +343,12 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
     const secs = seconds % 60;
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
+
   const resetTimer = () => { setTimeLeft(20 * 60); setIsRunning(false); };
 
   const getPassiveHint = (exercise: Practice1Item, input: string): string => {
-    if (level === "band55") return "Structure: subject + is/are + past participle";
-    if (level === "band6") return "Hint: use the correct be verb and complete the whole passive sentence.";
+    if (level === "band55") return `Structure: subject + is/are + past participle`;
+    if (level === "band6") return `Hint: use the correct be verb and complete the whole passive sentence.`;
     if (!input.toLowerCase().includes("is") && !input.toLowerCase().includes("are")) return "Check whether you have built a passive sentence: be + past participle.";
     return "Check whether you only used vocabulary shown in the diagram.";
   };
@@ -421,11 +382,11 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
               <div className="flex flex-wrap items-center gap-3">
                 <Badge className="rounded-full">IELTS Academic Task 1</Badge>
                 <Badge variant="secondary" className="rounded-full">Process Diagram</Badge>
-                <Badge variant="outline" className="rounded-full">Full Process Reference</Badge>
+                <Badge variant="outline" className="rounded-full">Training System</Badge>
               </div>
               <CardTitle className="text-3xl font-semibold tracking-tight">Process Writing Training System</CardTitle>
               <CardDescription className="max-w-3xl text-sm leading-6">
-                A product-level prototype that keeps the complete process diagram visible throughout the full training journey, with all steps numbered and annotated.
+                A product-level prototype that keeps the process steps visible throughout the full training journey.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -461,7 +422,7 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
               <div className="rounded-xl border bg-slate-100 p-3 text-sm text-slate-700">
                 <p className="font-medium">Learning journey completion</p>
                 <Progress value={completionRate} className="mt-2" />
-                <p className="mt-2 text-slate-600">{completionRate}% completed for {process.title} at {LEVEL_LABELS[level as keyof typeof LEVEL_LABELS]}.</p>
+                <p className="mt-2 text-slate-600">{completionRate}% completed for {process.title} at {LEVEL_LABELS[level]}.</p>
               </div>
             </CardContent>
           </Card>
@@ -485,19 +446,25 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
                 <CardContent className="space-y-5 max-h-[1000px] overflow-auto pr-2">
                   {passiveSet.map((item, index) => (
                     <div key={index} className="rounded-2xl border bg-white p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{index + 1}</span>
-                        <p className="text-sm font-medium text-slate-500">Task prompt</p>
-                      </div>
-                      <p className="text-base text-slate-900">{item.prompt}</p>
+                      <p className="text-sm font-medium text-slate-500">Task prompt</p>
+                      <p className="mt-1 text-base text-slate-900">{item.prompt}</p>
                       <div className="mt-4 flex flex-col gap-3 md:flex-row">
                         <div className="flex-1">
-                          <Input className="rounded-xl" value={passiveAnswers[index] || ""} onChange={(e) => setPassiveAnswers((prev) => ({ ...prev, [index]: e.target.value }))} placeholder="Write the passive sentence here..." />
+                          <Input 
+                            className="rounded-xl" 
+                            value={passiveAnswers[index] || ""} 
+                            onChange={(e) => setPassiveAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
+                            placeholder="Write the passive sentence here..." 
+                          />
                         </div>
                         <Button className="rounded-xl" onClick={() => handlePassiveCheck(index)}>Check Answer</Button>
                         <Button variant="outline" className="rounded-xl" onClick={() => handlePassiveHint(index)}>Hint</Button>
                       </div>
-                      {passiveHints[index] && <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">Hint: {passiveHints[index]}</div>}
+                      {passiveHints[index] && (
+                        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                          {passiveHints[index]}
+                        </div>
+                      )}
                       {passiveResults[index] !== undefined && (
                         <div className={`mt-3 rounded-xl border p-3 text-sm ${passiveResults[index] ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
                           <div className="flex items-start gap-2">
@@ -529,23 +496,27 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
                     <div key={index} className="rounded-2xl border bg-white p-4">
                       {item.type === "fill" ? (
                         <>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{index + 1}</span>
-                          </div>
                           <p className="text-base text-slate-900">{item.sentence}</p>
-                          <Input className="mt-4 rounded-xl" value={sequencingAnswers[index] || ""} onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} placeholder="Fill in the linker..." />
+                          <Input 
+                            className="mt-4 rounded-xl" 
+                            value={sequencingAnswers[index] || ""} 
+                            onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
+                            placeholder="Fill in the linker..." 
+                          />
                         </>
                       ) : (
                         <>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{index + 1}</span>
-                          </div>
                           <p className="text-sm font-medium text-slate-500">{item.prompt}</p>
                           <div className="mt-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
                             <p>1. {item.parts?.[0]}</p>
                             <p>2. {item.parts?.[1]}</p>
                           </div>
-                          <Input className="mt-4 rounded-xl" value={sequencingAnswers[index] || ""} onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} placeholder="Write the combined sentence here..." />
+                          <Input 
+                            className="mt-4 rounded-xl" 
+                            value={sequencingAnswers[index] || ""} 
+                            onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
+                            placeholder="Write the combined sentence here..." 
+                          />
                         </>
                       )}
                       <div className="mt-3">
@@ -596,18 +567,23 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
                       </div>
                       <div className="rounded-2xl border bg-slate-50 p-4">
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Writing goal</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-700">Write a factual paragraph of 100+ words while keeping the process steps visible for reference.</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">Write a factual paragraph of 100+ words while keeping the diagram visible, like a computer-based IELTS task.</p>
                       </div>
                     </div>
 
                     <div className="rounded-2xl border bg-slate-50 p-4">
                       <p className="mb-2 text-sm font-medium text-slate-700">Sentence bank from earlier practice</p>
                       <ul className="space-y-2 text-sm text-slate-700 max-h-52 overflow-auto">
-                        {paragraphSet.notes.map((note, index) => <li key={index}>- {note}</li>)}
+                        {paragraphSet.notes.map((note, index) => <li key={index}>• {note}</li>)}
                       </ul>
                     </div>
 
-                    <Textarea className="min-h-[280px] rounded-2xl" placeholder="Write your paragraph here..." value={paragraph} onChange={(e) => setParagraph(e.target.value)} />
+                    <Textarea 
+                      className="min-h-[280px] rounded-2xl" 
+                      placeholder="Write your paragraph here..." 
+                      value={paragraph} 
+                      onChange={(e) => setParagraph(e.target.value)} 
+                    />
 
                     <div className="flex flex-wrap gap-3">
                       <Button className="rounded-xl" onClick={handleParagraphCheck}>Check Paragraph</Button>
@@ -619,7 +595,7 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
                       <div className="rounded-2xl border bg-white p-4">
                         <p className="text-sm font-medium text-slate-700">Feedback</p>
                         <ul className="mt-2 space-y-2 text-sm text-slate-600">
-                          {paragraphFeedback.map((item, index) => <li key={index}>- {item}</li>)}
+                          {paragraphFeedback.map((item, index) => <li key={index}>• {item}</li>)}
                         </ul>
                       </div>
                     )}
@@ -629,9 +605,21 @@ export default function ProcessWritingTrainingWebappWithDiagrams() {
                 <Card className="rounded-2xl shadow-sm">
                   <CardHeader><CardTitle className="text-lg">Learning Support</CardTitle></CardHeader>
                   <CardContent className="space-y-4 text-sm text-slate-700">
-                    {showHint && <div className="rounded-2xl border bg-slate-50 p-4"><p className="font-medium">Hint</p><p className="mt-1 text-slate-600">{paragraphSet.hint}</p></div>}
-                    {showModel && <div className="rounded-2xl border bg-slate-50 p-4"><p className="font-medium">Model answer</p><p className="mt-1 leading-6 text-slate-600">{paragraphSet.model}</p></div>}
-                    {!showHint && !showModel && <div className="rounded-2xl border border-dashed bg-slate-50 p-4 text-slate-500">Open Hint or Model to support learners when needed.</div>}
+                    {showHint && (
+                      <div className="rounded-2xl border bg-slate-50 p-4">
+                        <p className="font-medium">Hint</p>
+                        <p className="mt-1 text-slate-600">{paragraphSet.hint}</p>
+                      </div>
+                    )}
+                    {showModel && (
+                      <div className="rounded-2xl border bg-slate-50 p-4">
+                        <p className="font-medium">Model answer</p>
+                        <p className="mt-1 leading-6 text-slate-600">{paragraphSet.model}</p>
+                      </div>
+                    )}
+                    {!showHint && !showModel && (
+                      <div className="rounded-2xl border border-dashed bg-slate-50 p-4 text-slate-500">Open Hint or Model to support learners when needed.</div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
