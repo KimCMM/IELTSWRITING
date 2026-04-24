@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, AlertCircle, Clock3, FileText, Sparkles, Wand2, Workflow } from "lucide-react";
+import { CheckCircle2, AlertCircle, Clock3, FileText, Sparkles, Wand2, Image as ImageIcon, Workflow } from "lucide-react";
 
 const LEVEL_LABELS: Record<string, string> = {
   band55: "Band 5.5",
@@ -33,7 +33,6 @@ interface ProcessData {
   id: string;
   title: string;
   diagramLabel: string;
-  shortDescription: string;
   steps: Step[];
 }
 
@@ -54,7 +53,6 @@ const processLibrary: Record<string, ProcessData> = {
     id: "bamboo",
     title: "Bamboo Fabric",
     diagramLabel: "How bamboo fabric is made",
-    shortDescription: "A linear process showing how bamboo is turned into fabric.",
     steps: [
       makeStep("Plant bamboo plants (Spring)", "People plant bamboo plants in spring.", "Bamboo plants are planted in spring.", "bamboo plants / plant / in spring", "plant bamboo plants / spring", "being planted in spring", "the harvesting of bamboo plants in autumn"),
       makeStep("Harvest (Autumn)", "Workers harvest bamboo plants in autumn.", "Bamboo plants are harvested in autumn.", "bamboo plants / harvest / in autumn", "harvest / autumn", "being harvested in autumn", "the cutting of bamboo into strips"),
@@ -70,7 +68,6 @@ const processLibrary: Record<string, ProcessData> = {
     id: "sugar",
     title: "Sugar from Sugar Cane",
     diagramLabel: "How sugar is produced from sugar cane",
-    shortDescription: "A manufacturing process showing how sugar is made from sugar cane.",
     steps: [
       makeStep("Growing (12-18 months)", "Farmers grow sugar cane for 12-18 months.", "Sugar cane is grown for 12-18 months.", "sugar cane / grow / for 12-18 months", "grow / 12-18 months", "being grown for 12-18 months", "the harvesting of sugar cane"),
       makeStep("Harvesting", "Workers harvest the sugar cane.", "The sugar cane is harvested.", "the sugar cane / harvest", "harvest", "being harvested", "the crushing of the sugar cane"),
@@ -85,7 +82,6 @@ const processLibrary: Record<string, ProcessData> = {
     id: "noodles",
     title: "Instant Noodles",
     diagramLabel: "Manufacturing instant noodles",
-    shortDescription: "A manufacturing process showing how instant noodles are made.",
     steps: [
       makeStep("Storage silos", "The factory stores flour in storage silos.", "Flour is stored in storage silos.", "flour / store / in storage silos", "storage silos / flour", "being stored in storage silos", "the mixing of flour, water and oil"),
       makeStep("Mixer (water + oil)", "Workers mix flour with water and oil.", "Flour is mixed with water and oil.", "flour / mix / with water and oil", "mixer / water / oil", "being mixed with water and oil", "the rolling of the dough into sheets"),
@@ -101,7 +97,6 @@ const processLibrary: Record<string, ProcessData> = {
     id: "recycling",
     title: "Plastic Bottle Recycling",
     diagramLabel: "How plastic bottles are recycled",
-    shortDescription: "A recycling process showing how plastic bottles become new products.",
     steps: [
       makeStep("Recycling bin", "People place plastic bottles in a recycling bin.", "Plastic bottles are placed in a recycling bin.", "plastic bottles / place / in a recycling bin", "recycling bin / plastic bottles", "being placed in a recycling bin", "the collection of plastic bottles"),
       makeStep("Collection by truck", "A truck collects the plastic bottles.", "The plastic bottles are collected.", "the plastic bottles / collect", "collect", "being collected", "the sorting of plastic bottles"),
@@ -109,7 +104,7 @@ const processLibrary: Record<string, ProcessData> = {
       makeStep("Compressing into blocks", "Machines compress the plastic bottles into blocks.", "The plastic bottles are compressed into blocks.", "the plastic bottles / compress / into blocks", "compressing / blocks", "being compressed into blocks", "the crushing of the blocks"),
       makeStep("Crushing", "Machines crush the blocks.", "The blocks are crushed.", "the blocks / crush", "crushing", "being crushed", "the producing of plastic pellets"),
       makeStep("Producing plastic pellets", "Machines produce plastic pellets.", "Plastic pellets are produced.", "plastic pellets / produce", "plastic pellets", "being produced", "the heating of the pellets to form raw material"),
-      makeStep("Heating pellets", "Heat turns the pellets into raw material.", "The pellets are heated to form raw material.", "the pellets / heat / to form raw material", "heating pellets / raw material", "being heated to form raw material", "the production of end products"),
+      makeStep("Heating pellets to form raw material", "Heat turns the pellets into raw material.", "The pellets are heated to form raw material.", "the pellets / heat / to form raw material", "heating pellets / raw material", "being heated to form raw material", "the production of end products"),
       makeStep("Producing end products", "Factories produce new products.", "New products are produced.", "new products / produce", "end products", "being produced", "the production of end products")
     ]
   }
@@ -141,12 +136,8 @@ interface ParagraphTask {
 
 function buildPractice1(steps: Step[], level: string): Practice1Item[] {
   return steps.map((step) => {
-    if (level === "band55") {
-      return { prompt: step.active, answer: step.passive, explanation: "Rewrite the sentence in the passive voice." };
-    }
-    if (level === "band6") {
-      return { prompt: step.prompt6, answer: step.passive, explanation: "Write a complete passive sentence using the prompt." };
-    }
+    if (level === "band55") return { prompt: step.active, answer: step.passive, explanation: "Rewrite the sentence in the passive voice." };
+    if (level === "band6") return { prompt: step.prompt6, answer: step.passive, explanation: "Write a complete passive sentence using the prompt." };
     return { prompt: step.prompt65, answer: step.passive, explanation: "Use only words already shown in the diagram." };
   });
 }
@@ -162,11 +153,11 @@ function buildPractice2(steps: Step[], level: string): Practice2Item[] {
     }));
   }
   if (level === "band6") {
-    const fillLinkers = ["Firstly", "Next", "Subsequently", "After that", "Subsequently", "Then", "After that", "Finally"];
+    const linkers = ["Firstly", "Next", "Subsequently", "After that", "Subsequently", "Then", "After that", "Finally"];
     const fillItems = steps.map((step, index) => ({
       type: "fill",
       sentence: `__________, ${lowerFirst(step.passive)}`,
-      answer: fillLinkers[Math.min(index, fillLinkers.length - 1)],
+      answer: linkers[Math.min(index, linkers.length - 1)],
       explanation: "Fill in a sequencing expression."
     }));
     const combineItems = steps.slice(0, -1).map((step, index) => {
@@ -184,25 +175,21 @@ function buildPractice2(steps: Step[], level: string): Practice2Item[] {
   }
   return steps.slice(0, -1).map((step, index) => {
     const nextStep = steps[index + 1];
-    const pattern = index % 3;
-    if (pattern === 0) {
-      return { type: "combine", prompt: "Combine the sentences using 'after doing':", parts: [step.passive, nextStep.passive], answer: `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`, explanation: "Use after + doing / being done." };
-    }
-    if (pattern === 1) {
-      return { type: "combine", prompt: "Combine the ideas using 'followed by':", parts: [step.passive, nextStep.passive], answer: `${step.passive.slice(0, -1)}, followed by ${nextStep.nounPhrase}.`, explanation: "Use followed by + noun or gerund phrase." };
-    }
+    if (index % 3 === 0) return { type: "combine", prompt: "Combine the sentences using 'after doing':", parts: [step.passive, nextStep.passive], answer: `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`, explanation: "Use after + doing / being done." };
+    if (index % 3 === 1) return { type: "combine", prompt: "Combine the ideas using 'followed by':", parts: [step.passive, nextStep.passive], answer: `${step.passive.slice(0, -1)}, followed by ${nextStep.nounPhrase}.`, explanation: "Use followed by + noun or gerund phrase." };
     return { type: "combine", prompt: "Combine the sentences using 'after which':", parts: [step.passive, nextStep.passive], answer: `${step.passive.slice(0, -1)}, after which ${lowerFirst(nextStep.passive)}.`, explanation: "Use after which to link two clauses." };
   });
 }
 
 function buildPractice3(steps: Step[], level: string): ParagraphTask {
+  const linkers55 = ["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"];
   if (level === "band55") {
     return {
       title: "Band 5.5 Timed Paragraph Writing",
       instruction: "Write one factual body paragraph about the process using the passive sentences and basic sequencing expressions from the earlier practices.",
       notes: steps.map((s) => s.passive),
       hint: "Use basic sequencing expressions such as firstly, next, after that, then, and finally. Do not add information that is not shown in the diagram.",
-      model: steps.map((s, i) => `${["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"][Math.min(i, 7)]}, ${lowerFirst(s.passive)}`).join(" "),
+      model: steps.map((s, i) => `${linkers55[Math.min(i, 7)]}, ${lowerFirst(s.passive)}`).join(" "),
       targetLength: "100+ words"
     };
   }
@@ -268,18 +255,27 @@ function scoreParagraph(text: string, level: string, process: ProcessData): stri
 
 function DiagramPanel({ process }: { process: ProcessData }) {
   return (
-    <Card className="rounded-2xl shadow-sm">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl"><Workflow className="h-5 w-5" /> Process Diagram Overview</CardTitle>
+    <Card className="h-full rounded-none border-0 border-r shadow-none">
+      <CardHeader className="border-b bg-white">
+        <CardTitle className="flex items-center gap-2 text-lg"><Workflow className="h-5 w-5" /> Process Diagram</CardTitle>
         <CardDescription>{process.diagramLabel}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <CardContent className="h-[calc(100vh-150px)] overflow-auto bg-slate-50 p-4">
+        <div className="rounded-lg border bg-white p-4">
+          <div className="flex aspect-video items-center justify-center rounded-md bg-slate-100">
+            <div className="text-center text-slate-500">
+              <Workflow className="mx-auto h-12 w-12 opacity-50" />
+              <p className="mt-2 text-sm">Process Diagram</p>
+              <p className="text-xs">{process.title}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2">
           {process.steps.map((step, index) => (
-            <div key={index} className="rounded-2xl border bg-slate-50 p-3 text-sm text-slate-700">
+            <div key={index} className="rounded-lg border bg-white p-3 text-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Step {index + 1}</p>
-              <p className="mt-2 font-medium">{step.label}</p>
-              <p className="mt-2 leading-6 text-slate-600">{step.passive}</p>
+              <p className="mt-1 font-medium text-slate-800">{step.label}</p>
+              <p className="mt-1 text-slate-600">{step.passive}</p>
             </div>
           ))}
         </div>
@@ -288,9 +284,10 @@ function DiagramPanel({ process }: { process: ProcessData }) {
   );
 }
 
-export default function ProcessWritingTrainingWebapp() {
+export default function IELTSProcessWritingFinalDefenseApp() {
   const [selectedProcess, setSelectedProcess] = useState("bamboo");
   const [level, setLevel] = useState("band55");
+  const [activeTab, setActiveTab] = useState("practice1");
   const [passiveAnswers, setPassiveAnswers] = useState<Record<number, string>>({});
   const [passiveResults, setPassiveResults] = useState<Record<number, boolean>>({});
   const [passiveHints, setPassiveHints] = useState<Record<number, string>>({});
@@ -346,9 +343,9 @@ export default function ProcessWritingTrainingWebapp() {
 
   const resetTimer = () => { setTimeLeft(20 * 60); setIsRunning(false); };
 
-  const getPassiveHint = (exercise: Practice1Item, input: string): string => {
-    if (level === "band55") return `Structure: subject + is/are + past participle`;
-    if (level === "band6") return `Hint: use the correct be verb and complete the whole passive sentence.`;
+  const getPassiveHint = (input: string): string => {
+    if (level === "band55") return "Structure: subject + is/are + past participle";
+    if (level === "band6") return "Hint: use the correct be verb and complete the whole passive sentence.";
     if (!input.toLowerCase().includes("is") && !input.toLowerCase().includes("are")) return "Check whether you have built a passive sentence: be + past participle.";
     return "Check whether you only used vocabulary shown in the diagram.";
   };
@@ -360,9 +357,8 @@ export default function ProcessWritingTrainingWebapp() {
   };
 
   const handlePassiveHint = (index: number) => {
-    const item = passiveSet[index];
     const input = passiveAnswers[index] || "";
-    setPassiveHints((prev) => ({ ...prev, [index]: getPassiveHint(item, input) }));
+    setPassiveHints((prev) => ({ ...prev, [index]: getPassiveHint(input) }));
   };
 
   const handleSequencingCheck = (index: number) => {
@@ -374,258 +370,241 @@ export default function ProcessWritingTrainingWebapp() {
   const handleParagraphCheck = () => setParagraphFeedback(scoreParagraph(paragraph, level, process));
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="grid gap-4 md:grid-cols-[1.5fr_0.8fr]">
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader>
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge className="rounded-full">IELTS Academic Task 1</Badge>
-                <Badge variant="secondary" className="rounded-full">Process Diagram</Badge>
-                <Badge variant="outline" className="rounded-full">Training System</Badge>
-              </div>
-              <CardTitle className="text-3xl font-semibold tracking-tight">Process Writing Training System</CardTitle>
-              <CardDescription className="max-w-3xl text-sm leading-6">
-                A product-level prototype that keeps the process steps visible throughout the full training journey.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+    <div className="min-h-screen bg-white">
+      <div className="flex h-screen flex-col">
+        <header className="flex items-center justify-between border-b bg-white px-5 py-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>IELTS Academic Task 1</Badge>
+              <Badge variant="secondary">Process Diagram</Badge>
+              <Badge variant="outline">Training System</Badge>
+            </div>
+            <h1 className="mt-1 text-xl font-semibold">Process Writing Training System</h1>
+          </div>
+          <div className="flex w-[520px] items-center gap-3">
+            <Select value={selectedProcess} onValueChange={setSelectedProcess}>
+              <SelectTrigger className="rounded-lg"><SelectValue placeholder="Select process" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bamboo">Bamboo</SelectItem>
+                <SelectItem value="sugar">Sugar</SelectItem>
+                <SelectItem value="noodles">Instant noodles</SelectItem>
+                <SelectItem value="recycling">Recycling</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={level} onValueChange={setLevel}>
+              <SelectTrigger className="rounded-lg"><SelectValue placeholder="Select level" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="band55">Band 5.5</SelectItem>
+                <SelectItem value="band6">Band 6</SelectItem>
+                <SelectItem value="band65">Band 6.5</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </header>
 
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Product Controls</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="mb-2 text-sm font-medium text-slate-700">Select process diagram</p>
-                <Select value={selectedProcess} onValueChange={setSelectedProcess}>
-                  <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select process" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bamboo">Bamboo</SelectItem>
-                    <SelectItem value="sugar">Sugar</SelectItem>
-                    <SelectItem value="noodles">Instant noodles</SelectItem>
-                    <SelectItem value="recycling">Recycling</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <p className="mb-2 text-sm font-medium text-slate-700">Select learner level</p>
-                <Select value={level} onValueChange={setLevel}>
-                  <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select level" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="band55">Band 5.5</SelectItem>
-                    <SelectItem value="band6">Band 6</SelectItem>
-                    <SelectItem value="band65">Band 6.5</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="rounded-xl border bg-slate-100 p-3 text-sm text-slate-700">
-                <p className="font-medium">Learning journey completion</p>
-                <Progress value={completionRate} className="mt-2" />
-                <p className="mt-2 text-slate-600">{completionRate}% completed for {process.title} at {LEVEL_LABELS[level]}.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <div className="grid min-h-0 flex-1 grid-cols-[48%_52%]">
+          <DiagramPanel process={process} />
 
-        <Tabs defaultValue="practice1" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 rounded-2xl">
-            <TabsTrigger value="practice1" className="rounded-xl">Practice 1 Passive Voice</TabsTrigger>
-            <TabsTrigger value="practice2" className="rounded-xl">Practice 2 Sequencing</TabsTrigger>
-            <TabsTrigger value="practice3" className="rounded-xl">Practice 3 Timed Writing</TabsTrigger>
-          </TabsList>
+          <main className="flex min-h-0 flex-col bg-slate-50">
+            <div className="border-b bg-white p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-700">Learning journey completion</p>
+                <p className="text-sm text-slate-500">{completionRate}% - {LEVEL_LABELS[level]}</p>
+              </div>
+              <Progress value={completionRate} />
+            </div>
 
-          <TabsContent value="practice1">
-            <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-              <DiagramPanel process={process} />
-              <Card className="rounded-2xl shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl"><Wand2 className="h-5 w-5" /> Passive Voice Transformation</CardTitle>
-                  <CardDescription>Every step in the diagram is practised here.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5 max-h-[1000px] overflow-auto pr-2">
-                  {passiveSet.map((item, index) => (
-                    <div key={index} className="rounded-2xl border bg-white p-4">
-                      <p className="text-sm font-medium text-slate-500">Task prompt</p>
-                      <p className="mt-1 text-base text-slate-900">{item.prompt}</p>
-                      <div className="mt-4 flex flex-col gap-3 md:flex-row">
-                        <div className="flex-1">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col">
+              <div className="border-b bg-white p-3">
+                <TabsList className="grid w-full grid-cols-3 rounded-xl">
+                  <TabsTrigger value="practice1" className="rounded-lg">1 Passive</TabsTrigger>
+                  <TabsTrigger value="practice2" className="rounded-lg">2 Cohesion</TabsTrigger>
+                  <TabsTrigger value="practice3" className="rounded-lg">3 Writing</TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="practice1" className="m-0 min-h-0 flex-1 overflow-auto p-5">
+                <Card className="rounded-2xl shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl"><Wand2 className="h-5 w-5" /> Passive Voice Transformation</CardTitle>
+                    <CardDescription>Every step in the diagram is practised here. The source diagram stays visible on the left.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    {passiveSet.map((item, index) => (
+                      <div key={index} className="rounded-2xl border bg-white p-4">
+                        <p className="text-sm font-medium text-slate-500">Task prompt</p>
+                        <p className="mt-1 text-base text-slate-900">{item.prompt}</p>
+                        <div className="mt-4 flex flex-col gap-3 md:flex-row">
                           <Input 
-                            className="rounded-xl" 
+                            className="rounded-xl flex-1" 
                             value={passiveAnswers[index] || ""} 
                             onChange={(e) => setPassiveAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
                             placeholder="Write the passive sentence here..." 
                           />
+                          <Button className="rounded-xl" onClick={() => handlePassiveCheck(index)}>Check</Button>
+                          <Button variant="outline" className="rounded-xl" onClick={() => handlePassiveHint(index)}>Hint</Button>
                         </div>
-                        <Button className="rounded-xl" onClick={() => handlePassiveCheck(index)}>Check Answer</Button>
-                        <Button variant="outline" className="rounded-xl" onClick={() => handlePassiveHint(index)}>Hint</Button>
-                      </div>
-                      {passiveHints[index] && (
-                        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-                          {passiveHints[index]}
-                        </div>
-                      )}
-                      {passiveResults[index] !== undefined && (
-                        <div className={`mt-3 rounded-xl border p-3 text-sm ${passiveResults[index] ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
-                          <div className="flex items-start gap-2">
-                            {passiveResults[index] ? <CheckCircle2 className="mt-0.5 h-4 w-4" /> : <AlertCircle className="mt-0.5 h-4 w-4" />}
-                            <div>
-                              <p>{passiveResults[index] ? "Correct. Well done." : `Incorrect. ${item.explanation}`}</p>
-                              {!passiveResults[index] && <p className="mt-1 font-medium">Correct answer: {item.answer}</p>}
+                        {passiveHints[index] && (
+                          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                            {passiveHints[index]}
+                          </div>
+                        )}
+                        {passiveResults[index] !== undefined && (
+                          <div className={`mt-3 rounded-xl border p-3 text-sm ${passiveResults[index] ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+                            <div className="flex items-start gap-2">
+                              {passiveResults[index] ? <CheckCircle2 className="mt-0.5 h-4 w-4" /> : <AlertCircle className="mt-0.5 h-4 w-4" />}
+                              <div>
+                                <p>{passiveResults[index] ? "Correct. Well done." : `Incorrect. ${item.explanation}`}</p>
+                                {!passiveResults[index] && <p className="mt-1 font-medium">Correct answer: {item.answer}</p>}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="practice2">
-            <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-              <DiagramPanel process={process} />
-              <Card className="rounded-2xl shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl"><Sparkles className="h-5 w-5" /> Sequencing and Cohesion</CardTitle>
-                  <CardDescription>Every step is linked in this stage as well.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5 max-h-[1000px] overflow-auto pr-2">
-                  {sequencingSet.map((item, index) => (
-                    <div key={index} className="rounded-2xl border bg-white p-4">
-                      {item.type === "fill" ? (
-                        <>
-                          <p className="text-base text-slate-900">{item.sentence}</p>
-                          <Input 
-                            className="mt-4 rounded-xl" 
-                            value={sequencingAnswers[index] || ""} 
-                            onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
-                            placeholder="Fill in the linker..." 
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm font-medium text-slate-500">{item.prompt}</p>
-                          <div className="mt-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-                            <p>1. {item.parts?.[0]}</p>
-                            <p>2. {item.parts?.[1]}</p>
-                          </div>
-                          <Input 
-                            className="mt-4 rounded-xl" 
-                            value={sequencingAnswers[index] || ""} 
-                            onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
-                            placeholder="Write the combined sentence here..." 
-                          />
-                        </>
-                      )}
-                      <div className="mt-3">
-                        <Button className="rounded-xl" onClick={() => handleSequencingCheck(index)}>Check Answer</Button>
+                        )}
                       </div>
-                      {sequencingResults[index] !== undefined && (
-                        <div className={`mt-3 rounded-xl border p-3 text-sm ${sequencingResults[index] ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
-                          <div className="flex items-start gap-2">
-                            {sequencingResults[index] ? <CheckCircle2 className="mt-0.5 h-4 w-4" /> : <AlertCircle className="mt-0.5 h-4 w-4" />}
-                            <div>
-                              <p>{sequencingResults[index] ? "Correct. The sequencing works well." : `Incorrect. ${item.explanation}`}</p>
-                              {!sequencingResults[index] && <p className="mt-1 font-medium">Suggested answer: {item.answer}</p>}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="practice3">
-            <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-              <DiagramPanel process={process} />
-              <div className="space-y-6">
+              <TabsContent value="practice2" className="m-0 min-h-0 flex-1 overflow-auto p-5">
                 <Card className="rounded-2xl shadow-sm">
                   <CardHeader>
-                    <CardTitle className="text-xl">{paragraphSet.title}</CardTitle>
-                    <CardDescription>{paragraphSet.instruction}</CardDescription>
+                    <CardTitle className="flex items-center gap-2 text-xl"><Sparkles className="h-5 w-5" /> Sequencing and Cohesion</CardTitle>
+                    <CardDescription>Every step is linked in this stage. Band 5.5 and 6 use fill-in tasks; Band 6.5 moves to sentence combining.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <div className="rounded-2xl border bg-slate-50 p-4">
-                        <div className="flex items-center gap-2 text-slate-500"><Clock3 className="h-4 w-4" /><span className="text-xs font-medium uppercase tracking-wide">Time limit</span></div>
-                        <p className="mt-2 text-2xl font-semibold text-slate-900">{formatTime(timeLeft)}</p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <Button size="sm" className="rounded-xl" onClick={() => setIsRunning(true)}>Start</Button>
-                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setIsRunning(false)}>Pause</Button>
-                          <Button size="sm" variant="outline" className="rounded-xl" onClick={resetTimer}>Reset</Button>
+                  <CardContent className="space-y-5">
+                    {sequencingSet.map((item, index) => (
+                      <div key={index} className="rounded-2xl border bg-white p-4">
+                        {item.type === "fill" ? (
+                          <>
+                            <p className="text-base text-slate-900">{item.sentence}</p>
+                            <Input 
+                              className="mt-4 rounded-xl" 
+                              value={sequencingAnswers[index] || ""} 
+                              onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
+                              placeholder="Fill in the linker..." 
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium text-slate-500">{item.prompt}</p>
+                            <div className="mt-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                              <p>1. {item.parts?.[0]}</p>
+                              <p>2. {item.parts?.[1]}</p>
+                            </div>
+                            <Input 
+                              className="mt-4 rounded-xl" 
+                              value={sequencingAnswers[index] || ""} 
+                              onChange={(e) => setSequencingAnswers((prev) => ({ ...prev, [index]: e.target.value }))} 
+                              placeholder="Write the combined sentence here..." 
+                            />
+                          </>
+                        )}
+                        <div className="mt-3">
+                          <Button className="rounded-xl" onClick={() => handleSequencingCheck(index)}>Check</Button>
+                        </div>
+                        {sequencingResults[index] !== undefined && (
+                          <div className={`mt-3 rounded-xl border p-3 text-sm ${sequencingResults[index] ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+                            <div className="flex items-start gap-2">
+                              {sequencingResults[index] ? <CheckCircle2 className="mt-0.5 h-4 w-4" /> : <AlertCircle className="mt-0.5 h-4 w-4" />}
+                              <div>
+                                <p>{sequencingResults[index] ? "Correct. The sequencing works well." : `Incorrect. ${item.explanation}`}</p>
+                                {!sequencingResults[index] && <p className="mt-1 font-medium">Suggested answer: {item.answer}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="practice3" className="m-0 min-h-0 flex-1 overflow-auto p-5">
+                <div className="space-y-6">
+                  <Card className="rounded-2xl shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-xl">{paragraphSet.title}</CardTitle>
+                      <CardDescription>{paragraphSet.instruction}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="rounded-2xl border bg-slate-50 p-4">
+                          <div className="flex items-center gap-2 text-slate-500"><Clock3 className="h-4 w-4" /><span className="text-xs font-medium uppercase tracking-wide">Time limit</span></div>
+                          <p className="mt-2 text-2xl font-semibold text-slate-900">{formatTime(timeLeft)}</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Button size="sm" className="rounded-xl" onClick={() => setIsRunning(true)}>Start</Button>
+                            <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setIsRunning(false)}>Pause</Button>
+                            <Button size="sm" variant="outline" className="rounded-xl" onClick={resetTimer}>Reset</Button>
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border bg-slate-50 p-4">
+                          <div className="flex items-center gap-2 text-slate-500"><FileText className="h-4 w-4" /><span className="text-xs font-medium uppercase tracking-wide">Word count</span></div>
+                          <p className="mt-2 text-2xl font-semibold text-slate-900">{getWordCount(paragraph)}</p>
+                          <p className="mt-2 text-sm text-slate-600">Suggested length: {paragraphSet.targetLength}</p>
+                        </div>
+                        <div className="rounded-2xl border bg-slate-50 p-4">
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Writing goal</p>
+                          <p className="mt-2 text-sm leading-6 text-slate-700">Write a factual paragraph of 100+ words while keeping the diagram visible.</p>
                         </div>
                       </div>
+
                       <div className="rounded-2xl border bg-slate-50 p-4">
-                        <div className="flex items-center gap-2 text-slate-500"><FileText className="h-4 w-4" /><span className="text-xs font-medium uppercase tracking-wide">Word count</span></div>
-                        <p className="mt-2 text-2xl font-semibold text-slate-900">{getWordCount(paragraph)}</p>
-                        <p className="mt-2 text-sm text-slate-600">Suggested length: {paragraphSet.targetLength}</p>
-                      </div>
-                      <div className="rounded-2xl border bg-slate-50 p-4">
-                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Writing goal</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-700">Write a factual paragraph of 100+ words while keeping the diagram visible, like a computer-based IELTS task.</p>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border bg-slate-50 p-4">
-                      <p className="mb-2 text-sm font-medium text-slate-700">Sentence bank from earlier practice</p>
-                      <ul className="space-y-2 text-sm text-slate-700 max-h-52 overflow-auto">
-                        {paragraphSet.notes.map((note, index) => <li key={index}>• {note}</li>)}
-                      </ul>
-                    </div>
-
-                    <Textarea 
-                      className="min-h-[280px] rounded-2xl" 
-                      placeholder="Write your paragraph here..." 
-                      value={paragraph} 
-                      onChange={(e) => setParagraph(e.target.value)} 
-                    />
-
-                    <div className="flex flex-wrap gap-3">
-                      <Button className="rounded-xl" onClick={handleParagraphCheck}>Check Paragraph</Button>
-                      <Button variant="outline" className="rounded-xl" onClick={() => setShowHint((prev) => !prev)}>{showHint ? "Hide Hint" : "Show Hint"}</Button>
-                      <Button variant="outline" className="rounded-xl" onClick={() => setShowModel((prev) => !prev)}>{showModel ? "Hide Model" : "Show Model"}</Button>
-                    </div>
-
-                    {paragraphFeedback.length > 0 && (
-                      <div className="rounded-2xl border bg-white p-4">
-                        <p className="text-sm font-medium text-slate-700">Feedback</p>
-                        <ul className="mt-2 space-y-2 text-sm text-slate-600">
-                          {paragraphFeedback.map((item, index) => <li key={index}>• {item}</li>)}
+                        <p className="mb-2 text-sm font-medium text-slate-700">Sentence bank from earlier practice</p>
+                        <ul className="max-h-48 space-y-2 overflow-auto text-sm text-slate-700">
+                          {paragraphSet.notes.map((note, index) => <li key={index}>- {note}</li>)}
                         </ul>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
 
-                <Card className="rounded-2xl shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Learning Support</CardTitle></CardHeader>
-                  <CardContent className="space-y-4 text-sm text-slate-700">
-                    {showHint && (
-                      <div className="rounded-2xl border bg-slate-50 p-4">
-                        <p className="font-medium">Hint</p>
-                        <p className="mt-1 text-slate-600">{paragraphSet.hint}</p>
+                      <Textarea 
+                        className="min-h-[340px] rounded-2xl bg-white" 
+                        placeholder="Write your paragraph here..." 
+                        value={paragraph} 
+                        onChange={(e) => setParagraph(e.target.value)} 
+                      />
+
+                      <div className="flex flex-wrap gap-3">
+                        <Button className="rounded-xl" onClick={handleParagraphCheck}>Check Paragraph</Button>
+                        <Button variant="outline" className="rounded-xl" onClick={() => setShowHint((prev) => !prev)}>{showHint ? "Hide Hint" : "Show Hint"}</Button>
+                        <Button variant="outline" className="rounded-xl" onClick={() => setShowModel((prev) => !prev)}>{showModel ? "Hide Model" : "Show Model"}</Button>
                       </div>
-                    )}
-                    {showModel && (
-                      <div className="rounded-2xl border bg-slate-50 p-4">
-                        <p className="font-medium">Model answer</p>
-                        <p className="mt-1 leading-6 text-slate-600">{paragraphSet.model}</p>
-                      </div>
-                    )}
-                    {!showHint && !showModel && (
-                      <div className="rounded-2xl border border-dashed bg-slate-50 p-4 text-slate-500">Open Hint or Model to support learners when needed.</div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+
+                      {paragraphFeedback.length > 0 && (
+                        <div className="rounded-2xl border bg-white p-4">
+                          <p className="text-sm font-medium text-slate-700">Feedback</p>
+                          <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                            {paragraphFeedback.map((item, index) => <li key={index}>- {item}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-2xl shadow-sm">
+                    <CardHeader><CardTitle className="text-lg">Learning Support</CardTitle></CardHeader>
+                    <CardContent className="space-y-4 text-sm text-slate-700">
+                      {showHint && (
+                        <div className="rounded-2xl border bg-slate-50 p-4">
+                          <p className="font-medium">Hint</p>
+                          <p className="mt-1 text-slate-600">{paragraphSet.hint}</p>
+                        </div>
+                      )}
+                      {showModel && (
+                        <div className="rounded-2xl border bg-slate-50 p-4">
+                          <p className="font-medium">Model answer</p>
+                          <p className="mt-1 leading-6 text-slate-600">{paragraphSet.model}</p>
+                        </div>
+                      )}
+                      {!showHint && !showModel && (
+                        <div className="rounded-2xl border border-dashed bg-slate-50 p-4 text-slate-500">Open Hint or Model to support learners when needed.</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </main>
+        </div>
       </div>
     </div>
   );
