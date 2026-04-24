@@ -27,7 +27,7 @@ const LEVEL_LABELS = {
   band65: "Band 6.5"
 };
 
-const imageMap = {
+const imageMap: Record<string, string> = {
   bamboo:
     "https://i0.wp.com/ieltspracticeonline.com/wp-content/uploads/2025/07/Writing-Task-1-BHow-fabric-is-manufactured-from-bamboo.png",
   noodles:
@@ -381,6 +381,13 @@ const processLibrary: Record<string, ProcessData> = {
   }
 };
 
+// Remove preposition hints from prompt (e.g., "bamboo plants / plant / in spring" -> "bamboo plants / plant")
+function removePrepositionHints(prompt: string): string {
+  const parts = prompt.split("/").map((part) => part.trim()).filter(Boolean);
+  const blockedStarts = ["in ", "into ", "from ", "for ", "with ", "by ", "to ", "at ", "on "];
+  return parts.filter((part) => !blockedStarts.some((start) => part.toLowerCase().startsWith(start))).join(" / ");
+}
+
 interface Practice1Item {
   prompt: string;
   answer: string;
@@ -416,15 +423,15 @@ function buildPractice1(steps: StepData[], level: string): Practice1Item[] {
     }
     if (level === "band6") {
       return {
-        prompt: step.prompt6,
+        prompt: removePrepositionHints(step.prompt6),
         answer: step.passive,
-        explanation: "Write a complete passive sentence using the prompt."
+        explanation: "Write a complete passive sentence. Use the diagram to decide any necessary details and prepositions."
       };
     }
     return {
-      prompt: step.prompt65,
+      prompt: removePrepositionHints(step.prompt65),
       answer: step.passive,
-      explanation: "Use only vocabulary shown in the diagram to form a complete passive sentence."
+      explanation: "Use only vocabulary shown in the diagram. Decide the sentence details from the diagram rather than from the prompt."
     };
   });
 }
@@ -643,19 +650,6 @@ function DiagramPanel({ process, imageSrc }: DiagramPanelProps) {
               The diagram image could not be loaded. In the production version, this image should be served from a local static folder or CDN.
             </div>
           )}
-        </div>
-
-        <div className="mt-4 rounded-2xl border bg-slate-50 p-4">
-          <p className="mb-3 text-sm font-semibold text-slate-700">Step checklist</p>
-          <div className="space-y-2">
-            {process.steps.map((step, index) => (
-              <div key={index} className="rounded-xl border bg-white p-3 text-sm">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Step {index + 1}</p>
-                <p className="mt-1 font-medium text-slate-800">{step.label}</p>
-                <p className="mt-1 text-slate-600">{step.passive}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </aside>
