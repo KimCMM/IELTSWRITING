@@ -383,16 +383,34 @@ const processLibrary: Record<string, ProcessData> = {
 
 // Remove preposition hints from prompt (e.g., "bamboo plants / plant / in spring" -> "bamboo plants / plant")
 function removePrepositionHints(prompt: string): string {
-  const parts = prompt.split("/").map((part) => part.trim()).filter(Boolean);
-  const blockedStarts = ["in ", "into ", "from ", "for ", "with ", "by ", "to ", "at ", "on "];
-  return parts.filter((part) => !blockedStarts.some((start) => part.toLowerCase().startsWith(start))).join(" / ");
+  const parts = prompt.split("/").map((p) => p.trim()).filter(Boolean);
+  const blocked = ["in ", "into ", "from ", "for ", "with ", "by ", "to ", "at ", "on "];
+  return parts.filter((p) => !blocked.some((b) => p.toLowerCase().startsWith(b))).join(" / ");
 }
 
-interface Practice1Item {
+interface Band55PracticeItem {
+  type: "rewrite";
   prompt: string;
   answer: string;
   explanation: string;
 }
+
+interface Band6PracticeItem {
+  type: "build";
+  prompt: string;
+  answer: string;
+  explanation: string;
+}
+
+interface Band65PracticeItem {
+  type: "upgrade" | "expand";
+  prompt: string;
+  task: string;
+  answer: string;
+  explanation: string;
+}
+
+type Practice1Item = Band55PracticeItem | Band6PracticeItem | Band65PracticeItem;
 
 interface SequencingItem {
   type: "fill" | "combine";
@@ -413,27 +431,56 @@ interface ParagraphSet {
 }
 
 function buildPractice1(steps: StepData[], level: string): Practice1Item[] {
-  return steps.map((step) => {
-    if (level === "band55") {
-      return {
-        prompt: step.active,
-        answer: step.passive,
-        explanation: "Rewrite the sentence in the passive voice."
-      };
-    }
-    if (level === "band6") {
-      return {
-        prompt: removePrepositionHints(step.prompt6),
-        answer: step.passive,
-        explanation: "Write a complete passive sentence. Use the diagram to decide any necessary details and prepositions."
-      };
-    }
-    return {
-      prompt: removePrepositionHints(step.prompt65),
+  // ===== Band 5.5: Rewrite =====
+  if (level === "band55") {
+    return steps.map((step) => ({
+      type: "rewrite" as const,
+      prompt: step.active,
       answer: step.passive,
-      explanation: "Use only vocabulary shown in the diagram. Decide the sentence details from the diagram rather than from the prompt."
-    };
+      explanation: "Rewrite the sentence in the passive voice."
+    }));
+  }
+
+  // ===== Band 6: Build Sentence =====
+  if (level === "band6") {
+    return steps.map((step) => ({
+      type: "build" as const,
+      prompt: removePrepositionHints(step.prompt6),
+      answer: step.passive,
+      explanation: "Build a complete passive sentence. Decide details from the diagram."
+    }));
+  }
+
+  // ===== Band 6.5: Upgrade and Expand =====
+  // Filter steps that can be upgraded or expanded
+  const upgradeableSteps = steps.filter((_, i) => i % 2 === 0);
+  const expandableSteps = steps.filter((_, i) => i % 2 === 1);
+
+  const items: Band65PracticeItem[] = [];
+
+  // Add upgrade tasks (even indices)
+  upgradeableSteps.forEach((step) => {
+    items.push({
+      type: "upgrade",
+      prompt: step.passive,
+      task: "Use a more formal verb or structure.",
+      answer: step.passive, // Self-check for Band 6.5
+      explanation: "Focus on using formal vocabulary appropriate for academic writing."
+    });
   });
+
+  // Add expand tasks (odd indices)
+  expandableSteps.slice(0, 4).forEach((step) => {
+    items.push({
+      type: "expand",
+      prompt: step.passive,
+      task: "Add details from the diagram to expand this sentence.",
+      answer: step.passive,
+      explanation: "Include relevant details shown in the diagram without adding unshown information."
+    });
+  });
+
+  return items;
 }
 
 function buildPractice2(steps: StepData[], level: string): SequencingItem[] {
@@ -740,12 +787,11 @@ export default function IELTSProcessWritingFinalUI() {
     setIsRunning(false);
   };
 
-  const getPassiveHint = (input: string): string => {
+  const getPassiveHint = (item: Practice1Item): string => {
     if (level === "band55") return "Structure: subject + is/are + past participle";
     if (level === "band6") return "Hint: use the correct be verb and complete the whole passive sentence.";
-    if (!input.toLowerCase().includes("is") && !input.toLowerCase().includes("are")) {
-      return "Check whether you have built a passive sentence: be + past participle.";
-    }
+    if (item.type === "upgrade") return "Focus on formal vocabulary. Check if your sentence uses appropriate academic language.";
+    if (item.type === "expand") return "Add details from the diagram. What materials, methods, or outcomes are shown?";
     return "Check whether you only used vocabulary shown in the diagram.";
   };
 
@@ -756,8 +802,8 @@ export default function IELTSProcessWritingFinalUI() {
   };
 
   const handlePassiveHint = (index: number) => {
-    const input = passiveAnswers[index] || "";
-    setPassiveHints((prev) => ({ ...prev, [index]: getPassiveHint(input) }));
+    const item = passiveSet[index];
+    setPassiveHints((prev) => ({ ...prev, [index]: getPassiveHint(item) }));
   };
 
   const handleSequencingCheck = (index: number) => {
@@ -834,23 +880,36 @@ export default function IELTSProcessWritingFinalUI() {
               <Card className="rounded-2xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl">
-                    <Wand2 className="h-5 w-5" /> Passive Voice Transformation
+                    <Wand2 className="h-5 w-5" /> 
+                    {level === "band55" ? "Passive Voice Rewrite" : level === "band6" ? "Sentence Building" : "Academic Writing"}
                   </CardTitle>
                   <CardDescription>
-                    Every diagram step is practised. The left-hand diagram remains visible to simulate computer-based IELTS.
+                    {level === "band55" && "Rewrite each sentence in the passive voice."}
+                    {level === "band6" && "Build complete passive sentences using diagram vocabulary."}
+                    {level === "band65" && "Practise upgrading and expanding passive sentences."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   {passiveSet.map((item, index) => (
                     <div key={index} className="rounded-2xl border bg-white p-4">
-                      <p className="text-sm font-medium text-slate-500">Task prompt</p>
+                      {level === "band65" && (
+                        <Badge variant="outline" className="mb-2">
+                          {item.type === "upgrade" ? "Upgrade" : "Expand"}
+                        </Badge>
+                      )}
+                      <p className="text-sm font-medium text-slate-500">
+                        {level === "band55" ? "Rewrite:" : level === "band6" ? "Build:" : "Task:"}
+                      </p>
                       <p className="mt-1 text-base text-slate-900">{item.prompt}</p>
+                      {level === "band65" && (
+                        <p className="mt-2 text-sm text-blue-600">{item.task}</p>
+                      )}
                       <div className="mt-4 flex flex-col gap-3 md:flex-row">
                         <Input
                           className="rounded-xl"
                           value={passiveAnswers[index] || ""}
                           onChange={(e) => setPassiveAnswers((prev) => ({ ...prev, [index]: e.target.value }))}
-                          placeholder="Write the passive sentence here..."
+                          placeholder={level === "band65" ? "Write or improve the sentence..." : "Write the passive sentence here..."}
                         />
                         <Button className="rounded-xl" onClick={() => handlePassiveCheck(index)}>
                           Check
@@ -880,7 +939,7 @@ export default function IELTSProcessWritingFinalUI() {
                             )}
                             <div>
                               <p>{passiveResults[index] ? "Correct. Well done." : `Incorrect. ${item.explanation}`}</p>
-                              {!passiveResults[index] && <p className="mt-1 font-medium">Correct answer: {item.answer}</p>}
+                              {!passiveResults[index] && <p className="mt-1 font-medium">Expected: {item.answer}</p>}
                             </div>
                           </div>
                         </div>
@@ -898,7 +957,9 @@ export default function IELTSProcessWritingFinalUI() {
                     <Sparkles className="h-5 w-5" /> Sequencing and Cohesion
                   </CardTitle>
                   <CardDescription>
-                    Every step is linked. Band 5.5 and 6 complete fill-in tasks; Band 6.5 practises sentence combining.
+                    {level === "band55" && "Fill in sequencing expressions to connect steps."}
+                    {level === "band6" && "Fill in linkers and practise sentence combining."}
+                    {level === "band65" && "Practise advanced linking structures."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
