@@ -21,7 +21,7 @@ import {
   Wand2
 } from "lucide-react";
 
-const LEVEL_LABELS = {
+const LEVEL_LABELS: Record<string, string> = {
   band55: "Band 5.5",
   band6: "Band 6",
   band65: "Band 6.5"
@@ -71,314 +71,101 @@ const processLibrary: Record<string, ProcessData> = {
   bamboo: {
     title: "Bamboo Fabric Production",
     diagramLabel: "The diagram below shows how fabric is manufactured from bamboo.",
-    taskInstruction:
-      "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+    taskInstruction: "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
     steps: [
-      makeStep(
-        "Plant bamboo plants in spring",
-        "People plant bamboo plants in spring.",
-        "Bamboo plants are planted in spring.",
-        "bamboo plants / plant / in spring",
-        "plant bamboo plants / spring",
-        "being planted in spring",
-        "the harvesting of bamboo plants in autumn"
-      ),
-      makeStep(
-        "Harvest bamboo plants in autumn",
-        "Workers harvest bamboo plants in autumn.",
-        "Bamboo plants are harvested in autumn.",
-        "bamboo plants / harvest / in autumn",
-        "harvest / autumn",
-        "being harvested in autumn",
-        "the cutting of bamboo into strips"
-      ),
-      makeStep(
-        "Cut bamboo into strips",
-        "Workers cut bamboo into strips.",
-        "Bamboo is cut into strips.",
-        "bamboo / cut / into strips",
-        "cut / into strips",
-        "being cut into strips",
-        "the crushing of the strips"
-      ),
-      makeStep(
-        "Crush strips",
-        "Workers crush the strips.",
-        "The strips are crushed.",
-        "the strips / crush",
-        "crush strips",
-        "being crushed",
-        "the filtering of the fibres"
-      ),
-      makeStep(
-        "Filter fibres",
-        "Workers filter the fibres.",
-        "The fibres are filtered.",
-        "the fibres / filter",
-        "filter fibres",
-        "being filtered",
-        "the softening of the fibres"
-      ),
-      makeStep(
-        "Soften fibres",
-        "Workers soften the fibres.",
-        "The fibres are softened.",
-        "the fibres / soften",
-        "soften fibres",
-        "being softened",
-        "the spinning of the fibres into yarn"
-      ),
-      makeStep(
-        "Spin fibres into yarn",
-        "Machines spin the fibres into yarn.",
-        "The fibres are spun into yarn.",
-        "the fibres / spin / into yarn",
-        "spin / yarn",
-        "being spun into yarn",
-        "the weaving of the yarn into fabric"
-      ),
-      makeStep(
-        "Weave yarn into fabric",
-        "Machines weave the yarn into fabric.",
-        "The yarn is woven into fabric.",
-        "the yarn / weave / into fabric",
-        "weave / fabric",
-        "being woven into fabric",
-        "the production of fabric"
-      )
+      makeStep("Plant bamboo plants in spring", "People plant bamboo plants in spring.", "Bamboo plants are planted in spring.", "bamboo plants / plant / in spring", "plant bamboo plants / spring", "being planted in spring", "the harvesting of bamboo plants in autumn"),
+      makeStep("Harvest bamboo plants in autumn", "Workers harvest bamboo plants in autumn.", "Bamboo plants are harvested in autumn.", "bamboo plants / harvest / in autumn", "harvest / autumn", "being harvested in autumn", "the cutting of bamboo into strips"),
+      makeStep("Cut bamboo into strips", "Workers cut bamboo into strips.", "Bamboo is cut into strips.", "bamboo / cut / into strips", "cut / into strips", "being cut into strips", "the crushing of the strips"),
+      makeStep("Crush strips", "Workers crush the strips.", "The strips are crushed.", "the strips / crush", "crush strips", "being crushed", "the filtering of the fibres"),
+      makeStep("Filter fibres", "Workers filter the fibres.", "The fibres are filtered.", "the fibres / filter", "filter fibres", "being filtered", "the softening of the fibres"),
+      makeStep("Soften fibres", "Workers soften the fibres.", "The fibres are softened.", "the fibres / soften", "soften fibres", "being softened", "the spinning of the fibres into yarn"),
+      makeStep("Spin fibres into yarn", "Machines spin the fibres into yarn.", "The fibres are spun into yarn.", "the fibres / spin / into yarn", "spin / yarn", "being spun into yarn", "the weaving of the yarn into fabric"),
+      makeStep("Weave yarn into fabric", "Machines weave the yarn into fabric.", "The yarn is woven into fabric.", "the yarn / weave / into fabric", "weave / fabric", "being woven into fabric", "the production of fabric")
     ]
   },
   sugar: {
     title: "Sugar Production from Sugar Cane",
     diagramLabel: "The diagram below shows how sugar is produced from sugar cane.",
-    taskInstruction:
-      "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+    taskInstruction: "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
     steps: [
-      makeStep(
-        "Grow sugar cane for 12-18 months",
-        "Farmers grow sugar cane for 12-18 months.",
-        "Sugar cane is grown for 12-18 months.",
-        "sugar cane / grow / for 12-18 months",
-        "grow / 12-18 months",
-        "being grown for 12-18 months",
-        "the harvesting of sugar cane"
-      ),
-      makeStep(
-        "Harvest sugar cane",
-        "Workers harvest the sugar cane.",
-        "The sugar cane is harvested.",
-        "the sugar cane / harvest",
-        "harvest",
-        "being harvested",
-        "the crushing of the sugar cane"
-      ),
-      makeStep(
-        "Crush sugar cane",
-        "Machines crush the sugar cane.",
-        "The sugar cane is crushed.",
-        "the sugar cane / crush",
-        "crush",
-        "being crushed",
-        "the purification of the juice"
-      ),
-      makeStep(
-        "Purify juice",
-        "Workers purify the juice.",
-        "The juice is purified.",
-        "the juice / purify",
-        "purify juice",
-        "being purified",
-        "the evaporation of the juice"
-      ),
-      makeStep(
-        "Turn juice into syrup",
-        "Heat turns the juice into syrup.",
-        "The juice is turned into syrup.",
-        "the juice / turn / into syrup",
-        "turn / syrup",
-        "being turned into syrup",
-        "the separation of sugar crystals from syrup"
-      ),
-      makeStep(
-        "Separate sugar crystals from syrup",
-        "A centrifuge separates sugar crystals from syrup.",
-        "Sugar crystals are separated from syrup.",
-        "sugar crystals / separate / from syrup",
-        "separate sugar crystals / syrup",
-        "being separated from syrup",
-        "the drying and cooling of the sugar"
-      ),
-      makeStep(
-        "Dry and cool sugar",
-        "Machines dry and cool the sugar.",
-        "The sugar is dried and cooled.",
-        "the sugar / dry and cool",
-        "dry and cool sugar",
-        "being dried and cooled",
-        "the production of sugar"
-      )
+      makeStep("Grow sugar cane for 12-18 months", "Farmers grow sugar cane for 12-18 months.", "Sugar cane is grown for 12-18 months.", "sugar cane / grow / for 12-18 months", "grow / 12-18 months", "being grown for 12-18 months", "the harvesting of sugar cane"),
+      makeStep("Harvest sugar cane", "Workers harvest the sugar cane.", "The sugar cane is harvested.", "the sugar cane / harvest", "harvest", "being harvested", "the crushing of the sugar cane"),
+      makeStep("Crush sugar cane", "Machines crush the sugar cane.", "The sugar cane is crushed.", "the sugar cane / crush", "crush", "being crushed", "the purification of the juice"),
+      makeStep("Purify juice", "Workers purify the juice.", "The juice is purified.", "the juice / purify", "purify juice", "being purified", "the evaporation of the juice"),
+      makeStep("Turn juice into syrup", "Heat turns the juice into syrup.", "The juice is turned into syrup.", "the juice / turn / into syrup", "turn / syrup", "being turned into syrup", "the separation of sugar crystals from syrup"),
+      makeStep("Separate sugar crystals from syrup", "A centrifuge separates sugar crystals from syrup.", "Sugar crystals are separated from syrup.", "sugar crystals / separate / from syrup", "separate sugar crystals / syrup", "being separated from syrup", "the drying and cooling of the sugar"),
+      makeStep("Dry and cool sugar", "Machines dry and cool the sugar.", "The sugar is dried and cooled.", "the sugar / dry and cool", "dry and cool sugar", "being dried and cooled", "the production of sugar")
     ]
   },
   noodles: {
     title: "Instant Noodles Manufacturing",
     diagramLabel: "The diagram below shows the manufacturing process for instant noodles.",
-    taskInstruction:
-      "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+    taskInstruction: "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
     steps: [
-      makeStep(
-        "Store flour in storage silos",
-        "The factory stores flour in storage silos.",
-        "Flour is stored in storage silos.",
-        "flour / store / in storage silos",
-        "storage silos / flour",
-        "being stored in storage silos",
-        "the mixing of flour, water and oil"
-      ),
-      makeStep(
-        "Mix flour with water and oil",
-        "Workers mix flour with water and oil.",
-        "Flour is mixed with water and oil.",
-        "flour / mix / with water and oil",
-        "mixer / water / oil",
-        "being mixed with water and oil",
-        "the rolling of the dough into sheets"
-      ),
-      makeStep(
-        "Roll dough into sheets",
-        "Machines roll the dough into sheets.",
-        "The dough is rolled into sheets.",
-        "the dough / roll / into sheets",
-        "dough sheets",
-        "being rolled into sheets",
-        "the cutting of the dough into strips"
-      ),
-      makeStep(
-        "Cut dough into strips",
-        "Machines cut the dough into strips.",
-        "The dough is cut into strips.",
-        "the dough / cut / into strips",
-        "dough strips",
-        "being cut into strips",
-        "the formation of noodle discs"
-      ),
-      makeStep(
-        "Form noodle discs",
-        "Machines form noodle discs.",
-        "Noodle discs are formed.",
-        "noodle discs / form",
-        "noodle discs",
-        "being formed",
-        "the cooking and drying of the noodle discs"
-      ),
-      makeStep(
-        "Cook and dry noodle discs",
-        "Machines cook and dry the noodle discs.",
-        "The noodle discs are cooked and dried.",
-        "the noodle discs / cook and dry",
-        "cooking / drying",
-        "being cooked and dried",
-        "the adding of vegetables and spices"
-      ),
-      makeStep(
-        "Add vegetables and spices",
-        "Workers add vegetables and spices.",
-        "Vegetables and spices are added.",
-        "vegetables and spices / add",
-        "vegetables / spices",
-        "being added",
-        "the labelling and sealing of the cups"
-      ),
-      makeStep(
-        "Label and seal cups",
-        "Workers label and seal the cups.",
-        "The cups are labelled and sealed.",
-        "the cups / label and seal",
-        "labelling / sealing",
-        "being labelled and sealed",
-        "the production of instant noodles"
-      )
+      makeStep("Store flour in storage silos", "The factory stores flour in storage silos.", "Flour is stored in storage silos.", "flour / store / in storage silos", "storage silos / flour", "being stored in storage silos", "the mixing of flour, water and oil"),
+      makeStep("Mix flour with water and oil", "Workers mix flour with water and oil.", "Flour is mixed with water and oil.", "flour / mix / with water and oil", "mixer / water / oil", "being mixed with water and oil", "the rolling of the dough into sheets"),
+      makeStep("Roll dough into sheets", "Machines roll the dough into sheets.", "The dough is rolled into sheets.", "the dough / roll / into sheets", "dough sheets", "being rolled into sheets", "the cutting of the dough into strips"),
+      makeStep("Cut dough into strips", "Machines cut the dough into strips.", "The dough is cut into strips.", "the dough / cut / into strips", "dough strips", "being cut into strips", "the formation of noodle discs"),
+      makeStep("Form noodle discs", "Machines form noodle discs.", "Noodle discs are formed.", "noodle discs / form", "noodle discs", "being formed", "the cooking and drying of the noodle discs"),
+      makeStep("Cook and dry noodle discs", "Machines cook and dry the noodle discs.", "The noodle discs are cooked and dried.", "the noodle discs / cook and dry", "cooking / drying", "being cooked and dried", "the adding of vegetables and spices"),
+      makeStep("Add vegetables and spices", "Workers add vegetables and spices.", "Vegetables and spices are added.", "vegetables and spices / add", "vegetables / spices", "being added", "the labelling and sealing of the cups"),
+      makeStep("Label and seal cups", "Workers label and seal the cups.", "The cups are labelled and sealed.", "the cups / label and seal", "labelling / sealing", "being labelled and sealed", "the production of instant noodles")
     ]
   },
   recycling: {
     title: "Plastic Bottle Recycling",
     diagramLabel: "The diagram below shows the process for recycling plastic bottles.",
-    taskInstruction:
-      "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+    taskInstruction: "Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
     steps: [
-      makeStep(
-        "Place plastic bottles in recycling bins",
-        "People place plastic bottles in recycling bins.",
-        "Plastic bottles are placed in recycling bins.",
-        "plastic bottles / place / in recycling bins",
-        "recycling bins / plastic bottles",
-        "being placed in recycling bins",
-        "the collection of plastic bottles"
-      ),
-      makeStep(
-        "Collect plastic bottles by truck",
-        "A truck collects the plastic bottles.",
-        "The plastic bottles are collected.",
-        "the plastic bottles / collect",
-        "collect",
-        "being collected",
-        "the sorting of plastic bottles"
-      ),
-      makeStep(
-        "Sort plastic bottles",
-        "Workers sort the plastic bottles.",
-        "The plastic bottles are sorted.",
-        "the plastic bottles / sort",
-        "sorting",
-        "being sorted",
-        "the compressing of plastic bottles into blocks"
-      ),
-      makeStep(
-        "Compress plastic bottles into blocks",
-        "Machines compress the plastic bottles into blocks.",
-        "The plastic bottles are compressed into blocks.",
-        "the plastic bottles / compress / into blocks",
-        "compressing / blocks",
-        "being compressed into blocks",
-        "the crushing of the blocks"
-      ),
-      makeStep(
-        "Crush blocks",
-        "Machines crush the blocks.",
-        "The blocks are crushed.",
-        "the blocks / crush",
-        "crushing",
-        "being crushed",
-        "the production of plastic pellets"
-      ),
-      makeStep(
-        "Produce plastic pellets",
-        "Machines produce plastic pellets.",
-        "Plastic pellets are produced.",
-        "plastic pellets / produce",
-        "plastic pellets",
-        "being produced",
-        "the heating of the pellets to form raw material"
-      ),
-      makeStep(
-        "Heat pellets to form raw material",
-        "Heat forms raw material from the pellets.",
-        "Raw material is formed from the pellets.",
-        "raw material / form / from the pellets",
-        "raw material / pellets",
-        "being formed from the pellets",
-        "the production of end products"
-      ),
-      makeStep(
-        "Produce end products",
-        "Factories produce end products.",
-        "End products are produced.",
-        "end products / produce",
-        "end products",
-        "being produced",
-        "the production of end products"
-      )
+      makeStep("Place plastic bottles in recycling bins", "People place plastic bottles in recycling bins.", "Plastic bottles are placed in recycling bins.", "plastic bottles / place / in recycling bins", "recycling bins / plastic bottles", "being placed in recycling bins", "the collection of plastic bottles"),
+      makeStep("Collect plastic bottles by truck", "A truck collects the plastic bottles.", "The plastic bottles are collected.", "the plastic bottles / collect", "collect", "being collected", "the sorting of plastic bottles"),
+      makeStep("Sort plastic bottles", "Workers sort the plastic bottles.", "The plastic bottles are sorted.", "the plastic bottles / sort", "sorting", "being sorted", "the compressing of plastic bottles into blocks"),
+      makeStep("Compress plastic bottles into blocks", "Machines compress the plastic bottles into blocks.", "The plastic bottles are compressed into blocks.", "the plastic bottles / compress / into blocks", "compressing / blocks", "being compressed into blocks", "the crushing of the blocks"),
+      makeStep("Crush blocks", "Machines crush the blocks.", "The blocks are crushed.", "the blocks / crush", "crushing", "being crushed", "the production of plastic pellets"),
+      makeStep("Produce plastic pellets", "Machines produce plastic pellets.", "Plastic pellets are produced.", "plastic pellets / produce", "plastic pellets", "being produced", "the heating of the pellets to form raw material"),
+      makeStep("Heat pellets to form raw material", "Heat forms raw material from the pellets.", "Raw material is formed from the pellets.", "raw material / form / from the pellets", "raw material / pellets", "being formed from the pellets", "the production of end products"),
+      makeStep("Produce end products", "Factories produce end products.", "End products are produced.", "end products / produce", "end products", "being produced", "the production of end products")
     ]
   }
+};
+
+// Band 6.5 dedicated practice library with process-specific upgrade/expand tasks
+interface Band65Item {
+  type: "upgrade" | "expand";
+  prompt: string;
+  task: string;
+  answers: string[];
+}
+
+const band65Practice1Library: Record<string, Band65Item[]> = {
+  bamboo: [
+    { type: "upgrade", prompt: "Bamboo plants are grown in spring.", task: "Use a more formal verb.", answers: ["Bamboo plants are cultivated in spring."] },
+    { type: "expand", prompt: "The fibres are softened.", task: "Add more detail from the diagram.", answers: ["The fibres are softened by adding water and amine oxide."] },
+    { type: "upgrade", prompt: "The strips are crushed to make liquid pulp.", task: "Use a more formal verb.", answers: ["The strips are crushed to produce liquid pulp."] },
+    { type: "expand", prompt: "The strips are crushed.", task: "Expand the sentence without using sequencing linkers.", answers: ["The strips are crushed, producing liquid pulp."] },
+    { type: "upgrade", prompt: "Long fibres are separated from the liquid.", task: "Use a more formal verb.", answers: ["Long fibres are extracted from the liquid."] }
+  ],
+  sugar: [
+    { type: "upgrade", prompt: "Sugar cane is grown for 12-18 months.", task: "Use a more formal verb.", answers: ["Sugar cane is cultivated for 12-18 months."] },
+    { type: "expand", prompt: "The juice is purified.", task: "Add more detail from the diagram.", answers: ["The juice is purified using a limestone filter."] },
+    { type: "upgrade", prompt: "The sugar cane is crushed to make juice.", task: "Use a more formal verb.", answers: ["The sugar cane is crushed to produce juice."] },
+    { type: "expand", prompt: "The juice is heated.", task: "Expand the sentence without using sequencing linkers.", answers: ["The juice is heated, forming syrup."] },
+    { type: "upgrade", prompt: "Sugar crystals are separated from the syrup.", task: "Use a more formal verb.", answers: ["Sugar crystals are extracted from the syrup."] }
+  ],
+  noodles: [
+    { type: "upgrade", prompt: "Flour is put in storage silos.", task: "Use a more natural verb.", answers: ["Flour is placed in storage silos."] },
+    { type: "upgrade", prompt: "The dough strips are made into noodle discs.", task: "Use a more precise verb phrase.", answers: ["The dough strips are formed into noodle discs."] },
+    { type: "expand", prompt: "The noodle discs are cooked.", task: "Add more detail from the diagram.", answers: ["The noodle discs are cooked in oil."] },
+    { type: "upgrade", prompt: "Vegetables and spices are put into cups.", task: "Use a more natural verb.", answers: ["Vegetables and spices are added into cups."] },
+    { type: "expand", prompt: "The cups are sealed.", task: "Add another action shown in the diagram.", answers: ["The cups are labelled and sealed."] }
+  ],
+  recycling: [
+    { type: "upgrade", prompt: "Plastic bottles are put in recycling bins.", task: "Use a more natural verb.", answers: ["Plastic bottles are placed in recycling bins."] },
+    { type: "expand", prompt: "Plastic bottles are collected.", task: "Add more detail from the diagram.", answers: ["Plastic bottles are collected by a truck."] },
+    { type: "upgrade", prompt: "Plastic bottles are compressed into blocks.", task: "Use a more formal verb phrase.", answers: ["Plastic bottles are processed into blocks."] },
+    { type: "expand", prompt: "The blocks are crushed.", task: "Expand the sentence without using sequencing linkers.", answers: ["The blocks are crushed, producing smaller pieces."] },
+    { type: "upgrade", prompt: "End products are produced.", task: "Use a more formal verb.", answers: ["End products are manufactured."] }
+  ]
 };
 
 // Remove preposition hints from prompt (e.g., "bamboo plants / plant / in spring" -> "bamboo plants / plant")
@@ -430,8 +217,7 @@ interface ParagraphSet {
   targetLength: string;
 }
 
-function buildPractice1(steps: StepData[], level: string): Practice1Item[] {
-  // ===== Band 5.5: Rewrite =====
+function buildPractice1(steps: StepData[], level: string, processKey: string): Practice1Item[] {
   if (level === "band55") {
     return steps.map((step) => ({
       type: "rewrite" as const,
@@ -441,7 +227,6 @@ function buildPractice1(steps: StepData[], level: string): Practice1Item[] {
     }));
   }
 
-  // ===== Band 6: Build Sentence =====
   if (level === "band6") {
     return steps.map((step) => ({
       type: "build" as const,
@@ -451,101 +236,90 @@ function buildPractice1(steps: StepData[], level: string): Practice1Item[] {
     }));
   }
 
-  // ===== Band 6.5: Upgrade and Expand =====
-  // Filter steps that can be upgraded or expanded
-  const upgradeableSteps = steps.filter((_, i) => i % 2 === 0);
-  const expandableSteps = steps.filter((_, i) => i % 2 === 1);
-
-  const items: Band65PracticeItem[] = [];
-
-  // Add upgrade tasks (even indices)
-  upgradeableSteps.forEach((step) => {
-    items.push({
-      type: "upgrade",
-      prompt: step.passive,
-      task: "Use a more formal verb or structure.",
-      answer: step.passive, // Self-check for Band 6.5
-      explanation: "Focus on using formal vocabulary appropriate for academic writing."
-    });
-  });
-
-  // Add expand tasks (odd indices)
-  expandableSteps.slice(0, 4).forEach((step) => {
-    items.push({
-      type: "expand",
-      prompt: step.passive,
-      task: "Add details from the diagram to expand this sentence.",
-      answer: step.passive,
-      explanation: "Include relevant details shown in the diagram without adding unshown information."
-    });
-  });
-
-  return items;
+  // Band 6.5: Use dedicated library for each process
+  return (band65Practice1Library[processKey] || band65Practice1Library.bamboo).map((item) => ({
+    type: item.type,
+    prompt: item.prompt,
+    task: item.task,
+    answer: item.answers[0],
+    explanation: item.type === "upgrade" ? "Focus on formal vocabulary." : "Include relevant details from the diagram."
+  }));
 }
 
 function buildPractice2(steps: StepData[], level: string): SequencingItem[] {
+  const baseSentences = steps.map((s) => s.passive);
+
   if (level === "band55") {
-    const linkers = ["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"];
-    return steps.map((step, index) => ({
+    const linkers = ["Firstly", "Next", "After that", "Then", "Next", "After that", "Then", "Finally"];
+    return baseSentences.map((sentence, index) => ({
       type: "fill" as const,
-      sentence: `__________, ${lowerFirst(step.passive)}`,
-      answer: linkers[Math.min(index, linkers.length - 1)],
-      explanation: "Fill in a suitable sequencing expression."
+      sentence: `__________, ${lowerFirst(sentence)}`,
+      answer: linkers[index] || "Then",
+      explanation: "Use a basic sequencing linker."
     }));
   }
 
   if (level === "band6") {
-    const linkers = ["Firstly", "Next", "Subsequently", "After that", "Subsequently", "Then", "After that", "Finally"];
-    const fillItems: SequencingItem[] = steps.map((step, index) => ({
+    const linkers = ["Firstly", "Next", "Subsequently", "After that", "Then", "Subsequently", "After that", "Finally"];
+
+    const fill = baseSentences.map((sentence, index) => ({
       type: "fill" as const,
-      sentence: `__________, ${lowerFirst(step.passive)}`,
-      answer: linkers[Math.min(index, linkers.length - 1)],
-      explanation: "Fill in an appropriate sequencing expression."
+      sentence: `__________, ${lowerFirst(sentence)}`,
+      answer: linkers[index] || "Then",
+      explanation: "Choose an appropriate linker."
     }));
 
-    const combineItems: SequencingItem[] = steps.slice(0, -1).map((step, index) => {
-      const nextStep = steps[index + 1];
+    const combine = baseSentences.slice(0, -1).map((sentence, index) => {
+      const nextSentence = baseSentences[index + 1];
+      const nextGerund = steps[index + 1].gerund;
       const useBefore = index % 2 === 0;
+
       return {
         type: "combine" as const,
-        prompt: useBefore ? "Combine the sentences using 'before doing':" : "Combine the sentences using 'after doing':",
-        parts: [step.passive, nextStep.passive],
+        prompt: useBefore ? "Combine using 'before doing'" : "Combine using 'after doing'",
+        parts: [sentence, nextSentence],
         answer: useBefore
-          ? `${step.passive.slice(0, -1)} before ${nextStep.gerund}.`
-          : `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`,
-        explanation: "Check both the sequence and the verb form after before/after."
+          ? `${sentence.replace(/\.$/, "")} before ${nextGerund}.`
+          : `${nextSentence.replace(/\.$/, "")} after ${steps[index].gerund}.`,
+        explanation: "Pay attention to verb form after before/after."
       };
     });
 
-    return [...fillItems, ...combineItems];
+    return [...fill, ...combine];
   }
 
-  return steps.slice(0, -1).map((step, index) => {
-    const nextStep = steps[index + 1];
+  // Band 6.5: Advanced linking structures
+  return baseSentences.slice(0, -1).map((sentence, index) => {
+    const nextSentence = baseSentences[index + 1];
+    const nextGerund = steps[index + 1].gerund;
+    const nextNounPhrase = steps[index + 1].nounPhrase;
+
     if (index % 3 === 0) {
       return {
         type: "combine" as const,
-        prompt: "Combine the sentences using 'after doing':",
-        parts: [step.passive, nextStep.passive],
-        answer: `${nextStep.passive.slice(0, -1)} after ${step.gerund}.`,
-        explanation: "Use after + doing / being done to connect the two stages."
+        prompt: "Combine using 'after doing'",
+        parts: [sentence, nextSentence],
+        answer: `${nextSentence.replace(/\.$/, "")} after ${steps[index].gerund}.`,
+        explanation: "Use after + doing structure."
       };
     }
+
     if (index % 3 === 1) {
       return {
         type: "combine" as const,
-        prompt: "Combine the ideas using 'followed by':",
-        parts: [step.passive, nextStep.passive],
-        answer: `${step.passive.slice(0, -1)}, followed by ${nextStep.nounPhrase}.`,
-        explanation: "Use followed by + noun or gerund phrase, not a full clause."
+        prompt: "Combine using 'followed by'",
+        parts: [sentence, nextSentence],
+        answer: `${sentence.replace(/\.$/, "")}, followed by ${nextNounPhrase}.`,
+        explanation: "Use followed by + noun/phrase."
       };
     }
+
     return {
       type: "combine" as const,
-      prompt: "Combine the sentences using 'after which':",
-      parts: [step.passive, nextStep.passive],
-      answer: `${step.passive.slice(0, -1)}, after which ${lowerFirst(nextStep.passive)}.`,
-      explanation: "Use after which to link two sequential clauses."
+      prompt: "Combine using 'after which'",
+      parts: [sentence, nextSentence],
+      answer: `${sentence.replace(/\.$/, "")}, after which ${lowerFirst(nextSentence)}`,
+      explanation: "Use after which to link two clauses."
     };
   });
 }
@@ -555,11 +329,9 @@ function buildPractice3(steps: StepData[], level: string): ParagraphSet {
     const linkers = ["Firstly", "Next", "After that", "In the next stage", "Then", "After that", "Then", "Finally"];
     return {
       title: "Band 5.5 Timed Paragraph Writing",
-      instruction:
-        "Write one factual body paragraph about the process using passive sentences and basic sequencing expressions.",
+      instruction: "Write one factual body paragraph about the process using passive sentences and basic sequencing expressions.",
       notes: steps.map((s) => s.passive),
-      hint:
-        "Use basic sequencing expressions such as firstly, next, after that, then, and finally. Avoid adding information that is not shown in the diagram.",
+      hint: "Use basic sequencing expressions such as firstly, next, after that, then, and finally. Avoid adding information that is not shown in the diagram.",
       model: steps.map((s, i) => `${linkers[Math.min(i, 7)]}, ${lowerFirst(s.passive)}`).join(" "),
       targetLength: "100+ words"
     };
@@ -568,39 +340,29 @@ function buildPractice3(steps: StepData[], level: string): ParagraphSet {
   if (level === "band6") {
     return {
       title: "Band 6 Timed Paragraph Writing",
-      instruction:
-        "Write one factual body paragraph. Reuse subsequently and before/after doing from Practice 2.",
+      instruction: "Write one factual body paragraph. Reuse subsequently and before/after doing from Practice 2.",
       notes: steps.map((s) => s.passive),
-      hint:
-        "Use subsequently at least once and combine some stages with before/after doing. Keep your paragraph factual.",
-      model: steps
-        .slice(0, -1)
-        .map((s, i) => {
-          const next = steps[i + 1];
-          if (i % 2 === 0) return `${s.passive.slice(0, -1)} before ${next.gerund}.`;
-          return `Subsequently, ${lowerFirst(next.passive)}`;
-        })
-        .join(" "),
+      hint: "Use subsequently at least once and combine some stages with before/after doing. Keep your paragraph factual.",
+      model: steps.slice(0, -1).map((s, i) => {
+        const next = steps[i + 1];
+        if (i % 2 === 0) return `${s.passive.slice(0, -1)} before ${next.gerund}.`;
+        return `Subsequently, ${lowerFirst(next.passive)}`;
+      }).join(" "),
       targetLength: "100+ words"
     };
   }
 
   return {
     title: "Band 6.5 Timed Paragraph Writing",
-    instruction:
-      "Write one factual body paragraph in a more academic style using after doing, followed by, and after which.",
+    instruction: "Write one factual body paragraph in a more academic style using after doing, followed by, and after which.",
     notes: steps.map((s) => s.passive),
-    hint:
-      "Use at least two advanced linking structures, but do not add any process details that are not shown in the diagram.",
-    model: steps
-      .slice(0, -1)
-      .map((s, i) => {
-        const next = steps[i + 1];
-        if (i % 3 === 0) return `${next.passive.slice(0, -1)} after ${s.gerund}.`;
-        if (i % 3 === 1) return `${s.passive.slice(0, -1)}, followed by ${next.nounPhrase}.`;
-        return `${s.passive.slice(0, -1)}, after which ${lowerFirst(next.passive)}.`;
-      })
-      .join(" "),
+    hint: "Use at least two advanced linking structures, but do not add any process details that are not shown in the diagram.",
+    model: steps.slice(0, -1).map((s, i) => {
+      const next = steps[i + 1];
+      if (i % 3 === 0) return `${next.passive.slice(0, -1)} after ${s.gerund}.`;
+      if (i % 3 === 1) return `${s.passive.slice(0, -1)}, followed by ${next.nounPhrase}.`;
+      return `${s.passive.slice(0, -1)}, after which ${lowerFirst(next.passive)}.`;
+    }).join(" "),
     targetLength: "100+ words"
   };
 }
@@ -619,21 +381,9 @@ function getWordCount(text: string): number {
 
 function scoreParagraph(text: string, level: string, process: ProcessData): string[] {
   const lower = text.toLowerCase();
-  const sequencingWords = [
-    "firstly",
-    "next",
-    "after that",
-    "in the next stage",
-    "then",
-    "finally",
-    "subsequently",
-    "followed by",
-    "after which"
-  ];
+  const sequencingWords = ["firstly", "next", "after that", "in the next stage", "then", "finally", "subsequently", "followed by", "after which"];
   const passiveMarkers = [" is ", " are ", " was ", " were ", " being ", " been "];
-  const keywords = process.steps
-    .flatMap((s) => s.passive.toLowerCase().split(/[^a-z0-9-]+/))
-    .filter((w) => w.length > 3);
+  const keywords = process.steps.flatMap((s) => s.passive.toLowerCase().split(/[^a-z0-9-]+/)).filter((w) => w.length > 3);
   const keywordCount = [...new Set(keywords)].filter((w) => lower.includes(w)).length;
   const wordCount = getWordCount(text);
   const feedback: string[] = [];
@@ -716,7 +466,7 @@ function StatusBox({ completionRate, level }: StatusBoxProps) {
           <p className="text-sm font-semibold text-slate-800">Learning journey</p>
           <p className="text-xs text-slate-500">Sentence accuracy &rarr; Cohesion control &rarr; Timed writing</p>
         </div>
-        <Badge variant="outline">{LEVEL_LABELS[level as keyof typeof LEVEL_LABELS]}</Badge>
+        <Badge variant="outline">{LEVEL_LABELS[level]}</Badge>
       </div>
       <Progress value={completionRate} />
       <p className="mt-2 text-xs text-slate-500">{completionRate}% completed</p>
@@ -741,8 +491,8 @@ export default function IELTSProcessWritingFinalUI() {
   const [isRunning, setIsRunning] = useState(false);
 
   const process = useMemo(() => processLibrary[selectedProcess], [selectedProcess]);
-  const imageSrc = imageMap[selectedProcess as keyof typeof imageMap];
-  const passiveSet = useMemo(() => buildPractice1(process.steps, level), [process, level]);
+  const imageSrc = imageMap[selectedProcess];
+  const passiveSet = useMemo(() => buildPractice1(process.steps, level, selectedProcess), [process, level, selectedProcess]);
   const sequencingSet = useMemo(() => buildPractice2(process.steps, level), [process, level]);
   const paragraphSet = useMemo(() => buildPractice3(process.steps, level), [process, level]);
 
@@ -789,9 +539,9 @@ export default function IELTSProcessWritingFinalUI() {
 
   const getPassiveHint = (item: Practice1Item): string => {
     if (level === "band55") return "Structure: subject + is/are + past participle";
-    if (level === "band6") return "Hint: use the correct be verb and complete the whole passive sentence.";
-    if (item.type === "upgrade") return "Focus on formal vocabulary. Check if your sentence uses appropriate academic language.";
-    if (item.type === "expand") return "Add details from the diagram. What materials, methods, or outcomes are shown?";
+    if (level === "band6") return "Use the correct be verb and complete the whole passive sentence.";
+    if (item.type === "upgrade") return "Focus on using formal vocabulary appropriate for academic writing.";
+    if (item.type === "expand") return "Include relevant details from the diagram without adding unshown information.";
     return "Check whether you only used vocabulary shown in the diagram.";
   };
 
@@ -880,7 +630,7 @@ export default function IELTSProcessWritingFinalUI() {
               <Card className="rounded-2xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl">
-                    <Wand2 className="h-5 w-5" /> 
+                    <Wand2 className="h-5 w-5" />
                     {level === "band55" ? "Passive Voice Rewrite" : level === "band6" ? "Sentence Building" : "Academic Writing"}
                   </CardTitle>
                   <CardDescription>
@@ -901,7 +651,7 @@ export default function IELTSProcessWritingFinalUI() {
                         {level === "band55" ? "Rewrite:" : level === "band6" ? "Build:" : "Task:"}
                       </p>
                       <p className="mt-1 text-base text-slate-900">{item.prompt}</p>
-                      {level === "band65" && (
+                      {level === "band65" && "task" in item && (
                         <p className="mt-2 text-sm text-blue-600">{item.task}</p>
                       )}
                       <div className="mt-4 flex flex-col gap-3 md:flex-row">
@@ -1051,7 +801,7 @@ export default function IELTSProcessWritingFinalUI() {
                       </div>
 
                       <div className="rounded-2xl border bg-slate-50 p-4">
-                        <div className="flex items-center gap-2 text-slate-500">
+                        <div className="flex items-center gap-2 text-slate-50">
                           <FileText className="h-4 w-4" />
                           <span className="text-xs font-medium uppercase tracking-wide">Word count</span>
                         </div>
