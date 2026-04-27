@@ -90,7 +90,7 @@ const initialPracticeState: PracticeState = {
 
 interface ErrorRule {
   id: string;
-  type: "grammar" | "lexis";
+  type: "grammar" | "lexis" | "spelling";
   pattern: RegExp;
   message: string;
   examples?: string[];
@@ -108,9 +108,16 @@ function createErrorRules(processKey: string): ErrorRule[] {
     {
       id: "g2",
       type: "grammar",
-      pattern: /\b(fibres|bottles|pellets|crystals|plants)\s+is\b/gi,
+      pattern: /\b(fibres|bottles|pellets|crystals|plants|strips|cups)\s+is\b/gi,
       message: "Use a plural verb with plural nouns, e.g. fibres are / bottles are.",
       examples: ["fibres are", "plastic bottles are"],
+    },
+    {
+      id: "g3",
+      type: "grammar",
+      pattern: /\b(water and amine oxide|vegetables and spices)\s+is\b/gi,
+      message: "Use 'are' with a compound plural subject.",
+      examples: ["water and amine oxide are added", "vegetables and spices are added"],
     },
     {
       id: "l1",
@@ -140,6 +147,55 @@ function createErrorRules(processKey: string): ErrorRule[] {
       message: "Use 'spun', not 'spinned'.",
       examples: ["fibres are spun"],
     },
+    {
+      id: "sp1",
+      type: "spelling",
+      pattern: /\b(botles|bottels)\b/gi,
+      message: "Spelling: use 'bottles'.",
+      examples: ["bottles"],
+    },
+    {
+      id: "sp2",
+      type: "spelling",
+      pattern: /\b(recyling|recylcing)\b/gi,
+      message: "Spelling: use 'recycling'.",
+      examples: ["recycling"],
+    },
+    {
+      id: "sp3",
+      type: "spelling",
+      pattern: /\b(vegatables|vegetabels)\b/gi,
+      message: "Spelling: use 'vegetables'.",
+      examples: ["vegetables"],
+    },
+    {
+      id: "sp4",
+      type: "spelling",
+      pattern: /\b(materail|matrial)\b/gi,
+      message: "Spelling: use 'material'.",
+      examples: ["material"],
+    },
+    {
+      id: "sp5",
+      type: "spelling",
+      pattern: /\b(produts|productions)\b/gi,
+      message: "Spelling/word choice: use 'products'.",
+      examples: ["products"],
+    },
+    {
+      id: "sp6",
+      type: "spelling",
+      pattern: /\b(fibers|fiberrs|fibreses)\b/gi,
+      message: "Use the task spelling 'fibres'.",
+      examples: ["fibres"],
+    },
+    {
+      id: "sp7",
+      type: "spelling",
+      pattern: /\b(liqued|liqid)\b/gi,
+      message: "Spelling: use 'liquid'.",
+      examples: ["liquid"],
+    },
   ];
 
   const specific: Record<string, ErrorRule[]> = {
@@ -151,6 +207,13 @@ function createErrorRules(processKey: string): ErrorRule[] {
         message: "Use 'is manufactured' or 'is made', not 'manufacture'.",
         examples: ["fabric is manufactured"],
       },
+      {
+        id: "b2",
+        type: "spelling",
+        pattern: /\b(autum|autemn)\b/gi,
+        message: "Spelling: use 'autumn'.",
+        examples: ["autumn"],
+      },
     ],
     sugar: [
       {
@@ -159,6 +222,22 @@ function createErrorRules(processKey: string): ErrorRule[] {
         pattern: /\bthe sugar cane is harvest\b/gi,
         message: "Use the past participle: harvested.",
         examples: ["The sugar cane is harvested."],
+      },
+      {
+        id: "s2",
+        type: "spelling",
+        pattern: /\b(limeston|limstone)\b/gi,
+        message: "Spelling: use 'limestone'.",
+        examples: ["limestone"],
+      },
+    ],
+    noodles: [
+      {
+        id: "n1",
+        type: "spelling",
+        pattern: /\b(noodels|noodls)\b/gi,
+        message: "Spelling: use 'noodles'.",
+        examples: ["noodles"],
       },
     ],
   };
@@ -417,7 +496,7 @@ const rawProcessData: Record<string, ProcessData> = {
 };
 
 // =====================
-// UI COMPONENTS (outside main component)
+// UI COMPONENTS
 // =====================
 
 interface CardProps {
@@ -504,18 +583,10 @@ export default function IELTSProcessTrainerFullSystem() {
     setDragItem(null);
   }, []);
 
-  const handleProcessChange = useCallback(
-    (newProcess: string) => {
-      setProcessKey(newProcess);
-      setLevel("band55");
-      resetAllPracticeStates();
-    },
-    [resetAllPracticeStates]
-  );
-
-  const handleLevelChange = useCallback(
-    (newLevel: string) => {
-      setLevel(newLevel);
+  const handleProcessOrLevelChange = useCallback(
+    (newProcess: string | null, newLevel: string | null) => {
+      if (newProcess !== null) setProcessKey(newProcess);
+      if (newLevel !== null) setLevel(newLevel);
       resetAllPracticeStates();
     },
     [resetAllPracticeStates]
@@ -693,7 +764,11 @@ export default function IELTSProcessTrainerFullSystem() {
       output.push(
         <strong
           key={`${error.id}-${index}`}
-          className={`rounded px-1 font-bold ${error.type === "grammar" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}
+          className={`rounded px-1 font-bold ${
+            error.type === "grammar" ? "bg-red-100 text-red-700" : 
+            error.type === "spelling" ? "bg-purple-100 text-purple-700" : 
+            "bg-yellow-100 text-yellow-700"
+          }`}
           aria-label={`${error.type} error: ${error.message}`}
         >
           {practiceState.p3Writing.slice(error.index, error.index + error.match.length)}
@@ -709,43 +784,10 @@ export default function IELTSProcessTrainerFullSystem() {
   const wordRequirement = level === "band55" ? 80 : level === "band6" ? 100 : 120;
   const grammarErrorCount = detectedErrors.filter((e) => e.type === "grammar").length;
   const lexisErrorCount = detectedErrors.filter((e) => e.type === "lexis").length;
+  const spellingErrorCount = detectedErrors.filter((e) => e.type === "spelling").length;
   const reflectionComplete = practiceState.p3Reflection.every((item) => item.trim().length > 0);
   const canSubmitP3 = wordCount >= wordRequirement;
   const p3Pass = practiceState.p3Submitted && detectedErrors.length === 0 && reflectionComplete;
-
-  const writingDiagnostics = useMemo(() => {
-    const text = practiceState.p3Writing.toLowerCase();
-    const passiveForms = [
-      "is placed", "are placed", "is collected", "are collected", "is sorted", "are sorted",
-      "is compressed", "are compressed", "is crushed", "are crushed", "is produced", "are produced",
-      "is harvested", "are harvested", "is purified", "are purified", "is heated", "are heated",
-      "is dried", "are dried", "is cooled", "are cooled", "is labelled", "are labelled",
-      "is sealed", "are sealed", "is woven", "are spun", "is used", "are added"
-    ];
-    const basicLinkers = ["first", "then", "next", "after that", "finally"];
-    const advancedLinkers = ["subsequently", "after which", "followed by", "before being", "after being"];
-    const pronouns = [" it ", " they ", " them ", " this "];
-
-    const passiveCount = passiveForms.filter((item) => text.includes(item)).length;
-    const basicLinkerCount = basicLinkers.filter((item) => text.includes(item)).length;
-    const advancedLinkerCount = advancedLinkers.filter((item) => text.includes(item)).length;
-    const pronounCount = pronouns.filter((item) => ` ${text} `.includes(item)).length;
-
-    let estimatedBand = "Needs review";
-    if (level === "band55" && wordCount >= wordRequirement && passiveCount >= 3 && basicLinkerCount >= 2) estimatedBand = "5.5-ready";
-    if (level === "band6" && wordCount >= wordRequirement && passiveCount >= 4 && basicLinkerCount >= 2 && pronounCount >= 1) estimatedBand = "6.0-ready";
-    if (level === "band65" && wordCount >= wordRequirement && passiveCount >= 5 && advancedLinkerCount >= 1) estimatedBand = "6.5-ready";
-
-    const feedback: string[] = [];
-    if (wordCount < wordRequirement) feedback.push(`Develop the paragraph to at least ${wordRequirement} words.`);
-    if (passiveCount < 3) feedback.push("Use more present simple passive forms to describe the process steps.");
-    if (basicLinkerCount < 2) feedback.push("Add clear sequencing linkers such as first, then, next and finally.");
-    if (level !== "band55" && pronounCount < 1) feedback.push("Use pronouns such as it, they or them to avoid repetition.");
-    if (level === "band65" && advancedLinkerCount < 1) feedback.push("Try one complex linking structure, such as after which, followed by, or before/after being done.");
-    if (feedback.length === 0) feedback.push("Good control for this level. Check spelling, articles and punctuation before final submission.");
-
-    return { estimatedBand, passiveCount, basicLinkerCount, advancedLinkerCount, pronounCount, feedback };
-  }, [practiceState.p3Writing, level, wordCount, wordRequirement]);
 
   const submitWriting = useCallback(() => {
     if (!canSubmitP3) {
@@ -753,7 +795,7 @@ export default function IELTSProcessTrainerFullSystem() {
       return;
     }
     setPracticeState((prev) => ({ ...prev, p3Submitted: true }));
-  }, [canSubmitP3, wordRequirement, wordCount]);
+  }, [canSubmitP3, wordCount, wordRequirement]);
 
   const getWritingHint = useCallback(() => {
     if (!practiceState.p3Submitted) {
@@ -762,18 +804,14 @@ export default function IELTSProcessTrainerFullSystem() {
       } else if (level === "band6") {
         setWritingHint("Band 6: Use present simple passive and a range of linkers. Use pronouns (it, they) to avoid repetition.");
       } else {
-        setWritingHint("Band 6.5: Use present simple passive, include more diagram details, and combine sentences using complex structures.");
+        setWritingHint("Band 6.5: Use present simple passive, include more diagram details, and combine sentences using complex structures such as after which, followed by, and before/after being done.");
       }
     } else if (detectedErrors.length > 0) {
       const first = detectedErrors[0];
       const example = first.examples?.[0] ? ` Example: ${first.examples[0]}.` : "";
       setWritingHint(`Focus on ${first.type.toUpperCase()}: ${first.message}${example}`);
-    } else if (!reflectionComplete) {
-      setWritingHint("No language errors remain. Complete all 3 self-reflection points to pass.");
-    } else {
-      setWritingHint("Well done. All errors corrected and reflection completed.");
     }
-  }, [practiceState.p3Submitted, detectedErrors, reflectionComplete, level]);
+  }, [practiceState.p3Submitted, detectedErrors, reflectionComplete, wordCount, level]);
 
   useEffect(() => {
     if (p3Pass && !earned.p3) award("p3");
@@ -889,7 +927,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const renderPractice3 = () => (
     <Card title="Practice 3 - Timed Writing + Self-correction">
-      <p className="mb-4 text-sm text-slate-600">Write a {wordRequirement}+ word body paragraph. Submit, correct highlighted errors, and complete three reflection points before passing.</p>
+      <p className="mb-4 text-sm text-slate-600">Write a body paragraph. Band 5.5 requires 80+ words, Band 6 requires 100+ words, and Band 6.5 requires 120+ words. Submit, correct highlighted errors, and complete three reflection points before passing.</p>
       <textarea
         value={practiceState.p3Writing}
         onChange={(e) => setPracticeState((prev) => ({ ...prev, p3Writing: e.target.value, p3Submitted: false }))}
@@ -899,44 +937,14 @@ export default function IELTSProcessTrainerFullSystem() {
       <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
         <span>Word count: <strong>{wordCount}</strong></span>
         <span>Target: <strong>{wordRequirement}+ words</strong></span>
-        {practiceState.p3Submitted && <><span>Grammar errors: <strong>{grammarErrorCount}</strong></span><span>Lexical errors: <strong>{lexisErrorCount}</strong></span></>}
+        {practiceState.p3Submitted && (
+          <>
+            <span>Grammar errors: <strong>{grammarErrorCount}</strong></span>
+            <span>Lexical errors: <strong>{lexisErrorCount}</strong></span>
+            <span>Spelling errors: <strong>{spellingErrorCount}</strong></span>
+          </>
+        )}
       </div>
-      
-      {/* Writing Diagnostics */}
-      {practiceState.p3Submitted && wordCount >= wordRequirement && (
-        <div className="mt-3 rounded-xl border bg-blue-50 p-4">
-          <p className="font-semibold text-blue-800">Writing Analysis</p>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-            <div className="rounded-lg bg-white p-2 text-center">
-              <p className="text-2xl font-bold text-blue-600">{writingDiagnostics.passiveCount}</p>
-              <p className="text-xs text-slate-600">Passive forms</p>
-            </div>
-            <div className="rounded-lg bg-white p-2 text-center">
-              <p className="text-2xl font-bold text-green-600">{writingDiagnostics.basicLinkerCount}</p>
-              <p className="text-xs text-slate-600">Basic linkers</p>
-            </div>
-            {level !== "band55" && (
-              <div className="rounded-lg bg-white p-2 text-center">
-                <p className="text-2xl font-bold text-purple-600">{writingDiagnostics.pronounCount}</p>
-                <p className="text-xs text-slate-600">Pronouns</p>
-              </div>
-            )}
-            {level === "band65" && (
-              <div className="rounded-lg bg-white p-2 text-center">
-                <p className="text-2xl font-bold text-orange-600">{writingDiagnostics.advancedLinkerCount}</p>
-                <p className="text-xs text-slate-600">Advanced linkers</p>
-              </div>
-            )}
-          </div>
-          <p className="mt-2 text-sm font-medium text-blue-700">Estimated: <span className="font-bold">{writingDiagnostics.estimatedBand}</span></p>
-          <ul className="mt-2 space-y-1">
-            {writingDiagnostics.feedback.map((item, i) => (
-              <li key={i} className="text-sm text-slate-700">- {item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      
       <div className="mt-4 flex gap-2">
         <button onClick={submitWriting} disabled={!canSubmitP3} className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${canSubmitP3 ? "bg-blue-600" : "bg-slate-400 cursor-not-allowed"}`}>Submit</button>
         <button onClick={getWritingHint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
@@ -945,7 +953,7 @@ export default function IELTSProcessTrainerFullSystem() {
       {practiceState.p3Submitted && <div className="mt-4 rounded-2xl border bg-slate-50 p-4 whitespace-pre-wrap leading-7">{highlightedWriting || "No writing submitted."}</div>}
       <div className="mt-5 rounded-2xl border bg-white p-4">
         <p className="font-semibold">Self-reflection</p>
-        <p className="mt-1 text-sm text-slate-600">Write 3 language points or main features you need to focus on next time.</p>
+        <p className="mt-1 text-sm text-slate-600">Write 3 reflection points. You may reflect on: passive forms, basic linkers, advanced linkers, pronoun use, spelling accuracy, or your estimated level.</p>
         <div className="mt-3 space-y-2">
           {practiceState.p3Reflection.map((item, i) => (
             <input 
@@ -977,13 +985,13 @@ export default function IELTSProcessTrainerFullSystem() {
               <p className="mt-2 text-sm text-slate-600">Four process diagrams - three bands - sentence, cohesion and writing training.</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <select value={processKey} onChange={(e) => handleProcessChange(e.target.value)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">
+              <select value={processKey} onChange={(e) => handleProcessOrLevelChange(e.target.value, null)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">
                 <option value="bamboo">Bamboo fabric</option>
                 <option value="sugar">Sugar cane</option>
                 <option value="noodles">Instant noodles</option>
                 <option value="recycling">Recycling</option>
               </select>
-              <select value={level} onChange={(e) => handleLevelChange(e.target.value)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">
+              <select value={level} onChange={(e) => handleProcessOrLevelChange(null, e.target.value)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">
                 <option value="band55">Band 5.5</option>
                 <option value="band6">Band 6</option>
                 <option value="band65">Band 6.5</option>
@@ -993,8 +1001,11 @@ export default function IELTSProcessTrainerFullSystem() {
           <div className="mt-4 rounded-xl border bg-slate-50 p-4">
             <p className="font-semibold">{current.title}</p>
             <p className="text-sm text-slate-600">{current.task}</p>
+            <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${totalScore * 10}%` }} />
+            </div>
             <p className="mt-2 text-lg font-bold text-blue-700">Score: {totalScore} / 10 - {achievement}</p>
-            <p className="text-sm text-slate-500">P1: {earned.p1 ? "+2" : "2pts"} - P2: {earned.p2 ? "+3" : "3pts"} - P3: {earned.p3 ? "+5" : "5pts"}</p>
+            <p className="text-sm text-slate-500">P1: {earned.p1 ? "+2 earned" : "2pts"} - P2: {earned.p2 ? "+3 earned" : "3pts"} - P3: {earned.p3 ? "+5 earned" : "5pts"}</p>
           </div>
         </div>
 
