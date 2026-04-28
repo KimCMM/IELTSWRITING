@@ -108,16 +108,9 @@ function createErrorRules(processKey: string): ErrorRule[] {
     {
       id: "g2",
       type: "grammar",
-      pattern: /\b(fibres|bottles|pellets|crystals|plants|strips|cups)\s+is\b/gi,
+      pattern: /\b(fibres|bottles|pellets|crystals|plants)\s+is\b/gi,
       message: "Use a plural verb with plural nouns, e.g. fibres are / bottles are.",
       examples: ["fibres are", "plastic bottles are"],
-    },
-    {
-      id: "g3",
-      type: "grammar",
-      pattern: /\b(water and amine oxide|vegetables and spices)\s+is\b/gi,
-      message: "Use 'are' with a compound plural subject.",
-      examples: ["water and amine oxide are added", "vegetables and spices are added"],
     },
     {
       id: "l1",
@@ -150,49 +143,42 @@ function createErrorRules(processKey: string): ErrorRule[] {
     {
       id: "sp1",
       type: "spelling",
-      pattern: /\b(botles|bottels)\b/gi,
+      pattern: /botles|bottels/gi,
       message: "Spelling: use 'bottles'.",
       examples: ["bottles"],
     },
     {
       id: "sp2",
       type: "spelling",
-      pattern: /\b(recyling|recylcing)\b/gi,
+      pattern: /recyling|recylcing/gi,
       message: "Spelling: use 'recycling'.",
       examples: ["recycling"],
     },
     {
       id: "sp3",
       type: "spelling",
-      pattern: /\b(vegatables|vegetabels)\b/gi,
+      pattern: /vegatables|vegetabels/gi,
       message: "Spelling: use 'vegetables'.",
       examples: ["vegetables"],
     },
     {
       id: "sp4",
       type: "spelling",
-      pattern: /\b(materail|matrial)\b/gi,
+      pattern: /materail|matrial/gi,
       message: "Spelling: use 'material'.",
       examples: ["material"],
     },
     {
       id: "sp5",
       type: "spelling",
-      pattern: /\b(produts|productions)\b/gi,
-      message: "Spelling/word choice: use 'products'.",
+      pattern: /produts|prodcts/gi,
+      message: "Spelling: use 'products'.",
       examples: ["products"],
     },
     {
       id: "sp6",
       type: "spelling",
-      pattern: /\b(fibers|fiberrs|fibreses)\b/gi,
-      message: "Use the task spelling 'fibres'.",
-      examples: ["fibres"],
-    },
-    {
-      id: "sp7",
-      type: "spelling",
-      pattern: /\b(liqued|liqid)\b/gi,
+      pattern: /liqued|liqid/gi,
       message: "Spelling: use 'liquid'.",
       examples: ["liquid"],
     },
@@ -207,13 +193,6 @@ function createErrorRules(processKey: string): ErrorRule[] {
         message: "Use 'is manufactured' or 'is made', not 'manufacture'.",
         examples: ["fabric is manufactured"],
       },
-      {
-        id: "b2",
-        type: "spelling",
-        pattern: /\b(autum|autemn)\b/gi,
-        message: "Spelling: use 'autumn'.",
-        examples: ["autumn"],
-      },
     ],
     sugar: [
       {
@@ -222,22 +201,6 @@ function createErrorRules(processKey: string): ErrorRule[] {
         pattern: /\bthe sugar cane is harvest\b/gi,
         message: "Use the past participle: harvested.",
         examples: ["The sugar cane is harvested."],
-      },
-      {
-        id: "s2",
-        type: "spelling",
-        pattern: /\b(limeston|limstone)\b/gi,
-        message: "Spelling: use 'limestone'.",
-        examples: ["limestone"],
-      },
-    ],
-    noodles: [
-      {
-        id: "n1",
-        type: "spelling",
-        pattern: /\b(noodels|noodls)\b/gi,
-        message: "Spelling: use 'noodles'.",
-        examples: ["noodles"],
       },
     ],
   };
@@ -555,6 +518,19 @@ interface CohesionTask {
   answer: string;
 }
 
+interface AIFeedbackData {
+  estimatedBand?: string;
+  summary?: string;
+  errors?: Array<{
+    type: string;
+    original: string;
+    suggestion: string;
+    explanation: string;
+  }>;
+  strengths?: string[];
+  nextSteps?: string[];
+}
+
 export default function IELTSProcessTrainerFullSystem() {
   const processData = useMemo(() => fixP2Band55Data(rawProcessData), []);
 
@@ -567,6 +543,8 @@ export default function IELTSProcessTrainerFullSystem() {
   const [p1Hint, setP1Hint] = useState<string>("");
   const [p2Hint, setP2Hint] = useState<string>("");
   const [writingHint, setWritingHint] = useState<string>("");
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiFeedback, setAiFeedback] = useState<AIFeedbackData | null>(null);
 
   const current = processData[processKey];
   const steps = current.steps;
@@ -813,6 +791,45 @@ export default function IELTSProcessTrainerFullSystem() {
     }
   }, [practiceState.p3Submitted, detectedErrors, reflectionComplete, wordCount, level]);
 
+  const getAIFeedback = useCallback(async () => {
+    if (!practiceState.p3Writing.trim() || aiLoading) return;
+
+    setAiLoading(true);
+    setAiFeedback(null);
+
+    try {
+      const response = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          writing: practiceState.p3Writing,
+          level: level,
+          processTitle: current.title,
+          processDescription: current.task,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get AI feedback");
+      }
+
+      const data = await response.json();
+      setAiFeedback(data);
+    } catch (error) {
+      console.error("AI Feedback Error:", error);
+      setAiFeedback({
+        summary: "Failed to generate AI feedback. Please try again.",
+        errors: [],
+        strengths: [],
+        nextSteps: [],
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  }, [practiceState.p3Writing, level, current, aiLoading]);
+
   useEffect(() => {
     if (p3Pass && !earned.p3) award("p3");
   }, [p3Pass, earned.p3, award]);
@@ -945,11 +962,68 @@ export default function IELTSProcessTrainerFullSystem() {
           </>
         )}
       </div>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <button onClick={submitWriting} disabled={!canSubmitP3} className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${canSubmitP3 ? "bg-blue-600" : "bg-slate-400 cursor-not-allowed"}`}>Submit</button>
         <button onClick={getWritingHint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
+        <button
+          onClick={getAIFeedback}
+          disabled={aiLoading || !practiceState.p3Writing.trim()}
+          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
+        >
+          {aiLoading ? "Checking..." : "AI Feedback"}
+        </button>
       </div>
       {writingHint && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{writingHint}</div>}
+      
+      {aiFeedback && (
+        <div className="mt-4 rounded-2xl border border-purple-200 bg-purple-50 p-4 text-sm text-purple-950">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-base font-bold">AI Feedback</p>
+            {aiFeedback.estimatedBand && (
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-purple-700">
+                Estimated Band: {aiFeedback.estimatedBand}
+              </span>
+            )}
+          </div>
+
+          {aiFeedback.summary && <p className="mt-3 leading-6">{aiFeedback.summary}</p>}
+
+          {Array.isArray(aiFeedback.errors) && aiFeedback.errors.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold">Errors and suggestions</p>
+              <div className="mt-2 space-y-2">
+                {aiFeedback.errors.map((error, index) => (
+                  <div key={index} className="rounded-xl border bg-white p-3">
+                    <p><strong>Type:</strong> {error.type}</p>
+                    <p><strong>Original:</strong> {error.original}</p>
+                    <p><strong>Suggestion:</strong> {error.suggestion}</p>
+                    <p><strong>Why:</strong> {error.explanation}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {Array.isArray(aiFeedback.strengths) && aiFeedback.strengths.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold">Strengths</p>
+              <ul className="mt-2 list-disc pl-5">
+                {aiFeedback.strengths.map((item, index) => <li key={index}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {Array.isArray(aiFeedback.nextSteps) && aiFeedback.nextSteps.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold">Next steps</p>
+              <ul className="mt-2 list-disc pl-5">
+                {aiFeedback.nextSteps.map((item, index) => <li key={index}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+      
       {practiceState.p3Submitted && <div className="mt-4 rounded-2xl border bg-slate-50 p-4 whitespace-pre-wrap leading-7">{highlightedWriting || "No writing submitted."}</div>}
       <div className="mt-5 rounded-2xl border bg-white p-4">
         <p className="font-semibold">Self-reflection</p>
