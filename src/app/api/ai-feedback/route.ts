@@ -25,7 +25,7 @@ interface AIFeedbackResponse {
 }
 
 function buildPrompt(data: AIFeedbackRequest): string {
-  const { writing, level, processTitle, processTask, feedbackMode } = data;
+  const { writing, level, processTask, feedbackMode } = data;
   const levelMap: Record<string, string> = {
     band55: "5.5",
     band6: "6.0",

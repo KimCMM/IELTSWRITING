@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { memo, useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
 
 // =====================
 // 1. HELPERS
@@ -78,21 +78,134 @@ const initialPracticeState = {
   p3Reflection: ["", "", ""],
 };
 
+interface ErrorRule {
+  id: string;
+  type: string;
+  pattern: RegExp;
+  message: string;
+  examples: string[];
+}
+
+function createErrorRules(processKey: string): ErrorRule[] {
+  const baseRules: ErrorRule[] = [
+    {
+      id: "g1",
+      type: "grammar",
+      pattern: /\b(are|is)\s+(place|collect|sort|compress|harvest|spin|produce|pack|label|seal|crush|wash|dry|cool)\b(?!\w)/gi,
+      message: "Use passive form: be + past participle, e.g. are placed / are collected.",
+      examples: ["are placed", "are collected", "are sorted"],
+    },
+    {
+      id: "g2",
+      type: "grammar",
+      pattern: /\b(fibres|bottles|pellets|crystals|plants)\s+is\b/gi,
+      message: "Use a plural verb with plural nouns, e.g. fibres are / bottles are.",
+      examples: ["fibres are", "plastic bottles are"],
+    },
+    {
+      id: "l1",
+      type: "lexis",
+      pattern: /\b(end|final)\s+goods\b/gi,
+      message: "Use 'end products' instead of 'end/final goods'.",
+      examples: ["end products"],
+    },
+    {
+      id: "l2",
+      type: "lexis",
+      pattern: /plastic\s+balls/gi,
+      message: "Use 'plastic pellets', not 'plastic balls'.",
+      examples: ["plastic pellets"],
+    },
+    {
+      id: "l3",
+      type: "lexis",
+      pattern: /raw\s+materials\b/gi,
+      message: "Use 'raw material' as an uncountable noun here.",
+      examples: ["raw material"],
+    },
+    {
+      id: "l4",
+      type: "lexis",
+      pattern: /spinned/gi,
+      message: "Use 'spun', not 'spinned'.",
+      examples: ["fibres are spun"],
+    },
+    {
+      id: "sp1",
+      type: "spelling",
+      pattern: /botles|bottels/gi,
+      message: "Spelling: use 'bottles'.",
+      examples: ["bottles"],
+    },
+    {
+      id: "sp2",
+      type: "spelling",
+      pattern: /recyling|recylcing/gi,
+      message: "Spelling: use 'recycling'.",
+      examples: ["recycling"],
+    },
+    {
+      id: "sp3",
+      type: "spelling",
+      pattern: /vegatables|vegetabels/gi,
+      message: "Spelling: use 'vegetables'.",
+      examples: ["vegetables"],
+    },
+    {
+      id: "sp4",
+      type: "spelling",
+      pattern: /materail|matrial/gi,
+      message: "Spelling: use 'material'.",
+      examples: ["material"],
+    },
+    {
+      id: "sp5",
+      type: "spelling",
+      pattern: /produts|prodcts/gi,
+      message: "Spelling: use 'products'.",
+      examples: ["products"],
+    },
+    {
+      id: "sp6",
+      type: "spelling",
+      pattern: /liqued|liqid/gi,
+      message: "Spelling: use 'liquid'.",
+      examples: ["liquid"],
+    },
+  ];
+
+  const specific: Record<string, ErrorRule[]> = {
+    bamboo: [
+      {
+        id: "b1",
+        type: "lexis",
+        pattern: /\bfabric\s+(is\s+)?manufacture\b/gi,
+        message: "Use 'is manufactured' or 'is made', not 'manufacture'.",
+        examples: ["fabric is manufactured"],
+      },
+    ],
+    sugar: [
+      {
+        id: "s1",
+        type: "grammar",
+        pattern: /\bthe sugar cane is harvest\b/gi,
+        message: "Use the past participle: harvested.",
+        examples: ["The sugar cane is harvested."],
+      },
+    ],
+  };
+
+  return [...baseRules, ...(specific[processKey] || [])];
+}
+
 const fixP2Band55Data = (rawData: typeof rawProcessData) => {
   const copy = JSON.parse(JSON.stringify(rawData));
 
   Object.keys(copy).forEach((key) => {
     const item = copy[key];
-
     if (!item.p2Band55) return;
-
-    while (item.p2Band55.answers.length < 8) {
-      item.p2Band55.answers.push("");
-    }
-
-    if (item.p2Band55.answers.length > 8) {
-      item.p2Band55.answers = item.p2Band55.answers.slice(0, 8);
-    }
+    while (item.p2Band55.answers.length < 8) item.p2Band55.answers.push("");
+    if (item.p2Band55.answers.length > 8) item.p2Band55.answers = item.p2Band55.answers.slice(0, 8);
   });
 
   return copy;
@@ -119,11 +232,15 @@ const rawProcessData = {
       { active: "People use fabric to make clothes.", passive: "Fabric is used to make clothes.", prompt6: "fabric / use / clothes" },
     ],
     band65: [
-      { prompt: "Bamboo plants are grown in spring.", task: "Use a more formal verb.", answer: "Bamboo plants are cultivated in spring." },
-      { prompt: "The strips are crushed.", task: "Add the result shown in the diagram.", answer: "The strips are crushed, producing liquid pulp." },
-      { prompt: "Long fibres are separated from the liquid.", task: "Use a more formal verb.", answer: "Long fibres are extracted from the liquid." },
-      { prompt: "The fibres are softened.", task: "Add detail from the diagram.", answer: "The fibres are softened by adding water and amine oxide." },
-      { prompt: "Yarn is woven to make fabric.", task: "Use a more natural result structure.", answer: "Yarn is woven into fabric." },
+      { prompt: "Bamboo plants are grown in spring.", task: "Upgrade the verb.", answer: "Bamboo plants are cultivated in spring." },
+      { prompt: "Bamboo plants are harvested in autumn.", task: "Combine the time detail naturally.", answer: "They are harvested in autumn." },
+      { prompt: "Bamboo plants are cut into strips.", task: "Use a pronoun to avoid repetition.", answer: "They are then cut into strips." },
+      { prompt: "The strips are crushed to make liquid pulp.", task: "Use a result structure.", answer: "The strips are crushed, producing liquid pulp." },
+      { prompt: "Long fibres are separated from the liquid by a filter.", task: "Upgrade the verb.", answer: "Long fibres are extracted from the liquid by a filter." },
+      { prompt: "Water and amine oxide are added to soften the fibres.", task: "Use a by + -ing structure.", answer: "The fibres are softened by adding water and amine oxide." },
+      { prompt: "Fibres are spun to make yarn.", task: "Use a more natural result structure.", answer: "The fibres are spun into yarn." },
+      { prompt: "Yarn is woven to make fabric.", task: "Use a more natural result structure.", answer: "The yarn is woven into fabric." },
+      { prompt: "Fabric is used to make clothes.", task: "Add the final examples from the diagram if shown.", answer: "The fabric is used to make clothes and socks." },
     ],
     p2Band55: {
       text: [
@@ -148,9 +265,41 @@ const rawProcessData = {
       { type: "combine", prompt: "Combine using before doing.", parts: ["Yarn is woven to make fabric.", "It is used to make clothes."], answer: "Yarn is woven to make fabric before being used to make clothes." },
     ],
     p2Band65: [
-      { prompt: "Combine using followed by + noun phrase.", parts: ["The strips are crushed, producing liquid pulp.", "Long fibres are extracted from the liquid."], answer: "The strips are crushed, producing liquid pulp, followed by the extraction of long fibres from the liquid." },
-      { prompt: "Combine using after which.", parts: ["The fibres are softened by adding water and amine oxide.", "They are spun into yarn."], answer: "The fibres are softened by adding water and amine oxide, after which they are spun into yarn." },
-      { prompt: "Combine using before doing.", parts: ["Yarn is woven into fabric.", "Fabric is used to make clothes."], answer: "Yarn is woven into fabric before being used to make clothes." },
+      {
+        prompt: "Combine using before doing.",
+        parts: ["Bamboo plants are planted in spring.", "They are harvested in autumn."],
+        answer: "Bamboo plants are planted in spring before being harvested in autumn.",
+      },
+      {
+        prompt: "Combine using after doing.",
+        parts: ["Bamboo plants are cut into strips.", "The strips are crushed to make liquid pulp."],
+        answer: "The strips are crushed to make liquid pulp after being cut from bamboo plants.",
+      },
+      {
+        prompt: "Combine using followed by + noun phrase.",
+        parts: ["The strips are crushed, producing liquid pulp.", "Long fibres are extracted from the liquid."],
+        answer: "The strips are crushed, producing liquid pulp, followed by the extraction of long fibres from the liquid.",
+      },
+      {
+        prompt: "Combine using after which.",
+        parts: ["Long fibres are extracted from the liquid by a filter.", "The fibres are softened by adding water and amine oxide."],
+        answer: "Long fibres are extracted from the liquid by a filter, after which they are softened by adding water and amine oxide.",
+      },
+      {
+        prompt: "Combine using after doing.",
+        parts: ["The fibres are softened by adding water and amine oxide.", "They are spun into yarn."],
+        answer: "The fibres are spun into yarn after being softened by adding water and amine oxide.",
+      },
+      {
+        prompt: "Combine using before doing.",
+        parts: ["The fibres are spun into yarn.", "The yarn is woven into fabric."],
+        answer: "The fibres are spun into yarn before being woven into fabric.",
+      },
+      {
+        prompt: "Combine using before doing.",
+        parts: ["The yarn is woven into fabric.", "The fabric is used to make clothes."],
+        answer: "The yarn is woven into fabric before being used to make clothes.",
+      },
     ],
   },
 
@@ -306,9 +455,38 @@ const rawProcessData = {
 
 type ProcessKey = keyof typeof rawProcessData;
 type LevelKey = "band55" | "band6" | "band65";
+type PracticeKey = "practice1" | "practice2" | "practice3";
 
 // =====================
-// 3. MAIN COMPONENT
+// 3. LIGHTWEIGHT UI COMPONENTS
+// =====================
+
+const Card = memo(({ title, children }: { title: string; children: ReactNode }) => (
+  <div className="rounded-2xl border bg-white p-5 shadow-sm">
+    <h2 className="mb-4 text-xl font-bold text-slate-900">{title}</h2>
+    {children}
+  </div>
+));
+Card.displayName = "Card";
+
+const Tab = memo(({ value, label, activePractice, onSelect }: { value: PracticeKey; label: string; activePractice: PracticeKey; onSelect: (v: PracticeKey) => void }) => (
+  <button
+    onClick={() => onSelect(value)}
+    role="tab"
+    aria-selected={activePractice === value}
+    className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+      activePractice === value
+        ? "bg-blue-600 text-white"
+        : "bg-slate-100 text-slate-700"
+    }`}
+  >
+    {label}
+  </button>
+));
+Tab.displayName = "Tab";
+
+// =====================
+// 4. MAIN COMPONENT
 // =====================
 
 export default function IELTSProcessTrainerFullSystem() {
@@ -316,7 +494,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const [processKey, setProcessKey] = useState<ProcessKey>("bamboo");
   const [level, setLevel] = useState<LevelKey>("band55");
-  const [activePractice, setActivePractice] = useState<"practice1" | "practice2" | "practice3">("practice1");
+  const [activePractice, setActivePractice] = useState<PracticeKey>("practice1");
   const [scoreMap, setScoreMap] = useLocalStorage<Record<string, { p1: boolean; p2: boolean; p3: boolean }>>("ielts-process-scores-v2", {});
   const [practiceState, setPracticeState] = useState(initialPracticeState);
   const [dragItem, setDragItem] = useState<string | null>(null);
@@ -333,6 +511,7 @@ export default function IELTSProcessTrainerFullSystem() {
   } | null>(null);
 
   const current = processData[processKey];
+  const steps = current.steps;
 
   const scoreKey = `${processKey}-${level}`;
   const earned = scoreMap[scoreKey] || { p1: false, p2: false, p3: false };
@@ -375,23 +554,38 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const practice1Tasks = useMemo(() => {
     if (level === "band55") {
-      return current.steps.map((s: typeof current.steps[0]) => ({ prompt: s.active, answer: s.passive, instruction: "Rewrite the active sentence in the passive voice." }));
+      return steps.map((s: (typeof steps)[0]) => ({
+        prompt: s.active,
+        answer: s.passive,
+        instruction: "Rewrite the active sentence in the passive voice.",
+      }));
     }
     if (level === "band6") {
-      return current.steps.map((s: typeof current.steps[0]) => ({ prompt: s.prompt6, answer: s.passive, instruction: "Use the words and the diagram to write a complete passive sentence." }));
+      return steps.map((s: (typeof steps)[0]) => ({
+        prompt: s.prompt6,
+        answer: s.passive,
+        instruction: "Use the words and the diagram to write a complete passive sentence.",
+      }));
     }
-    return current.band65.map((s: typeof current.band65[0]) => ({ prompt: s.prompt, answer: s.answer, instruction: s.task }));
-  }, [level, current]);
+    return current.band65.map((s: (typeof current.band65)[0]) => ({
+      prompt: s.prompt,
+      answer: s.answer,
+      instruction: s.task,
+    }));
+  }, [level, current, steps]);
 
   const checkP1 = useCallback(
     (index: number) => {
-      const userAnswer = practiceState.p1Answers[index] || "";
+      const updatedAnswers = { ...practiceState.p1Answers };
+      const userAnswer = updatedAnswers[index] || "";
       const ok = isAnswerCorrect(userAnswer, practice1Tasks[index].answer, level);
       const updatedFeedback = { ...practiceState.p1Feedback, [index]: ok };
 
       setPracticeState((prev) => ({ ...prev, p1Feedback: updatedFeedback }));
 
-      const allCorrect = practice1Tasks.every((task: typeof practice1Tasks[0], i: number) => isAnswerCorrect(practiceState.p1Answers[i] || "", task.answer, level));
+      const allCorrect = practice1Tasks.every((task: (typeof practice1Tasks)[0], i: number) =>
+        isAnswerCorrect(updatedAnswers[i] || "", task.answer, level)
+      );
       if (allCorrect) award("p1");
     },
     [practiceState.p1Answers, practiceState.p1Feedback, practice1Tasks, level, award]
@@ -430,24 +624,32 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const checkParagraph = useCallback(() => {
     const expected = current.p2Band55.answers;
-    const feedback = practiceState.p2ParagraphAnswers.map((answer, i) => answer === expected[i]);
+    const feedback = practiceState.p2ParagraphAnswers.map((answer: string, i: number) => answer === expected[i]);
     setPracticeState((prev) => ({ ...prev, p2ParagraphFeedback: feedback }));
     if (feedback.every(Boolean)) award("p2");
   }, [current, practiceState.p2ParagraphAnswers, award]);
 
+  const getCohesionTasks = useCallback(
+    () => (level === "band6" ? current.p2Band6 : current.p2Band65),
+    [level, current]
+  );
+
   const checkCohesion = useCallback(
     (index: number) => {
-      const tasks = level === "band6" ? current.p2Band6 : current.p2Band65;
-      const userAnswer = practiceState.p2CohesionAnswers[index] || "";
+      const tasks = getCohesionTasks();
+      const updatedAnswers = { ...practiceState.p2CohesionAnswers };
+      const userAnswer = updatedAnswers[index] || "";
       const ok = isAnswerCorrect(userAnswer, tasks[index].answer, level);
       const updatedFeedback = { ...practiceState.p2CohesionFeedback, [index]: ok };
 
       setPracticeState((prev) => ({ ...prev, p2CohesionFeedback: updatedFeedback }));
 
-      const allCorrect = tasks.every((task: typeof tasks[0], i: number) => isAnswerCorrect(practiceState.p2CohesionAnswers[i] || "", task.answer, level));
+      const allCorrect = tasks.every((task: (typeof tasks)[0], i: number) =>
+        isAnswerCorrect(updatedAnswers[i] || "", task.answer, level)
+      );
       if (allCorrect) award("p2");
     },
-    [level, current, practiceState.p2CohesionAnswers, award]
+    [getCohesionTasks, practiceState.p2CohesionAnswers, practiceState.p2CohesionFeedback, level, award]
   );
 
   const getP2Hint = useCallback(() => {
@@ -464,10 +666,60 @@ export default function IELTSProcessTrainerFullSystem() {
   // PRACTICE 3
   // =====================
 
+  const errorRules = useMemo(() => createErrorRules(processKey), [processKey]);
+
+  interface DetectedError extends ErrorRule {
+    match: string;
+    index: number;
+  }
+
+  const detectedErrors = useMemo<DetectedError[]>(() => {
+    if (!practiceState.p3Submitted) return [];
+    const found: DetectedError[] = [];
+    errorRules.forEach((rule) => {
+      [...practiceState.p3Writing.matchAll(rule.pattern)].forEach((match) => {
+        found.push({ ...rule, match: match[0], index: match.index });
+      });
+    });
+    return found.sort((a, b) => a.index - b.index);
+  }, [practiceState.p3Submitted, practiceState.p3Writing, errorRules]);
+
+  const highlightedWriting = useMemo(() => {
+    if (!practiceState.p3Submitted || detectedErrors.length === 0) return practiceState.p3Writing;
+    const output: (string | React.ReactNode)[] = [];
+    let cursor = 0;
+    detectedErrors.forEach((error, i) => {
+      if (error.index < cursor) return;
+      output.push(practiceState.p3Writing.slice(cursor, error.index));
+      output.push(
+        <strong
+          key={`${error.id}-${i}`}
+          className={`rounded px-1 font-bold ${
+            error.type === "grammar"
+              ? "bg-red-100 text-red-700"
+              : error.type === "spelling"
+              ? "bg-purple-100 text-purple-700"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+          aria-label={`${error.type} error: ${error.message}`}
+        >
+          {practiceState.p3Writing.slice(error.index, error.index + error.match.length)}
+        </strong>
+      );
+      cursor = error.index + error.match.length;
+    });
+    output.push(practiceState.p3Writing.slice(cursor));
+    return output;
+  }, [practiceState.p3Submitted, practiceState.p3Writing, detectedErrors]);
+
   const wordCount = practiceState.p3Writing.trim() ? practiceState.p3Writing.trim().split(/\s+/).filter(Boolean).length : 0;
   const wordRequirement = level === "band55" ? 70 : level === "band6" ? 80 : 100;
   const wordTargetRange = level === "band55" ? "70-80" : level === "band6" ? "80-100" : "100-120";
   const canSubmitP3 = wordCount >= wordRequirement;
+
+  const grammarErrorCount = detectedErrors.filter((e) => e.type === "grammar").length;
+  const lexisErrorCount = detectedErrors.filter((e) => e.type === "lexis").length;
+  const spellingErrorCount = detectedErrors.filter((e) => e.type === "spelling").length;
 
   const aiChecked = Boolean(aiFeedback);
   const aiErrors = aiFeedback?.errors || [];
@@ -476,8 +728,17 @@ export default function IELTSProcessTrainerFullSystem() {
   const aiSpellingCount = aiErrors.filter((e) => e.type === "spelling").length;
   const aiCohesionCount = aiErrors.filter((e) => e.type === "cohesion").length;
   const aiTaskCount = aiErrors.filter((e) => e.type === "task").length;
+
   const reflectionComplete = practiceState.p3Reflection.every((item) => item.trim().length > 0);
   const p3Pass = aiChecked && aiErrors.length === 0 && reflectionComplete;
+
+  const submitWriting = useCallback(() => {
+    if (!canSubmitP3) {
+      setWritingHint(`Please write at least ${wordRequirement} words. Target range: ${wordTargetRange} words. Current: ${wordCount}.`);
+      return;
+    }
+    setPracticeState((prev) => ({ ...prev, p3Submitted: true }));
+  }, [canSubmitP3, wordCount, wordRequirement, wordTargetRange]);
 
   const getAIFeedback = useCallback(async () => {
     if (!practiceState.p3Writing.trim()) {
@@ -503,6 +764,7 @@ export default function IELTSProcessTrainerFullSystem() {
           level,
           writing: practiceState.p3Writing,
           feedbackMode: "error-types-only",
+          instruction: "Mark language error types only. Do not provide corrected answers or rewritten sentences. Return original phrases and error types only.",
         }),
       });
 
@@ -511,7 +773,7 @@ export default function IELTSProcessTrainerFullSystem() {
       setAiFeedback(data);
       setPracticeState((prev) => ({ ...prev, p3Submitted: true }));
     } catch {
-      setWritingHint("AI feedback is temporarily unavailable. Please try again later.");
+      setWritingHint("AI feedback is temporarily unavailable. Please check the backend API route or try again later.");
     } finally {
       setAiLoading(false);
     }
@@ -519,47 +781,31 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const getWritingHint = useCallback(() => {
     if (!practiceState.p3Submitted) {
-      if (level === "band55") setWritingHint("Band 5.5: Use present simple passive to describe the process. Add basic linkers such as First, Then, Finally.");
-      else if (level === "band6") setWritingHint("Band 6: Use present simple passive and a range of linkers. Use pronouns such as it, they or them to avoid repetition.");
-      else setWritingHint("Band 6.5: Use present simple passive, include more diagram details, and combine sentences using complex structures.");
+      if (level === "band55") {
+        setWritingHint("Band 5.5: Use present simple passive to describe the process. Add basic linkers such as First, Then, Finally.");
+      } else if (level === "band6") {
+        setWritingHint("Band 6: Use present simple passive and a range of linkers. Use pronouns (it, they) to avoid repetition.");
+      } else {
+        setWritingHint("Band 6.5: Use present simple passive, include more diagram details, and combine sentences using complex structures such as after which, followed by, and before/after being done.");
+      }
       return;
     }
-    if (aiErrors.length > 0) {
-      setWritingHint("AI has marked the error types only. Revise the paragraph yourself and run AI Check again.");
+    if (detectedErrors.length > 0) {
+      const first = detectedErrors[0];
+      const example = first.examples?.[0] ? ` Example: ${first.examples[0]}.` : "";
+      setWritingHint(`Focus on ${first.type.toUpperCase()}: ${first.message}${example}`);
       return;
     }
     if (!reflectionComplete) {
-      setWritingHint("No language errors detected by AI. Complete all 3 self-reflection points to pass.");
+      setWritingHint("No language errors detected. Complete all 3 self-reflection points to pass.");
       return;
     }
     setWritingHint("Well done. All errors corrected and reflection completed.");
-  }, [practiceState.p3Submitted, level, aiErrors.length, reflectionComplete]);
+  }, [practiceState.p3Submitted, detectedErrors, reflectionComplete, level]);
 
   useEffect(() => {
     if (p3Pass && !earned.p3) award("p3");
   }, [p3Pass, earned.p3, award]);
-
-  // =====================
-  // UI COMPONENTS
-  // =====================
-
-  const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="rounded-2xl border bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-xl font-bold text-slate-900">{title}</h2>
-      {children}
-    </div>
-  );
-
-  const Tab = ({ value, label }: { value: string; label: string }) => (
-    <button
-      onClick={() => setActivePractice(value as typeof activePractice)}
-      role="tab"
-      aria-selected={activePractice === value}
-      className={`rounded-xl px-4 py-2 text-sm font-semibold ${activePractice === value ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"}`}
-    >
-      {label}
-    </button>
-  );
 
   const p3Band6GuidingQuestions = [
     "Which 2-3 neighbouring steps can be combined into one sentence?",
@@ -570,10 +816,35 @@ export default function IELTSProcessTrainerFullSystem() {
   ];
 
   const p3Band65DiagramDetails: Record<ProcessKey, string[]> = {
-    bamboo: ["time: spring and autumn", "changes: plants → strips → liquid pulp → fibres → yarn → fabric", "materials: filter, water and amine oxide", "examples: clothes and socks"],
-    sugar: ["time: 12-18 months", "method: by workers or machines", "machines: crusher, filter, evaporator, centrifuge", "changes: cane → juice → syrup → crystals"],
-    noodles: ["materials: flour, water and oil", "machines: mixer and rollers", "changes: dough → sheets → strips → discs", "packaging: cups, vegetables, spices"],
-    recycling: ["locations: bins and centre", "transport: a truck", "changes: bottles → blocks → pieces → pellets", "examples: T-shirts, bags, containers"],
+    bamboo: [
+      "time details: spring and autumn",
+      "material changes: bamboo plants → strips → liquid pulp → fibres → yarn → fabric",
+      "tools/materials: filter, water and amine oxide",
+      "final examples: clothes and socks",
+      "repeated nouns: bamboo plants / fibres / yarn / fabric",
+    ],
+    sugar: [
+      "time detail: 12-18 months",
+      "harvesting method: by workers or machines",
+      "machines/equipment: crusher, limestone filter, evaporator, centrifuge",
+      "material changes: sugar cane → juice → syrup → sugar crystals → sugar",
+      "repeated nouns: sugar cane / juice / syrup / sugar crystals",
+    ],
+    noodles: [
+      "starting material: flour from storage silos",
+      "ingredients: water and oil",
+      "machines/equipment: mixer and rollers",
+      "shape changes: dough → sheets → strips → noodle discs",
+      "packaging details: cups, vegetables, spices, labels and seals",
+      "repeated nouns: flour / dough / noodle discs / cups",
+    ],
+    recycling: [
+      "locations: recycling bins and recycling centre",
+      "transport: a truck",
+      "shape changes: bottles → blocks → pieces → pellets → raw material",
+      "final examples: T-shirts, bags, pencils and containers",
+      "repeated nouns: plastic bottles / blocks / pieces / pellets / raw material",
+    ],
   };
 
   // =====================
@@ -583,9 +854,11 @@ export default function IELTSProcessTrainerFullSystem() {
   const renderPractice1 = () => (
     <Card title={level === "band55" ? "Practice 1 · Active to Passive" : "Practice 1 · Passive Voice / Sentence Upgrade"}>
       <div className="space-y-4">
-        {practice1Tasks.map((task: typeof practice1Tasks[0], index: number) => (
+        {practice1Tasks.map((task: (typeof practice1Tasks)[0], index: number) => (
           <div key={index} className="rounded-xl border bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{level === "band55" ? `Stage ${index + 1}` : `Task ${index + 1}`}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {level === "band55" ? `Stage ${index + 1}` : `Task ${index + 1}`}
+            </p>
             {level !== "band55" && <p className="mt-1 font-medium">{task.instruction}</p>}
             <p className="mt-2 rounded-lg bg-white p-3">{task.prompt}</p>
             <input
@@ -593,6 +866,7 @@ export default function IELTSProcessTrainerFullSystem() {
               onChange={(e) => setPracticeState((prev) => ({ ...prev, p1Answers: { ...prev.p1Answers, [index]: e.target.value } }))}
               className="mt-3 w-full rounded-xl border p-2"
               placeholder="Write your answer here..."
+              aria-label={`Answer for task ${index + 1}`}
             />
             <div className="mt-3 flex gap-2">
               <button onClick={() => checkP1(index)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
@@ -624,7 +898,13 @@ export default function IELTSProcessTrainerFullSystem() {
         role="textbox"
         aria-label={`Blank ${index + 1}`}
         aria-readonly={true}
-        className={`mx-1 inline-block min-w-[105px] rounded border-b-2 px-2 text-center ${checked ? (ok ? "border-green-500 bg-green-50 text-green-700" : "border-red-500 bg-red-50 text-red-700") : "border-slate-600 bg-white"}`}
+        className={`mx-1 inline-block min-w-[105px] rounded border-b-2 px-2 text-center ${
+          checked
+            ? ok
+              ? "border-green-500 bg-green-50 text-green-700"
+              : "border-red-500 bg-red-50 text-red-700"
+            : "border-slate-600 bg-white"
+        }`}
       >
         {practiceState.p2ParagraphAnswers[index] || "_____"}
       </span>
@@ -634,7 +914,10 @@ export default function IELTSProcessTrainerFullSystem() {
   const renderBand55Paragraph = () => (
     <p className="leading-10">
       {current.p2Band55.text.map((chunk: [number, string], i: number) => (
-        <span key={i}>{renderBlank(chunk[0])}{chunk[1]}</span>
+        <span key={i}>
+          {renderBlank(chunk[0])}
+          {chunk[1]}
+        </span>
       ))}
     </p>
   );
@@ -646,7 +929,14 @@ export default function IELTSProcessTrainerFullSystem() {
           <div className="rounded-2xl border bg-slate-50 p-5">{renderBand55Paragraph()}</div>
           <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4">
             {linkerOptions.map((option) => (
-              <div key={option} draggable onDragStart={() => setDragItem(option)} role="button" tabIndex={0} className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
+              <div
+                key={option}
+                draggable
+                onDragStart={() => setDragItem(option)}
+                role="button"
+                tabIndex={0}
+                className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700"
+              >
                 {option}
               </div>
             ))}
@@ -659,7 +949,7 @@ export default function IELTSProcessTrainerFullSystem() {
           {p2Hint && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint}</div>}
           {practiceState.p2ParagraphFeedback.length > 0 && (
             <div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-              {practiceState.p2ParagraphFeedback.map((ok, i) => (
+              {practiceState.p2ParagraphFeedback.map((ok: boolean, i: number) => (
                 <div key={i} className={`rounded-xl border p-3 text-sm ${ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                   Blank {i + 1}: {ok ? "Correct" : "Check again"}
                 </div>
@@ -670,11 +960,11 @@ export default function IELTSProcessTrainerFullSystem() {
       );
     }
 
-    const tasks = level === "band6" ? current.p2Band6 : current.p2Band65;
+    const tasks = getCohesionTasks();
     return (
       <Card title={level === "band6" ? "Practice 2 · Band 6 Cohesion" : "Practice 2 · Band 6.5 Complex Cohesion"}>
         <div className="space-y-4">
-          {tasks.map((task: typeof tasks[0], index: number) => (
+          {tasks.map((task: (typeof tasks)[0], index: number) => (
             <div key={index} className="rounded-xl border bg-slate-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Task {index + 1}</p>
               {task.type === "fill" ? (
@@ -714,10 +1004,11 @@ export default function IELTSProcessTrainerFullSystem() {
   // =====================
 
   const renderAIErrorMarker = (error: { type: string; original?: string }, index: number) => {
-    const typeColor = error.type === "grammar" ? "bg-red-100 text-red-700 border-red-200"
-      : error.type === "spelling" ? "bg-purple-100 text-purple-700 border-purple-200"
-      : error.type === "lexis" ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-      : "bg-blue-100 text-blue-700 border-blue-200";
+    const typeColor =
+      error.type === "grammar" ? "bg-red-100 text-red-700 border-red-200"
+        : error.type === "spelling" ? "bg-purple-100 text-purple-700 border-purple-200"
+        : error.type === "lexis" ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+        : "bg-blue-100 text-blue-700 border-blue-200";
 
     return (
       <div key={index} className={`rounded-xl border p-3 ${typeColor}`}>
@@ -737,7 +1028,6 @@ export default function IELTSProcessTrainerFullSystem() {
           </ul>
         </div>
       )}
-
       {level === "band65" && (
         <div className="mb-4 rounded-2xl border border-purple-100 bg-purple-50 p-4 text-sm text-purple-900">
           <p className="font-semibold">Useful diagram details to consider</p>
@@ -751,7 +1041,7 @@ export default function IELTSProcessTrainerFullSystem() {
         value={practiceState.p3Writing}
         onChange={(e) => {
           setPracticeState((prev) => ({ ...prev, p3Writing: e.target.value, p3Submitted: false }));
-          setAiFeedback(null);
+          if (aiFeedback) setAiFeedback(null);
         }}
         className="h-56 w-full rounded-2xl border p-3"
         placeholder="Write your process paragraph here..."
@@ -760,29 +1050,82 @@ export default function IELTSProcessTrainerFullSystem() {
       <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
         <span>Word count: <strong>{wordCount}</strong></span>
         <span>Target: <strong>{wordTargetRange} words</strong></span>
+        {practiceState.p3Submitted && detectedErrors.length > 0 && (
+          <span>
+            Local check: <strong>{detectedErrors.length} issue(s)</strong>
+          </span>
+        )}
         {aiChecked && (
-          <span>AI check: <strong>{aiErrors.length === 0 ? "No language errors detected" : `${aiErrors.length} issue(s)`}</strong></span>
+          <span>
+            AI check: <strong>{aiErrors.length === 0 ? "No language errors detected" : `${aiErrors.length} issue(s)`}</strong>
+          </span>
         )}
       </div>
 
+      {practiceState.p3Submitted && detectedErrors.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">Grammar: {grammarErrorCount}</span>
+          <span className="rounded-full bg-yellow-50 px-3 py-1 font-semibold text-yellow-700">Lexis: {lexisErrorCount}</span>
+          <span className="rounded-full bg-purple-50 px-3 py-1 font-semibold text-purple-700">Spelling: {spellingErrorCount}</span>
+        </div>
+      )}
+
       {aiChecked && (
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">Grammar: {aiGrammarCount}</span>
-          <span className="rounded-full bg-yellow-50 px-3 py-1 font-semibold text-yellow-700">Lexis: {aiLexisCount}</span>
-          <span className="rounded-full bg-purple-50 px-3 py-1 font-semibold text-purple-700">Spelling: {aiSpellingCount}</span>
-          <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">Cohesion: {aiCohesionCount}</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">Task: {aiTaskCount}</span>
+          <span className="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">AI Grammar: {aiGrammarCount}</span>
+          <span className="rounded-full bg-yellow-50 px-3 py-1 font-semibold text-yellow-700">AI Lexis: {aiLexisCount}</span>
+          <span className="rounded-full bg-purple-50 px-3 py-1 font-semibold text-purple-700">AI Spelling: {aiSpellingCount}</span>
+          <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">AI Cohesion: {aiCohesionCount}</span>
+          <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">AI Task: {aiTaskCount}</span>
+        </div>
+      )}
+
+      {practiceState.p3Submitted && detectedErrors.length > 0 && (
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <p className="font-bold text-slate-800">Detected language errors</p>
+          <div className="mt-3 rounded-2xl border bg-slate-50 p-4 text-sm leading-7">
+            {highlightedWriting}
+          </div>
+          <div className="mt-3 space-y-2">
+            {detectedErrors.map((error, i) => (
+              <div key={i} className={`rounded-xl border p-3 text-sm ${
+                error.type === "grammar" ? "bg-red-50 text-red-700 border-red-200"
+                  : error.type === "spelling" ? "bg-purple-50 text-purple-700 border-purple-200"
+                  : "bg-yellow-50 text-yellow-700 border-yellow-200"
+              }`}>
+                <p className="font-semibold">{error.type.toUpperCase()}: {error.message}</p>
+                {error.examples.length > 0 && <p className="mt-1 text-xs">Example: {error.examples.join(", ")}</p>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       <div className="mt-4 flex gap-2">
         <button
+          onClick={submitWriting}
+          disabled={!practiceState.p3Writing.trim() || !canSubmitP3}
+          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${
+            !practiceState.p3Writing.trim() || !canSubmitP3
+              ? "cursor-not-allowed bg-slate-400"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
+        >
+          Submit
+        </button>
+
+        <button
           onClick={getAIFeedback}
           disabled={aiLoading || !practiceState.p3Writing.trim() || !canSubmitP3}
-          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || !canSubmitP3 ? "cursor-not-allowed bg-slate-400" : "bg-purple-600 hover:bg-purple-700"}`}
+          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${
+            aiLoading || !practiceState.p3Writing.trim() || !canSubmitP3
+              ? "cursor-not-allowed bg-slate-400"
+              : "bg-purple-600 hover:bg-purple-700"
+          }`}
         >
           {aiLoading ? "Checking..." : "AI Check"}
         </button>
+
         <button onClick={getWritingHint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
       </div>
 
@@ -791,7 +1134,7 @@ export default function IELTSProcessTrainerFullSystem() {
       {aiChecked && aiErrors.length > 0 && (
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <p className="font-bold text-slate-800">AI language error labels</p>
-          <p className="mt-1 text-sm text-slate-600">Only error types are shown. No corrections provided - revise yourself.</p>
+          <p className="mt-1 text-sm text-slate-600">Only error types are shown. No corrections are provided, so revise the paragraph by yourself and run AI Check again.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {aiErrors.map((error, index) => renderAIErrorMarker(error, index))}
           </div>
@@ -806,13 +1149,17 @@ export default function IELTSProcessTrainerFullSystem() {
 
       <div className="mt-5 rounded-2xl border bg-white p-4">
         <p className="font-semibold">Self-reflection</p>
-        <p className="mt-1 text-sm text-slate-600">Write 3 reflection points on: passive forms, linkers, pronoun use, spelling, or estimated level.</p>
+        <p className="mt-1 text-sm text-slate-600">Write 3 reflection points. You may reflect on: passive forms, basic linkers, advanced linkers, pronoun use, spelling accuracy, or your estimated level.</p>
         <div className="mt-3 space-y-2">
           {practiceState.p3Reflection.map((item, i) => (
             <input
               key={i}
               value={item}
-              onChange={(e) => setPracticeState((prev) => { const copy = [...prev.p3Reflection]; copy[i] = e.target.value; return { ...prev, p3Reflection: copy }; })}
+              onChange={(e) => setPracticeState((prev) => {
+                const copy = [...prev.p3Reflection];
+                copy[i] = e.target.value;
+                return { ...prev, p3Reflection: copy };
+              })}
               className="w-full rounded-xl border p-2"
               placeholder={`Reflection ${i + 1}`}
             />
@@ -839,13 +1186,21 @@ export default function IELTSProcessTrainerFullSystem() {
               <p className="mt-2 text-sm text-slate-600">Four process diagrams · three bands · sentence, cohesion and writing training.</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <select value={processKey} onChange={(e) => handleProcessOrLevelChange(e.target.value as ProcessKey, level)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">
+              <select
+                value={processKey}
+                onChange={(e) => handleProcessOrLevelChange(e.target.value as ProcessKey, level)}
+                className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"
+              >
                 <option value="bamboo">Bamboo fabric</option>
                 <option value="sugar">Sugar cane</option>
                 <option value="noodles">Instant noodles</option>
                 <option value="recycling">Recycling</option>
               </select>
-              <select value={level} onChange={(e) => handleProcessOrLevelChange(processKey, e.target.value as LevelKey)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">
+              <select
+                value={level}
+                onChange={(e) => handleProcessOrLevelChange(processKey, e.target.value as LevelKey)}
+                className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"
+              >
                 <option value="band55">Band 5.5</option>
                 <option value="band6">Band 6</option>
                 <option value="band65">Band 6.5</option>
@@ -869,13 +1224,19 @@ export default function IELTSProcessTrainerFullSystem() {
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-2xl border bg-white p-4 shadow-sm">
             <h2 className="mb-3 text-lg font-bold">Process Diagram</h2>
-            <img src={current.image} alt={current.title} className="w-full rounded-xl border object-contain" onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/400?text=Image+Not+Found"; }} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={current.image}
+              alt={current.title}
+              className="w-full rounded-xl border object-contain"
+              onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/400?text=Image+Not+Found"; }}
+            />
           </div>
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2" role="tablist">
-              <Tab value="practice1" label="Practice 1" />
-              <Tab value="practice2" label="Practice 2" />
-              <Tab value="practice3" label="Practice 3" />
+              <Tab value="practice1" label="Practice 1" activePractice={activePractice} onSelect={setActivePractice} />
+              <Tab value="practice2" label="Practice 2" activePractice={activePractice} onSelect={setActivePractice} />
+              <Tab value="practice3" label="Practice 3" activePractice={activePractice} onSelect={setActivePractice} />
             </div>
             {activePractice === "practice1" && renderPractice1()}
             {activePractice === "practice2" && renderPractice2()}
