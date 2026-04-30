@@ -79,6 +79,12 @@ interface Band6Checklist {
   structure: boolean;
 }
 
+interface Band65Checklist {
+  details: boolean;
+  complexStructure: boolean;
+  stageLogic: boolean;
+}
+
 // =====================
 // 2. HELPERS
 // =====================
@@ -446,6 +452,12 @@ export default function IELTSProcessTrainerFullSystem() {
     pronouns: false,
     details: false,
     structure: false,
+  });
+  const [band65SelfCheckVisible, setBand65SelfCheckVisible] = useState(false);
+  const [band65Checklist, setBand65Checklist] = useState<Band65Checklist>({
+    details: false,
+    complexStructure: false,
+    stageLogic: false,
   });
 
   const current = processData[processKey];
