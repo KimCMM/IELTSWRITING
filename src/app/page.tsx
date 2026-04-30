@@ -223,31 +223,11 @@ const rawProcessData: Record<string, ProcessData> = {
       { type: "combine", prompt: "Combine using before doing.", parts: ["Yarn is woven to make fabric.", "It is used to make clothes."], answer: "Yarn is woven to make fabric before being used to make clothes." },
     ],
     p2Band65: [
-      {
-        prompt: "Use 'Once ... has/have been done, ...' to connect two steps.",
-        parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."],
-        answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre."
-      },
-      {
-        prompt: "Combine using before doing.",
-        parts: ["Plastic pellets are produced.", "They are heated to form raw material."],
-        answer: "Plastic pellets are produced before being heated to form raw material."
-      },
-      {
-        prompt: "Combine using after which.",
-        parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."],
-        answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed."
-      },
-      {
-        prompt: "Combine using which are then done.",
-        parts: ["Plastic pellets are produced.", "They are heated to form raw material."],
-        answer: "Plastic pellets are produced, which are then heated to form raw material."
-      },
-      {
-        prompt: "Combine using followed by + noun phrase.",
-        parts: ["Plastic bottles are sorted in a recycling centre.", "They are compressed into blocks."],
-        answer: "Plastic bottles are sorted in a recycling centre, followed by the compression of the bottles into blocks."
-      },
+      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Bamboo is harvested manually in autumn.", "It is mechanically cut into narrow strips."], answer: "Once the bamboo has been harvested manually in autumn, it is mechanically cut into narrow strips." },
+      { prompt: "Combine using before doing.", parts: ["Bamboo is cut into narrow strips.", "It is crushed to make liquid pulp."], answer: "Bamboo is cut into narrow strips before being crushed to make liquid pulp." },
+      { prompt: "Combine using after which.", parts: ["The strips are crushed to make liquid pulp.", "Long fibres are extracted from the remaining liquid by a filter."], answer: "The strips are crushed to make liquid pulp, after which long fibres are extracted from the remaining liquid by a filter." },
+      { prompt: "Combine using which is then done.", parts: ["The fibres are spun into yarn.", "The yarn is woven into bamboo fabric."], answer: "The fibres are spun into yarn, which is then woven into bamboo fabric." },
+      { prompt: "Combine using followed by + noun phrase.", parts: ["The softened fibres are spun into yarn.", "The yarn is woven into fabric."], answer: "The softened fibres are spun into yarn, followed by the weaving of the yarn into fabric." },
     ],
   },
 
