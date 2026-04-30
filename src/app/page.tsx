@@ -476,6 +476,8 @@ export default function IELTSProcessTrainerFullSystem() {
     setAiLoading(false);
     setBand6SelfCheckVisible(false);
     setBand6Checklist({ pronouns: false, details: false, structure: false });
+    setBand65SelfCheckVisible(false);
+    setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setDragItem(null);
   }, []);
 
@@ -642,6 +644,9 @@ export default function IELTSProcessTrainerFullSystem() {
   const band6ChecklistComplete =
     level !== "band6" ||
     (band6Checklist.pronouns && band6Checklist.details && band6Checklist.structure);
+  const band65ChecklistComplete =
+    level !== "band65" ||
+    (band65Checklist.details && band65Checklist.complexStructure && band65Checklist.stageLogic);
   const p3Pass = aiChecked && aiErrors.length === 0 && reflectionComplete;
 
   const getWritingHint = useCallback(() => {
@@ -688,8 +693,28 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand6SelfCheckVisible(true);
   }, [practiceState.p3Writing, wordCount, wordRequirement, wordTargetRange]);
 
+  const handleBand65SelfCheck = useCallback(() => {
+    if (!practiceState.p3Writing.trim()) {
+      setWritingHint("Please write your paragraph before completing the self-checklist.");
+      return;
+    }
+
+    if (wordCount < wordRequirement) {
+      setWritingHint(`Please write at least ${wordRequirement} words first. Target range: ${wordTargetRange} words. Current: ${wordCount}.`);
+      return;
+    }
+
+    setWritingHint("");
+    setBand65SelfCheckVisible(true);
+  }, [practiceState.p3Writing, wordCount, wordRequirement, wordTargetRange]);
+
   const getAIFeedback = useCallback(async () => {
     if (level === "band6" && !band6ChecklistComplete) {
+      setWritingHint("Complete the self-checklist before using AI Check.");
+      return;
+    }
+
+    if (level === "band65" && !band65ChecklistComplete) {
       setWritingHint("Complete the self-checklist before using AI Check.");
       return;
     }
@@ -737,47 +762,7 @@ export default function IELTSProcessTrainerFullSystem() {
     } finally {
       setAiLoading(false);
     }
-  }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange, band6ChecklistComplete]);
-
-  const p3Band6GuidingQuestions = [
-    "Which 2-3 neighbouring steps can be combined into one sentence?",
-    "Which repeated nouns can be replaced by it, they or them?",
-    "Which steps share the same subject and can be written together?",
-    "Which useful diagram details should be included, such as time, tools, machines, materials or final products?",
-    "Can you use one structure from Practice 2, such as before/after being done?",
-  ];
-
-  const p3Band65DiagramDetails: Record<string, string[]> = {
-    bamboo: [
-      "time details: spring and autumn",
-      "material changes: bamboo plants -> strips -> liquid pulp -> fibres -> yarn -> fabric",
-      "tools/materials: filter, water and amine oxide",
-      "final examples: clothes and socks",
-      "repeated nouns: bamboo plants / fibres / yarn / fabric",
-    ],
-    sugar: [
-      "time detail: 12-18 months",
-      "harvesting method: by workers or machines",
-      "machines/equipment: crusher, limestone filter, evaporator, centrifuge",
-      "material changes: sugar canes -> juice -> syrup -> sugar crystals -> sugar",
-      "repeated nouns: sugar canes / juice / syrup / sugar crystals",
-    ],
-    noodles: [
-      "starting material: flour from storage silos",
-      "ingredients: water and oil",
-      "machines/equipment: mixer and rollers",
-      "shape changes: dough -> sheets -> strips -> noodle discs",
-      "packaging details: cups, vegetables, spices, labels and seals",
-      "repeated nouns: flour / dough / noodle discs / cups",
-    ],
-    recycling: [
-      "locations: recycling bins and recycling centre",
-      "transport: a truck",
-      "shape changes: bottles -> blocks -> pieces -> pellets -> raw material",
-      "final examples: T-shirts, bags, pencils and containers",
-      "repeated nouns: plastic bottles / blocks / pieces / pellets / raw material",
-    ],
-  };
+  }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange, band6ChecklistComplete, band65ChecklistComplete]);
 
   const renderAIErrorMarker = (error: { type: string; original?: string }, index: number) => {
     const typeColor =
@@ -861,7 +846,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
     const tasks: CohesionTask[] = level === "band6" ? current.p2Band6 : current.p2Band65;
     return (
-      <Card title={level === "band6" ? "Practice 2 - Band 6 Cohesion" : "Practice 2 - Band 6.5 Complex Cohesion"}>
+      <Card title={level === "band6" ? "Practice 2 - Cohesive Devices" : "Practice 2 - Cohesive Devices"}>
         <div className="space-y-4">
           {tasks.map((task, i) => (
             <div key={i} className="rounded-xl border bg-slate-50 p-4">
@@ -903,50 +888,7 @@ export default function IELTSProcessTrainerFullSystem() {
   };
 
   const renderPractice3 = () => (
-    <Card title="Practice 3 - Timed Writing + AI Self-correction">
-      {level === "band6" && (
-        <div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-          <p className="font-semibold">Planning questions for the body paragraph</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            {p3Band6GuidingQuestions.map((question, index) => (
-              <li key={index}>{question}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {level === "band65" && (
-        <div className="mb-4 rounded-2xl border border-purple-100 bg-purple-50 p-4 text-sm text-purple-900">
-          <p className="font-semibold">Useful diagram details to consider</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            {p3Band65DiagramDetails[processKey].map((detail, index) => (
-              <li key={index}>{detail}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <textarea
-        value={practiceState.p3Writing}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          setPracticeState((prev) => ({ ...prev, p3Writing: e.target.value, p3Submitted: false }));
-          if (aiFeedback) setAiFeedback(null);
-        }}
-        className="h-56 w-full rounded-2xl border p-3"
-        placeholder="Write your process paragraph here..."
-      />
-      <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
-        <span>Word count: <strong>{wordCount}</strong></span>
-        <span>Target: <strong>{wordTargetRange} words</strong></span>
-        {aiChecked && <span>AI check: <strong>{aiErrors.length === 0 ? "No language errors detected" : `${aiErrors.length} issue(s)`}</strong></span>}
-      </div>
-      {aiChecked && (
-        <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">Grammar: {aiGrammarCount}</span>
-          <span className="rounded-full bg-yellow-50 px-3 py-1 font-semibold text-yellow-700">Lexis: {aiLexisCount}</span>
-          <span className="rounded-full bg-purple-50 px-3 py-1 font-semibold text-purple-700">Spelling: {aiSpellingCount}</span>
-          <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">Cohesion: {aiCohesionCount}</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">Task: {aiTaskCount}</span>
-        </div>
-      )}
+    <Card title="Practice 3 - Timed Writing - Body Paragraph">
       {level === "band6" && (
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -993,11 +935,81 @@ export default function IELTSProcessTrainerFullSystem() {
         </div>
       )}
 
+      {level === "band65" && (
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-800">Before AI Check</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+            </div>
+            <button
+              onClick={handleBand65SelfCheck}
+              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+            >
+              Submit for Self-check
+            </button>
+          </div>
+
+          {band65SelfCheckVisible && (
+            <div className="mt-3 space-y-2 text-sm text-slate-700">
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band65Checklist.details}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, details: e.target.checked }))}
+                />
+                <span>Have you included specific diagram details, such as time frames, tools, machines, materials or final products?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band65Checklist.complexStructure}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, complexStructure: e.target.checked }))}
+                />
+                <span>Have you used at least one complex grammatical structure, such as a relative clause or a reduced clause?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band65Checklist.stageLogic}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, stageLogic: e.target.checked }))}
+                />
+                <span>Have you clearly shown the logic between stages using advanced linkers or cohesion devices?</span>
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
+      <textarea
+        value={practiceState.p3Writing}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+          setPracticeState((prev) => ({ ...prev, p3Writing: e.target.value, p3Submitted: false }));
+          if (aiFeedback) setAiFeedback(null);
+        }}
+        className="h-56 w-full rounded-2xl border p-3"
+        placeholder="Write your process paragraph here..."
+      />
+      <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
+        <span>Word count: <strong>{wordCount}</strong></span>
+        <span>Target: <strong>{wordTargetRange} words</strong></span>
+        {aiChecked && <span>AI check: <strong>{aiErrors.length === 0 ? "No language errors detected" : `${aiErrors.length} issue(s)`}</strong></span>}
+      </div>
+      {aiChecked && (
+        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">Grammar: {aiGrammarCount}</span>
+          <span className="rounded-full bg-yellow-50 px-3 py-1 font-semibold text-yellow-700">Lexis: {aiLexisCount}</span>
+          <span className="rounded-full bg-purple-50 px-3 py-1 font-semibold text-purple-700">Spelling: {aiSpellingCount}</span>
+          <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">Cohesion: {aiCohesionCount}</span>
+          <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">Task: {aiTaskCount}</span>
+        </div>
+      )}
+
       <div className="mt-4 flex gap-2">
         <button
           onClick={getAIFeedback}
-          disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete)}
-          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete) ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
+          disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete) || (level === "band65" && !band65ChecklistComplete)}
+          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete) || (level === "band65" && !band65ChecklistComplete) ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
         >
           {aiLoading ? "Checking..." : "AI Check"}
         </button>
