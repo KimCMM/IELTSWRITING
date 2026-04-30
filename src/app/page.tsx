@@ -212,22 +212,42 @@ const rawProcessData: Record<string, ProcessData> = {
       answers: ["first", "then", "after", "the following stage", "next", "next", "then", "finally"],
     },
     p2Band6: [
-      { type: "fill", sentence: "F______, bamboo plants are planted in spring.", answer: "First" },
+      { type: "fill", sentence: "In the i______ stage, bamboo plants are planted in spring.", answer: "initial" },
       { type: "fill", sentence: "Bamboo plants are t______ harvested in autumn.", answer: "then" },
       { type: "fill", sentence: "A______ that, bamboo plants are cut into strips.", answer: "After" },
-      { type: "fill", sentence: "S__________, the strips are crushed to make liquid pulp.", answer: "Subsequently" },
+      { type: "fill", sentence: "The f______ stage is to crush the strips to make liquid pulp.", answer: "following" },
+      { type: "fill", sentence: "A__________, long fibres are separated from the liquid by a filter.", answer: "Afterwards" },
+      { type: "fill", sentence: "S__________, water and amine oxide are added to soften the fibres.", answer: "Subsequently" },
       { type: "combine", prompt: "Combine using after doing.", parts: ["The strips are crushed to make liquid pulp.", "Long fibres are separated from the liquid by a filter."], answer: "Long fibres are separated from the liquid by a filter after being crushed to make liquid pulp." },
       { type: "combine", prompt: "Combine using before doing.", parts: ["The fibres are softened.", "They are spun to make yarn."], answer: "The fibres are softened before being spun to make yarn." },
       { type: "combine", prompt: "Combine using before doing.", parts: ["Yarn is woven to make fabric.", "It is used to make clothes."], answer: "Yarn is woven to make fabric before being used to make clothes." },
     ],
     p2Band65: [
-      { prompt: "Combine using before doing.", parts: ["Bamboo plants are planted in spring.", "They are harvested in autumn."], answer: "Bamboo plants are planted in spring before being harvested in autumn." },
-      { prompt: "Combine using after doing.", parts: ["Bamboo plants are harvested in autumn.", "They are cut into strips."], answer: "They are cut into strips after being harvested in autumn." },
-      { prompt: "Combine using before doing.", parts: ["Bamboo plants are cut into strips.", "They are crushed to make liquid pulp."], answer: "They are cut into strips before being crushed to make liquid pulp." },
-      { prompt: "Combine using after which.", parts: ["The strips are crushed to make liquid pulp.", "Long fibres are separated from the liquid by a filter."], answer: "The strips are crushed to make liquid pulp, after which long fibres are separated from the liquid by a filter." },
-      { prompt: "Combine using after doing.", parts: ["Water and amine oxide are added to soften the fibres.", "The fibres are spun to make yarn."], answer: "The fibres are spun to make yarn after being softened with water and amine oxide." },
-      { prompt: "Combine using followed by + noun phrase.", parts: ["The fibres are spun to make yarn.", "The yarn is woven to make fabric."], answer: "The fibres are spun to make yarn, followed by the weaving of the yarn into fabric." },
-      { prompt: "Combine using before doing.", parts: ["Yarn is woven to make fabric.", "Fabric is used to make clothes."], answer: "Yarn is woven to make fabric before being used to make clothes." },
+      {
+        prompt: "Use 'Once ... has/have been done, ...' to connect two steps.",
+        parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."],
+        answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre."
+      },
+      {
+        prompt: "Combine using before doing.",
+        parts: ["Plastic pellets are produced.", "They are heated to form raw material."],
+        answer: "Plastic pellets are produced before being heated to form raw material."
+      },
+      {
+        prompt: "Combine using after which.",
+        parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."],
+        answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed."
+      },
+      {
+        prompt: "Combine using which are then done.",
+        parts: ["Plastic pellets are produced.", "They are heated to form raw material."],
+        answer: "Plastic pellets are produced, which are then heated to form raw material."
+      },
+      {
+        prompt: "Combine using followed by + noun phrase.",
+        parts: ["Plastic bottles are sorted in a recycling centre.", "They are compressed into blocks."],
+        answer: "Plastic bottles are sorted in a recycling centre, followed by the compression of the bottles into blocks."
+      },
     ],
   },
 
@@ -764,6 +784,44 @@ export default function IELTSProcessTrainerFullSystem() {
     }
   }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange, band6ChecklistComplete, band65ChecklistComplete]);
 
+  const p3Band6GuidingQuestions = [
+    "Which repeated nouns can be replaced by it, they or them?",
+    "Which useful diagram details should be included, such as time, tools, machines, materials or final products?",
+    "Can you use one structure from Practice 2, such as before/after being done?",
+  ];
+
+  const p3Band65DiagramDetails: Record<string, string[]> = {
+    bamboo: [
+      "time details: spring and autumn",
+      "material changes: bamboo plants -> strips -> liquid pulp -> fibres -> yarn -> fabric",
+      "tools/materials: filter, water and amine oxide",
+      "final examples: clothes and socks",
+      "repeated nouns: bamboo plants / fibres / yarn / fabric",
+    ],
+    sugar: [
+      "time detail: 12-18 months",
+      "harvesting method: by workers or machines",
+      "machines/equipment: crusher, limestone filter, evaporator, centrifuge",
+      "material changes: sugar canes -> juice -> syrup -> sugar crystals -> sugar",
+      "repeated nouns: sugar canes / juice / syrup / sugar crystals",
+    ],
+    noodles: [
+      "starting material: flour from storage silos",
+      "ingredients: water and oil",
+      "machines/equipment: mixer and rollers",
+      "shape changes: dough -> sheets -> strips -> noodle discs",
+      "packaging details: cups, vegetables, spices, labels and seals",
+      "repeated nouns: flour / dough / noodle discs / cups",
+    ],
+    recycling: [
+      "locations: recycling bins and recycling centre",
+      "transport: by truck",
+      "shape changes: bottles -> blocks -> pieces -> pellets -> raw material",
+      "final examples: T-shirts, bags, pencils and containers",
+      "repeated nouns: plastic bottles / blocks / pieces / pellets / raw material",
+    ],
+  };
+
   const renderAIErrorMarker = (error: { type: string; original?: string }, index: number) => {
     const typeColor =
       error.type === "grammar"
@@ -958,7 +1016,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band65Checklist.details}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, details: e.target.checked }))}
                 />
-                <span>Have you included specific diagram details, such as time frames, tools, machines, materials or final products?</span>
+                <span>Have you included specific diagram details, such as tools, machines, materials, locations or final examples?</span>
               </label>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
                 <input
@@ -966,7 +1024,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band65Checklist.complexStructure}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, complexStructure: e.target.checked }))}
                 />
-                <span>Have you used at least one complex grammatical structure, such as a relative clause or a reduced clause?</span>
+                <span>Have you used at least one structure from Practice 2, such as &apos;Once ... has/have been done&apos;, &apos;after which&apos;, or &apos;which is/are then done&apos;?</span>
               </label>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
                 <input
@@ -974,7 +1032,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band65Checklist.stageLogic}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, stageLogic: e.target.checked }))}
                 />
-                <span>Have you clearly shown the logic between stages using advanced linkers or cohesion devices?</span>
+                <span>Have you grouped neighbouring steps logically instead of listing every step mechanically?</span>
               </label>
             </div>
           )}
