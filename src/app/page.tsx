@@ -73,6 +73,12 @@ interface ScoreEntry {
   p3: boolean;
 }
 
+interface Band6Checklist {
+  pronouns: boolean;
+  details: boolean;
+  structure: boolean;
+}
+
 // =====================
 // 2. HELPERS
 // =====================
@@ -223,55 +229,55 @@ const rawProcessData: Record<string, ProcessData> = {
   },
 
   sugar: {
-    title: "Sugar Cane",
-    task: "The diagram below shows how sugar is produced from sugar cane.",
+    title: "Sugar Canes",
+    task: "The diagram below shows how sugar is produced from sugar canes.",
     image: "https://daxue-oss.koocdn.com/upload/ti/sardine/2521000-2522000/2521817/3395c3236ee34b9089e15f2ce4dfc9a9.png",
     steps: [
-      { active: "Farmers grow sugar cane for 12-18 months.", passive: "Sugar cane is grown for 12-18 months.", prompt6: "sugar cane / grow / 12-18 months" },
-      { active: "Workers or machines harvest the sugar cane.", passive: "The sugar cane is harvested by workers or machines.", prompt6: "sugar cane / harvest / workers or machines" },
-      { active: "Machines crush the sugar cane to make juice.", passive: "Sugar cane is crushed to make juice.", prompt6: "sugar cane / crush / juice" },
+      { active: "Farmers grow sugar canes for 12-18 months.", passive: "Sugar canes are grown for 12-18 months.", prompt6: "sugar canes / grow / 12-18 months" },
+      { active: "Workers or machines harvest the sugar canes.", passive: "The sugar canes are harvested by workers or machines.", prompt6: "sugar canes / harvest / workers or machines" },
+      { active: "Machines crush the sugar canes to make juice.", passive: "The sugar canes are crushed to make juice.", prompt6: "sugar canes / crush / juice" },
       { active: "A limestone filter purifies the juice.", passive: "The juice is purified by a limestone filter.", prompt6: "juice / purify / limestone filter" },
       { active: "An evaporator turns the juice into syrup.", passive: "The juice is turned into syrup by an evaporator.", prompt6: "juice / turn / syrup / evaporator" },
-      { active: "A centrifuge separates sugar crystals from syrup.", passive: "Sugar crystals are separated from syrup by a centrifuge.", prompt6: "sugar crystals / separate / syrup / centrifuge" },
+      { active: "A centrifuge separates sugar crystals from the syrup.", passive: "Sugar crystals are separated from the syrup by a centrifuge.", prompt6: "sugar crystals / separate / syrup / centrifuge" },
       { active: "A machine dries and cools the sugar.", passive: "The sugar is dried and cooled by a machine.", prompt6: "sugar / dry and cool / machine" },
     ],
     band65: [
-      { prompt: "Sugar cane is grown for 12-18 months.", task: "Upgrade the verb.", answer: "Sugar cane is cultivated for 12-18 months." },
-      { prompt: "The sugar cane is harvested by workers or machines.", task: "Keep both harvesting methods accurately.", answer: "The mature sugar cane is harvested either by workers or by machines." },
-      { prompt: "Sugar cane is crushed to make juice.", task: "Use a more formal result verb.", answer: "The sugar cane is crushed to produce juice." },
-      { prompt: "The juice is purified by a limestone filter.", task: "Use a more natural tool structure.", answer: "The juice is purified using a limestone filter." },
+      { prompt: "Sugar canes are grown for 12-18 months.", task: "Upgrade the verb.", answer: "Sugar canes are cultivated for 12-18 months." },
+      { prompt: "The sugar canes are harvested by workers or machines.", task: "Keep both harvesting methods accurately.", answer: "The mature sugar canes are harvested either by workers or by machines." },
+      { prompt: "The sugar canes are crushed to make juice.", task: "Use a more formal result verb.", answer: "The sugar canes are crushed to produce juice." },
+      { prompt: "The juice is purified by a limestone filter.", task: "Use a natural tool structure.", answer: "The juice is purified using a limestone filter." },
       { prompt: "The juice is turned into syrup by an evaporator.", task: "Use a transformation structure.", answer: "The juice is heated in an evaporator and turned into syrup." },
-      { prompt: "Sugar crystals are separated from syrup by a centrifuge.", task: "Upgrade the verb and keep the machine detail.", answer: "Sugar crystals are extracted from the syrup by a centrifuge." },
+      { prompt: "Sugar crystals are separated from the syrup by a centrifuge.", task: "Keep the machine detail and improve article use.", answer: "Sugar crystals are separated from the syrup by a centrifuge." },
       { prompt: "The sugar is dried and cooled by a machine.", task: "Use a concise final-stage sentence.", answer: "Finally, the sugar is dried and cooled." },
     ],
     p2Band55: {
       text: [
-        [0, " sugar cane is grown for 12-18 months. The sugar cane is "],
+        [0, " sugar canes are grown for 12-18 months. The sugar canes are "],
         [1, " harvested by workers or machines. "],
-        [2, " that, sugar cane is crushed to make juice. "],
+        [2, " that, the sugar canes are crushed to make juice. "],
         [3, " is to purify the juice by a limestone filter. "],
         [4, ", the juice is turned into syrup by an evaporator. In the "],
-        [5, " stage, sugar crystals are separated from syrup by a centrifuge. "],
+        [5, " stage, sugar crystals are separated from the syrup by a centrifuge. "],
         [6, ", the sugar is dried and cooled by a machine."],
         [7, ""],
       ],
       answers: ["first", "then", "after", "the following stage", "next", "next", "finally", ""],
     },
     p2Band6: [
-      { type: "fill", sentence: "F______, sugar cane is grown for 12-18 months.", answer: "First" },
-      { type: "fill", sentence: "The sugar cane is t______ harvested by workers or machines.", answer: "then" },
-      { type: "fill", sentence: "A______ that, sugar cane is crushed to make juice.", answer: "After" },
+      { type: "fill", sentence: "F______, sugar canes are grown for 12-18 months.", answer: "First" },
+      { type: "fill", sentence: "The sugar canes are t______ harvested by workers or machines.", answer: "then" },
+      { type: "fill", sentence: "A______ that, the sugar canes are crushed to make juice.", answer: "After" },
       { type: "fill", sentence: "S__________, the juice is purified by a limestone filter.", answer: "Subsequently" },
       { type: "combine", prompt: "Combine using after doing.", parts: ["The juice is purified by a limestone filter.", "It is turned into syrup by an evaporator."], answer: "The juice is turned into syrup by an evaporator after being purified by a limestone filter." },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["Sugar crystals are separated from syrup by a centrifuge.", "The sugar is dried and cooled by a machine."], answer: "The sugar is dried and cooled by a machine after being separated from syrup by a centrifuge." },
+      { type: "combine", prompt: "Combine using after doing.", parts: ["Sugar crystals are separated from the syrup by a centrifuge.", "The sugar is dried and cooled by a machine."], answer: "The sugar is dried and cooled by a machine after the crystals are separated from the syrup by a centrifuge." },
     ],
     p2Band65: [
-      { prompt: "Combine using before doing.", parts: ["Sugar cane is grown for 12-18 months.", "It is harvested by workers or machines."], answer: "Sugar cane is grown for 12-18 months before being harvested by workers or machines." },
-      { prompt: "Combine using after doing.", parts: ["The sugar cane is harvested by workers or machines.", "It is crushed to make juice."], answer: "It is crushed to make juice after being harvested by workers or machines." },
-      { prompt: "Combine using followed by + noun phrase.", parts: ["Sugar cane is crushed to make juice.", "The juice is purified by a limestone filter."], answer: "Sugar cane is crushed to make juice, followed by the purification of the juice by a limestone filter." },
+      { prompt: "Combine using before doing.", parts: ["Sugar canes are grown for 12-18 months.", "They are harvested by workers or machines."], answer: "Sugar canes are grown for 12-18 months before being harvested by workers or machines." },
+      { prompt: "Combine using after doing.", parts: ["The sugar canes are harvested by workers or machines.", "They are crushed to make juice."], answer: "They are crushed to make juice after being harvested by workers or machines." },
+      { prompt: "Combine using followed by + noun phrase.", parts: ["The sugar canes are crushed to make juice.", "The juice is purified by a limestone filter."], answer: "The sugar canes are crushed to make juice, followed by the purification of the juice by a limestone filter." },
       { prompt: "Combine using after which.", parts: ["The juice is purified by a limestone filter.", "It is turned into syrup by an evaporator."], answer: "The juice is purified by a limestone filter, after which it is turned into syrup by an evaporator." },
-      { prompt: "Combine using after doing.", parts: ["The juice is turned into syrup by an evaporator.", "Sugar crystals are separated from syrup by a centrifuge."], answer: "Sugar crystals are separated from syrup by a centrifuge after the juice is turned into syrup by an evaporator." },
-      { prompt: "Combine using after doing.", parts: ["Sugar crystals are separated from syrup by a centrifuge.", "The sugar is dried and cooled by a machine."], answer: "The sugar is dried and cooled by a machine after being separated from syrup by a centrifuge." },
+      { prompt: "Combine using after doing.", parts: ["The juice is turned into syrup by an evaporator.", "Sugar crystals are separated from the syrup by a centrifuge."], answer: "Sugar crystals are separated from the syrup by a centrifuge after the juice is turned into syrup by an evaporator." },
+      { prompt: "Combine using after doing.", parts: ["Sugar crystals are separated from the syrup by a centrifuge.", "The sugar is dried and cooled by a machine."], answer: "The sugar is dried and cooled by a machine after the crystals are separated from the syrup by a centrifuge." },
     ],
   },
 
@@ -378,7 +384,7 @@ const rawProcessData: Record<string, ProcessData> = {
       { type: "fill", sentence: "S__________, plastic bottles are compressed into blocks.", answer: "Subsequently" },
       { type: "combine", prompt: "Combine using after doing.", parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."], answer: "The blocks are crushed and the pieces are washed after being compressed into blocks." },
       { type: "combine", prompt: "Combine using before doing.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced before being heated to form raw material." },
-      { type: "combine", prompt: "Combine using before doing.", parts: ["The raw material is packed.", "End products are produced."], answer: "The raw material is packed before end products are produced." },
+      { type: "combine", prompt: "Combine using before doing.", parts: ["The raw material is packed.", "It is used to produce end products."], answer: "The raw material is packed before being used to produce end products." },
     ],
     p2Band65: [
       { prompt: "Combine using before doing.", parts: ["Plastic bottles are placed in recycling bins.", "They are collected and transported by a truck."], answer: "Plastic bottles are placed in recycling bins before being collected and transported by a truck." },
@@ -431,18 +437,24 @@ export default function IELTSProcessTrainerFullSystem() {
   const [level, setLevel] = useState("band55");
   const [activePractice, setActivePractice] = useState("practice1");
   const [scoreMap, setScoreMap] = useLocalStorage("ielts-process-scores", {});
-  const [practiceState, setPracticeState] = useState<PracticeState>(initialPracticeState);
+  const [practiceState, setPracticeState] = useState(initialPracticeState);
   const [dragItem, setDragItem] = useState<string | null>(null);
   const [p1Hint, setP1Hint] = useState<HintState>({ index: null, text: "" });
   const [p2Hint, setP2Hint] = useState<HintState>({ index: null, text: "" });
   const [writingHint, setWritingHint] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiFeedback, setAiFeedback] = useState<{ errors: { type: string; original: string }[] } | null>(null);
+  const [aiFeedback, setAiFeedback] = useState<{ errors?: { type: string; original?: string }[] } | null>(null);
+  const [band6SelfCheckVisible, setBand6SelfCheckVisible] = useState(false);
+  const [band6Checklist, setBand6Checklist] = useState<Band6Checklist>({
+    pronouns: false,
+    details: false,
+    structure: false,
+  });
 
   const current = processData[processKey];
   const steps = current.steps;
   const scoreKey = `${processKey}-${level}`;
-  const earned = scoreMap[scoreKey] || { p1: false, p2: false, p3: false };
+  const earned: ScoreEntry = scoreMap[scoreKey] || { p1: false, p2: false, p3: false };
   const totalScore = (earned.p1 ? 2 : 0) + (earned.p2 ? 3 : 0) + (earned.p3 ? 5 : 0);
   const achievement = totalScore <= 3 ? "Bronze" : totalScore <= 7 ? "Silver" : "Gold";
 
@@ -453,6 +465,8 @@ export default function IELTSProcessTrainerFullSystem() {
     setWritingHint("");
     setAiFeedback(null);
     setAiLoading(false);
+    setBand6SelfCheckVisible(false);
+    setBand6Checklist({ pronouns: false, details: false, structure: false });
     setDragItem(null);
   }, []);
 
@@ -466,10 +480,10 @@ export default function IELTSProcessTrainerFullSystem() {
   );
 
   const award = useCallback(
-    (practice: string) => {
+    (practice: "p1" | "p2" | "p3") => {
       setScoreMap((prev) => {
         const currentEarned = prev[scoreKey] || { p1: false, p2: false, p3: false };
-        if (currentEarned[practice as keyof ScoreEntry]) return prev;
+        if (currentEarned[practice]) return prev;
         return { ...prev, [scoreKey]: { ...currentEarned, [practice]: true } };
       });
     },
@@ -499,7 +513,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
       setPracticeState((prev) => ({ ...prev, p1Feedback: updatedFeedback }));
 
-      const allCorrect = practice1Tasks.every((task: { answer: string }, i: number) => isAnswerCorrect(updatedAnswers[i] || "", task.answer, level));
+      const allCorrect = practice1Tasks.every((task, i) => isAnswerCorrect(updatedAnswers[i] || "", task.answer, level));
       if (allCorrect) award("p1");
     },
     [practiceState.p1Answers, practiceState.p1Feedback, practice1Tasks, level, award]
@@ -555,7 +569,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
       setPracticeState((prev) => ({ ...prev, p2CohesionFeedback: updatedFeedback }));
 
-      const allCorrect = tasks.every((task: CohesionTask, i: number) => isAnswerCorrect(updatedAnswers[i] || "", task.answer, level));
+      const allCorrect = tasks.every((task, i) => isAnswerCorrect(updatedAnswers[i] || "", task.answer, level));
       if (allCorrect) award("p2");
     },
     [getCohesionTasks, practiceState.p2CohesionAnswers, practiceState.p2CohesionFeedback, level, award]
@@ -607,7 +621,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const wordCount = practiceState.p3Writing.trim() ? practiceState.p3Writing.trim().split(/\s+/).filter(Boolean).length : 0;
   const wordRequirement = level === "band55" ? 70 : level === "band6" ? 80 : 100;
-  const wordTargetRange = level === "band55" ? "70\u201380" : level === "band6" ? "80\u2013100" : "100\u2013120";
+  const wordTargetRange = level === "band55" ? "70-80" : level === "band6" ? "80-100" : "100-120";
   const reflectionComplete = practiceState.p3Reflection.every((item: string) => item.trim().length > 0);
   const aiChecked = Boolean(aiFeedback);
   const aiErrors = Array.isArray(aiFeedback?.errors) ? aiFeedback.errors : [];
@@ -616,6 +630,9 @@ export default function IELTSProcessTrainerFullSystem() {
   const aiSpellingCount = aiErrors.filter((e: { type: string }) => e.type === "spelling").length;
   const aiCohesionCount = aiErrors.filter((e: { type: string }) => e.type === "cohesion").length;
   const aiTaskCount = aiErrors.filter((e: { type: string }) => e.type === "task").length;
+  const band6ChecklistComplete =
+    level !== "band6" ||
+    (band6Checklist.pronouns && band6Checklist.details && band6Checklist.structure);
   const p3Pass = aiChecked && aiErrors.length === 0 && reflectionComplete;
 
   const getWritingHint = useCallback(() => {
@@ -647,7 +664,27 @@ export default function IELTSProcessTrainerFullSystem() {
     if (p3Pass && !earned.p3) award("p3");
   }, [p3Pass, earned.p3, award]);
 
+  const handleBand6SelfCheck = useCallback(() => {
+    if (!practiceState.p3Writing.trim()) {
+      setWritingHint("Please write your paragraph before completing the self-checklist.");
+      return;
+    }
+
+    if (wordCount < wordRequirement) {
+      setWritingHint(`Please write at least ${wordRequirement} words first. Target range: ${wordTargetRange} words. Current: ${wordCount}.`);
+      return;
+    }
+
+    setWritingHint("");
+    setBand6SelfCheckVisible(true);
+  }, [practiceState.p3Writing, wordCount, wordRequirement, wordTargetRange]);
+
   const getAIFeedback = useCallback(async () => {
+    if (level === "band6" && !band6ChecklistComplete) {
+      setWritingHint("Complete the self-checklist before using AI Check.");
+      return;
+    }
+
     if (!practiceState.p3Writing.trim()) {
       setWritingHint("Please write your paragraph first before requesting AI feedback.");
       return;
@@ -691,43 +728,43 @@ export default function IELTSProcessTrainerFullSystem() {
     } finally {
       setAiLoading(false);
     }
-  }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange]);
+  }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange, band6ChecklistComplete]);
 
   const p3Band6GuidingQuestions = [
-    "Which 2\u20133 neighbouring steps can be combined into one sentence?",
+    "Which 2-3 neighbouring steps can be combined into one sentence?",
     "Which repeated nouns can be replaced by it, they or them?",
     "Which steps share the same subject and can be written together?",
-    "Which useful diagram details should be kept, such as time, tools, machines, materials or final products?",
+    "Which useful diagram details should be included, such as time, tools, machines, materials or final products?",
     "Can you use one structure from Practice 2, such as before/after being done?",
   ];
 
   const p3Band65DiagramDetails: Record<string, string[]> = {
     bamboo: [
       "time details: spring and autumn",
-      "material changes: bamboo plants \u2192 strips \u2192 liquid pulp \u2192 fibres \u2192 yarn \u2192 fabric",
+      "material changes: bamboo plants -> strips -> liquid pulp -> fibres -> yarn -> fabric",
       "tools/materials: filter, water and amine oxide",
       "final examples: clothes and socks",
       "repeated nouns: bamboo plants / fibres / yarn / fabric",
     ],
     sugar: [
-      "time detail: 12\u201318 months",
+      "time detail: 12-18 months",
       "harvesting method: by workers or machines",
       "machines/equipment: crusher, limestone filter, evaporator, centrifuge",
-      "material changes: sugar cane \u2192 juice \u2192 syrup \u2192 sugar crystals \u2192 sugar",
-      "repeated nouns: sugar cane / juice / syrup / sugar crystals",
+      "material changes: sugar canes -> juice -> syrup -> sugar crystals -> sugar",
+      "repeated nouns: sugar canes / juice / syrup / sugar crystals",
     ],
     noodles: [
       "starting material: flour from storage silos",
       "ingredients: water and oil",
       "machines/equipment: mixer and rollers",
-      "shape changes: dough \u2192 sheets \u2192 strips \u2192 noodle discs",
+      "shape changes: dough -> sheets -> strips -> noodle discs",
       "packaging details: cups, vegetables, spices, labels and seals",
       "repeated nouns: flour / dough / noodle discs / cups",
     ],
     recycling: [
       "locations: recycling bins and recycling centre",
       "transport: a truck",
-      "shape changes: bottles \u2192 blocks \u2192 pieces \u2192 pellets \u2192 raw material",
+      "shape changes: bottles -> blocks -> pieces -> pellets -> raw material",
       "final examples: T-shirts, bags, pencils and containers",
       "repeated nouns: plastic bottles / blocks / pieces / pellets / raw material",
     ],
@@ -752,9 +789,9 @@ export default function IELTSProcessTrainerFullSystem() {
   };
 
   const renderPractice1 = () => (
-    <Card title={level === "band55" ? "Practice 1 \u00b7 Active to Passive" : "Practice 1 \u00b7 Passive Voice / Sentence Upgrade"}>
+    <Card title={level === "band55" ? "Practice 1 - Active to Passive" : "Practice 1 - Passive Voice / Sentence Upgrade"}>
       <div className="space-y-4">
-        {practice1Tasks.map((task: { prompt: string; answer: string; instruction: string }, i: number) => (
+        {practice1Tasks.map((task, i) => (
           <div key={i} className="rounded-xl border bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{level === "band55" ? `Stage ${i + 1}` : `Task ${i + 1}`}</p>
             {level !== "band55" && <p className="mt-1 font-medium">{task.instruction}</p>}
@@ -785,11 +822,11 @@ export default function IELTSProcessTrainerFullSystem() {
   const renderPractice2 = () => {
     if (level === "band55") {
       return (
-        <Card title="Practice 2 \u00b7 Controlled Paragraph Cohesion">
+        <Card title="Practice 2 - Controlled Paragraph Cohesion">
           <div className="rounded-2xl border bg-slate-50 p-5">{renderBand55Paragraph()}</div>
           {p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
           <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4">
-            {linkerOptions.map((option: string) => (
+            {linkerOptions.map((option) => (
               <div key={option} draggable onDragStart={() => setDragItem(option)} role="button" tabIndex={0} className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
                 {option}
               </div>
@@ -813,11 +850,11 @@ export default function IELTSProcessTrainerFullSystem() {
       );
     }
 
-    const tasks = level === "band6" ? current.p2Band6 : current.p2Band65;
+    const tasks: CohesionTask[] = level === "band6" ? current.p2Band6 : current.p2Band65;
     return (
-      <Card title={level === "band6" ? "Practice 2 \u00b7 Band 6 Cohesion" : "Practice 2 \u00b7 Band 6.5 Complex Cohesion"}>
+      <Card title={level === "band6" ? "Practice 2 - Band 6 Cohesion" : "Practice 2 - Band 6.5 Complex Cohesion"}>
         <div className="space-y-4">
-          {tasks.map((task: CohesionTask, i: number) => (
+          {tasks.map((task, i) => (
             <div key={i} className="rounded-xl border bg-slate-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Task {i + 1}</p>
               {task.type === "fill" ? (
@@ -857,12 +894,12 @@ export default function IELTSProcessTrainerFullSystem() {
   };
 
   const renderPractice3 = () => (
-    <Card title="Practice 3 \u00b7 Timed Writing + AI Self-correction">
+    <Card title="Practice 3 - Timed Writing + AI Self-correction">
       {level === "band6" && (
         <div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
           <p className="font-semibold">Planning questions for the body paragraph</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            {p3Band6GuidingQuestions.map((question: string, index: number) => (
+            {p3Band6GuidingQuestions.map((question, index) => (
               <li key={index}>{question}</li>
             ))}
           </ul>
@@ -872,7 +909,7 @@ export default function IELTSProcessTrainerFullSystem() {
         <div className="mb-4 rounded-2xl border border-purple-100 bg-purple-50 p-4 text-sm text-purple-900">
           <p className="font-semibold">Useful diagram details to consider</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            {p3Band65DiagramDetails[processKey].map((detail: string, index: number) => (
+            {p3Band65DiagramDetails[processKey].map((detail, index) => (
               <li key={index}>{detail}</li>
             ))}
           </ul>
@@ -901,11 +938,57 @@ export default function IELTSProcessTrainerFullSystem() {
           <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">Task: {aiTaskCount}</span>
         </div>
       )}
+      {level === "band6" && (
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-800">Before AI Check</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+            </div>
+            <button
+              onClick={handleBand6SelfCheck}
+              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+            >
+              Submit for Self-check
+            </button>
+          </div>
+
+          {band6SelfCheckVisible && (
+            <div className="mt-3 space-y-2 text-sm text-slate-700">
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band6Checklist.pronouns}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, pronouns: e.target.checked }))}
+                />
+                <span>Have you replaced repeated nouns with pronouns such as it, they or them?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band6Checklist.details}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, details: e.target.checked }))}
+                />
+                <span>Have you included useful diagram details, such as time, tools, machines, materials or final products?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band6Checklist.structure}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, structure: e.target.checked }))}
+                />
+                <span>Have you used at least one structure from Practice 2, such as before/after being done?</span>
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mt-4 flex gap-2">
         <button
           onClick={getAIFeedback}
-          disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement}
-          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
+          disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete)}
+          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete) ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
         >
           {aiLoading ? "Checking..." : "AI Check"}
         </button>
@@ -918,7 +1001,7 @@ export default function IELTSProcessTrainerFullSystem() {
           <p className="font-bold text-slate-800">AI language error labels</p>
           <p className="mt-1 text-sm text-slate-600">Only error types are shown. No corrections are provided, so revise the paragraph by yourself and run AI Check again.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {aiErrors.map((error: { type: string; original?: string }, index: number) => renderAIErrorMarker(error, index))}
+            {aiErrors.map((error, index) => renderAIErrorMarker(error, index))}
           </div>
         </div>
       )}
@@ -933,12 +1016,12 @@ export default function IELTSProcessTrainerFullSystem() {
         <p className="font-semibold">Self-reflection</p>
         <p className="mt-1 text-sm text-slate-600">Write 3 reflection points. You may reflect on: passive forms, basic linkers, advanced linkers, pronoun use, spelling accuracy, or your estimated level.</p>
         <div className="mt-3 space-y-2">
-          {practiceState.p3Reflection.map((item: string, i: number) => (
+          {practiceState.p3Reflection.map((item, i) => (
             <input key={i} value={item} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => { const copy = [...prev.p3Reflection]; copy[i] = e.target.value; return { ...prev, p3Reflection: copy }; })} className="w-full rounded-xl border p-2" placeholder={`Reflection ${i + 1}`} />
           ))}
         </div>
       </div>
-      {p3Pass && <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-lg font-bold text-green-700">PASS \u00b7 +5 points</div>}
+      {p3Pass && <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-lg font-bold text-green-700">PASS - +5 points</div>}
     </Card>
   );
 
@@ -947,9 +1030,9 @@ export default function IELTSProcessTrainerFullSystem() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div><p className="text-sm font-semibold uppercase tracking-wide text-blue-600">IELTS Academic Writing Task 1</p><h1 className="mt-1 text-3xl font-bold">Process Writing Training System</h1><p className="mt-2 text-sm text-slate-600">Four process diagrams \u00b7 three bands \u00b7 sentence, cohesion and writing training.</p></div>
+            <div><p className="text-sm font-semibold uppercase tracking-wide text-blue-600">IELTS Academic Writing Task 1</p><h1 className="mt-1 text-3xl font-bold">Process Writing Training System</h1><p className="mt-2 text-sm text-slate-600">Four process diagrams - three bands - sentence, cohesion and writing training.</p></div>
             <div className="flex flex-wrap gap-3">
-              <select value={processKey} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleProcessOrLevelChange(e.target.value, level)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"><option value="bamboo">Bamboo fabric</option><option value="sugar">Sugar cane</option><option value="noodles">Instant noodles</option><option value="recycling">Recycling</option></select>
+              <select value={processKey} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleProcessOrLevelChange(e.target.value, level)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"><option value="bamboo">Bamboo fabric</option><option value="sugar">Sugar canes</option><option value="noodles">Instant noodles</option><option value="recycling">Recycling</option></select>
               <select value={level} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleProcessOrLevelChange(processKey, e.target.value)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"><option value="band55">Band 5.5</option><option value="band6">Band 6</option><option value="band65">Band 6.5</option></select>
             </div>
           </div>
@@ -959,16 +1042,22 @@ export default function IELTSProcessTrainerFullSystem() {
             <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
               <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${totalScore * 10}%` }} />
             </div>
-            <p className="mt-2 text-lg font-bold text-blue-700">Score: {totalScore} / 10 \u00b7 {achievement}</p>
-            <p className="text-sm text-slate-500">Practice 1: {earned.p1 ? "+2 earned" : "2 pts"} \u00b7 Practice 2: {earned.p2 ? "+3 earned" : "3 pts"} \u00b7 Practice 3: {earned.p3 ? "+5 earned" : "5 pts"}</p>
+            <p className="mt-2 text-lg font-bold text-blue-700">Score: {totalScore} / 10 - {achievement}</p>
+            <p className="text-sm text-slate-500">Practice 1: {earned.p1 ? "+2 earned" : "2 pts"} - Practice 2: {earned.p2 ? "+3 earned" : "3 pts"} - Practice 3: {earned.p3 ? "+5 earned" : "5 pts"}</p>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-2xl border bg-white p-4 shadow-sm">
             <h2 className="mb-3 text-lg font-bold">Process Diagram</h2>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={current.image} alt={current.title} className="w-full rounded-xl border object-contain" onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.src = "https://via.placeholder.com/400?text=Image+Not+Found"; }} />
+            <Image
+              src={current.image}
+              alt={current.title}
+              width={600}
+              height={400}
+              className="w-full rounded-xl border object-contain"
+              unoptimized
+            />
           </div>
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2" role="tablist">
