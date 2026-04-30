@@ -188,7 +188,7 @@ const rawProcessData: Record<string, ProcessData> = {
       { prompt: "Bamboo plants are planted in spring.", task: "Paraphrase 'plant' and avoid repeating 'bamboo plants'.", answer: "Bamboo is cultivated in spring." },
       { prompt: "Bamboo is harvested in autumn.", task: "Add how the harvesting is shown in the diagram.", answer: "The bamboo is harvested manually in autumn." },
       { prompt: "Bamboo is cut into strips.", task: "Add how the cutting is done and make the strips more specific.", answer: "The harvested bamboo is mechanically cut into narrow strips." },
-      { prompt: "The strips are crushed to make liquid pulp.", task: "Use a participle phrase to show the result.", answer: "The strips are crushed, producing liquid pulp." },
+      { prompt: "The strips are crushed to make liquid pulp.", task: "Use ', doing sth' to show the result of the previous action.", answer: "The strips are crushed, producing liquid pulp." },
       { prompt: "Long fibres are separated from the liquid by a filter.", task: "Link liquid pulp to the filter and use a where-clause to describe the extraction of fibres.", answer: "The liquid pulp passes through a filter, where long fibres are extracted from the remaining liquid." },
       { prompt: "Water and amine oxide are added to soften the fibres.", task: "Use a which-clause to explain how this prepares the fibres for the next stage.", answer: "The fibres are treated with water and amine oxide, which softens them and prepares them for spinning." },
       { prompt: "Fibres are spun to make yarn.", task: "Use 'softened fibres' and a more natural result structure.", answer: "The softened fibres are spun into yarn." },
