@@ -875,7 +875,7 @@ export default function IELTSProcessTrainerFullSystem() {
   const renderPractice2 = () => {
     if (level === "band55") {
       return (
-        <Card title="Practice 2 - Controlled Paragraph Cohesion">
+        <Card title="Practice 2 - Cohesive Devices">
           <div className="rounded-2xl border bg-slate-50 p-5">{renderBand55Paragraph()}</div>
           {p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
           <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4">
