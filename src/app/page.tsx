@@ -646,7 +646,7 @@ export default function IELTSProcessTrainerFullSystem() {
         role="textbox"
         aria-label={`Blank ${index + 1} for linker word`}
         aria-readonly="true"
-        className={`mx-1 inline-block min-w-[105px] rounded border-b-2 px-2 text-center ${
+        className={`mx-1 inline-flex min-h-[28px] min-w-[105px] items-center justify-center rounded border-b-2 px-2 text-center align-middle ${
           checked
             ? ok
               ? "border-green-500 bg-green-50 text-green-700"
@@ -654,7 +654,7 @@ export default function IELTSProcessTrainerFullSystem() {
             : "border-slate-600 bg-white"
         } ${currentAnswer ? "cursor-grab" : ""}`}
       >
-        {currentAnswer || ""}
+        {currentAnswer || "\u00A0"}
       </span>
     );
   };
