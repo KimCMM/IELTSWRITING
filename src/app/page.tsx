@@ -439,7 +439,7 @@ export default function IELTSProcessTrainerFullSystem() {
   const [activePractice, setActivePractice] = useState("practice1");
   const [scoreMap, setScoreMap] = useLocalStorage("ielts-process-scores", {});
   const [practiceState, setPracticeState] = useState(initialPracticeState);
-  const [dragItem, setDragItem] = useState<string | null>(null);
+  const [dragItem, setDragItem] = useState<string | { type: "blank"; index: number; value: string } | { type: "option"; value: string } | null>(null);
   const [p1Hint, setP1Hint] = useState<HintState>({ index: null, text: "" });
   const [p2Hint, setP2Hint] = useState<HintState>({ index: null, text: "" });
   const [writingHint, setWritingHint] = useState("");
@@ -569,14 +569,26 @@ export default function IELTSProcessTrainerFullSystem() {
   const dropToBlank = useCallback(
     (index: number) => {
       if (!dragItem) return;
+      const value = typeof dragItem === "string" ? dragItem : dragItem.value;
+      if (!value) return;
       setPracticeState((prev) => {
         const copy = [...prev.p2ParagraphAnswers];
-        copy[index] = dragItem;
+        copy[index] = value;
         return { ...prev, p2ParagraphAnswers: copy };
       });
     },
     [dragItem]
   );
+
+  const returnBlankToBox = useCallback(() => {
+    if (!dragItem || typeof dragItem === "string" || dragItem.type !== "blank") return;
+    setPracticeState((prev) => {
+      const copy = [...prev.p2ParagraphAnswers];
+      copy[dragItem.index] = "";
+      return { ...prev, p2ParagraphAnswers: copy };
+    });
+    setDragItem(null);
+  }, [dragItem]);
 
   const checkParagraph = useCallback(() => {
     const expected = current.p2Band55.answers;
@@ -620,18 +632,29 @@ export default function IELTSProcessTrainerFullSystem() {
   const renderBlank = (index: number) => {
     const checked = practiceState.p2ParagraphFeedback.length > 0;
     const ok = practiceState.p2ParagraphFeedback[index];
+    const currentAnswer = practiceState.p2ParagraphAnswers[index] || "";
+
     return (
       <span
+        draggable={Boolean(currentAnswer)}
+        onDragStart={() =>
+          currentAnswer &&
+          setDragItem({ type: "blank", index, value: currentAnswer })
+        }
         onDragOver={(e: React.DragEvent) => e.preventDefault()}
         onDrop={() => dropToBlank(index)}
         role="textbox"
         aria-label={`Blank ${index + 1} for linker word`}
         aria-readonly="true"
         className={`mx-1 inline-block min-w-[105px] rounded border-b-2 px-2 text-center ${
-          checked ? (ok ? "border-green-500 bg-green-50 text-green-700" : "border-red-500 bg-red-50 text-red-700") : "border-slate-600 bg-white"
-        }`}
+          checked
+            ? ok
+              ? "border-green-500 bg-green-50 text-green-700"
+              : "border-red-500 bg-red-50 text-red-700"
+            : "border-slate-600 bg-white"
+        } ${currentAnswer ? "cursor-grab" : ""}`}
       >
-        {practiceState.p2ParagraphAnswers[index] || "_____"}
+        {currentAnswer || "_____"}
       </span>
     );
   };
@@ -876,11 +899,25 @@ export default function IELTSProcessTrainerFullSystem() {
     if (level === "band55") {
       return (
         <Card title="Practice 2 - Cohesive Devices">
+          <p className="mb-4 text-sm text-slate-600">
+            In the text below some words are missing. Drag words from the box below to the appropriate place in the text. To undo an answer choice, drag the word back to the box below the text.
+          </p>
           <div className="rounded-2xl border bg-slate-50 p-5">{renderBand55Paragraph()}</div>
           {p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
-          <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4">
+          <div
+            className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4"
+            onDragOver={(e: React.DragEvent) => e.preventDefault()}
+            onDrop={returnBlankToBox}
+          >
             {linkerOptions.map((option) => (
-              <div key={option} draggable onDragStart={() => setDragItem(option)} role="button" tabIndex={0} className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
+              <div
+                key={option}
+                draggable
+                onDragStart={() => setDragItem({ type: "option", value: option })}
+                role="button"
+                tabIndex={0}
+                className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700"
+              >
                 {option}
               </div>
             ))}
