@@ -218,9 +218,24 @@ const rawProcessData: Record<string, ProcessData> = {
       { type: "fill", sentence: "The f______ stage is to crush the strips to make liquid pulp.", answer: "following" },
       { type: "fill", sentence: "A__________, long fibres are separated from the liquid by a filter.", answer: "Afterwards" },
       { type: "fill", sentence: "S__________, water and amine oxide are added to soften the fibres.", answer: "Subsequently" },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["The strips are crushed to make liquid pulp.", "Long fibres are separated from the liquid by a filter."], answer: "Long fibres are separated from the liquid by a filter after being crushed to make liquid pulp." },
-      { type: "combine", prompt: "Combine using before doing.", parts: ["The fibres are softened.", "They are spun to make yarn."], answer: "The fibres are softened before being spun to make yarn." },
-      { type: "combine", prompt: "Combine using before doing.", parts: ["Yarn is woven to make fabric.", "It is used to make clothes."], answer: "Yarn is woven to make fabric before being used to make clothes." },
+      {
+        type: "combine",
+        prompt: "Combine using and then. Use a pronoun to avoid repetition.",
+        parts: ["Bamboo plants are harvested in autumn.", "Bamboo plants are cut into strips."],
+        answer: "Bamboo plants are harvested in autumn, and then they are cut into strips.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using before doing.",
+        parts: ["The fibres are softened.", "The fibres are spun to make yarn."],
+        answer: "The fibres are softened before being spun to make yarn.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using after doing.",
+        parts: ["Yarn is woven into fabric.", "The fabric is used to make clothes."],
+        answer: "The fabric is used to make clothes after being woven from yarn.",
+      },
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Bamboo is harvested manually in autumn.", "It is mechanically cut into narrow strips."], answer: "Once the bamboo has been harvested manually in autumn, it is mechanically cut into narrow strips." },
@@ -269,11 +284,27 @@ const rawProcessData: Record<string, ProcessData> = {
       { type: "fill", sentence: "In the i______ stage, sugar canes are grown for 12-18 months.", answer: "initial" },
       { type: "fill", sentence: "The sugar canes are t______ harvested by workers or machines.", answer: "then" },
       { type: "fill", sentence: "A______ that, the sugar canes are crushed to make juice.", answer: "After" },
-      { type: "fill", sentence: "The f______ stage is to purify the juice by a limestone filter.", answer: "following" },
-      { type: "fill", sentence: "A__________, the juice is turned into syrup by an evaporator.", answer: "Afterwards" },
-      { type: "fill", sentence: "S__________, sugar crystals are separated from the syrup by a centrifuge.", answer: "Subsequently" },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["The juice is purified by a limestone filter.", "It is turned into syrup by an evaporator."], answer: "The juice is turned into syrup by an evaporator after being purified by a limestone filter." },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["Sugar crystals are separated from the syrup by a centrifuge.", "The sugar is dried and cooled by a machine."], answer: "The sugar is dried and cooled by a machine after the crystals are separated from the syrup by a centrifuge." },
+      { type: "fill", sentence: "A__________, the juice is purified by a limestone filter.", answer: "Afterwards" },
+      { type: "fill", sentence: "In the n______ stage, the juice is turned into syrup by an evaporator.", answer: "next" },
+      { type: "fill", sentence: "The f______ stage is to separate sugar crystals from the syrup by a centrifuge.", answer: "following" },
+      {
+        type: "combine",
+        prompt: "Combine using and then. Use a pronoun to avoid repetition.",
+        parts: ["Sugar canes are harvested by workers or machines.", "Sugar canes are crushed to make juice."],
+        answer: "Sugar canes are harvested by workers or machines, and then they are crushed to make juice.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using before doing.",
+        parts: ["The juice is purified by a limestone filter.", "The juice is turned into syrup by an evaporator."],
+        answer: "The juice is purified by a limestone filter before being turned into syrup by an evaporator.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using after doing.",
+        parts: ["Sugar crystals are separated from the syrup by a centrifuge.", "Sugar crystals are dried and cooled by a machine."],
+        answer: "Sugar crystals are dried and cooled by a machine after being separated from the syrup by a centrifuge.",
+      },
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Sugar canes are harvested by workers or machines.", "They are crushed to make juice."], answer: "Once the sugar canes have been harvested by workers or machines, they are crushed to make juice." },
@@ -321,13 +352,28 @@ const rawProcessData: Record<string, ProcessData> = {
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, flour is transported from storage silos by truck.", answer: "initial" },
       { type: "fill", sentence: "Flour is t______ mixed with water and oil in a mixer.", answer: "then" },
-      { type: "fill", sentence: "A______ that, the dough is pressed into sheets by rollers.", answer: "After" },
-      { type: "fill", sentence: "The f______ stage is to cut the dough sheets into strips.", answer: "following" },
-      { type: "fill", sentence: "A__________, the dough strips are made into noodle discs.", answer: "Afterwards" },
-      { type: "fill", sentence: "S__________, the noodle discs are cooked in oil and then dried.", answer: "Subsequently" },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["The dough sheets are cut into strips.", "The dough strips are made into noodle discs."], answer: "The dough strips are made into noodle discs after being cut into strips." },
-      { type: "combine", prompt: "Combine using before doing.", parts: ["The noodle discs are cooked in oil.", "They are dried."], answer: "The noodle discs are cooked in oil before being dried." },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["The noodle discs, vegetables and spices are put into cups.", "The cups are labelled and sealed."], answer: "The cups are labelled and sealed after the noodle discs, vegetables and spices are put into them." },
+      { type: "fill", sentence: "N______, the dough is pressed into sheets by rollers.", answer: "Next" },
+      { type: "fill", sentence: "A______ that, the dough sheets are cut into strips.", answer: "After" },
+      { type: "fill", sentence: "The f______ stage is to make the dough strips into noodle discs.", answer: "following" },
+      { type: "fill", sentence: "S__________, the noodle discs are cooked in oil and dried.", answer: "Subsequently" },
+      {
+        type: "combine",
+        prompt: "Combine using and then. Use a pronoun to avoid repetition.",
+        parts: ["Flour is transported from storage silos by truck.", "Flour is mixed with water and oil in a mixer."],
+        answer: "Flour is transported from storage silos by truck, and then it is mixed with water and oil in a mixer.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using after doing.",
+        parts: ["Flour is transported from storage silos by truck.", "Flour is mixed with water and oil in a mixer."],
+        answer: "Flour is mixed with water and oil in a mixer after being transported from storage silos by truck.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using before doing.",
+        parts: ["The noodle discs are cooked in oil.", "The noodle discs are dried."],
+        answer: "The noodle discs are cooked in oil before being dried.",
+      },
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Flour is transported from storage silos by truck.", "It is mixed with water and oil in a mixer."], answer: "Once the flour has been transported from storage silos by truck, it is mixed with water and oil in a mixer." },
@@ -379,15 +425,30 @@ const rawProcessData: Record<string, ProcessData> = {
       answers: ["First", "After", "The following stage", "Next", "then", "next", "then", "Finally"],
     },
     p2Band6: [
-      { type: "fill", sentence: "In the i______ stage, plastic bottles are placed in recycling bins.", answer: "initial" },
-      { type: "fill", sentence: "Plastic bottles are t______ collected and transported by truck.", answer: "then" },
-      { type: "fill", sentence: "A______ that, plastic bottles are sorted in a recycling centre.", answer: "After" },
-      { type: "fill", sentence: "The f______ stage is to compress the plastic bottles into blocks.", answer: "following" },
-      { type: "fill", sentence: "A__________, the blocks are crushed and the pieces are washed.", answer: "Afterwards" },
-      { type: "fill", sentence: "S__________, plastic pellets are produced.", answer: "Subsequently" },
-      { type: "combine", prompt: "Combine using after doing.", parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."], answer: "The blocks are crushed and the pieces are washed after being compressed into blocks." },
-      { type: "combine", prompt: "Combine using before doing.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced before being heated to form raw material." },
-      { type: "combine", prompt: "Combine using before doing.", parts: ["The raw material is packed.", "It is used to produce end products."], answer: "The raw material is packed before being used to produce end products." },
+      { type: "fill", sentence: "F______, plastic bottles are placed in recycling bins.", answer: "First" },
+      { type: "fill", sentence: "A______ that, plastic bottles are collected and transported by truck.", answer: "After" },
+      { type: "fill", sentence: "The f______ stage is to sort the plastic bottles in a recycling centre.", answer: "following" },
+      { type: "fill", sentence: "N______, plastic bottles are compressed into blocks.", answer: "Next" },
+      { type: "fill", sentence: "The blocks are t______ crushed and the pieces are washed.", answer: "then" },
+      { type: "fill", sentence: "In the n______ stage, plastic pellets are produced.", answer: "next" },
+      {
+        type: "combine",
+        prompt: "Combine using and then. Use a pronoun to avoid repetition.",
+        parts: ["Plastic bottles are placed in recycling bins.", "Plastic bottles are collected and transported by truck."],
+        answer: "Plastic bottles are placed in recycling bins, and then they are collected and transported by truck.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using before doing.",
+        parts: ["Plastic pellets are produced.", "Plastic pellets are heated to form raw material."],
+        answer: "Plastic pellets are produced before being heated to form raw material.",
+      },
+      {
+        type: "combine",
+        prompt: "Combine using after doing.",
+        parts: ["The raw material is packed.", "The raw material is used to produce end products."],
+        answer: "The raw material is used to produce end products after being packed.",
+      },
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre." },
@@ -956,6 +1017,11 @@ export default function IELTSProcessTrainerFullSystem() {
     const tasks: CohesionTask[] = level === "band6" ? current.p2Band6 : current.p2Band65;
     return (
       <Card title="Practice 2 - Cohesive Devices">
+        {level === "band6" && (
+          <p className="mb-4 text-sm text-slate-600">
+            Complete the missing cohesive devices. Use the first letter, capitalisation and sentence position to decide the answer. Then combine the sentence pairs using and then, before doing or after doing.
+          </p>
+        )}
         <div className="space-y-4">
           {tasks.map((task, i) => (
             <div key={i} className="rounded-xl border bg-slate-50 p-4">
