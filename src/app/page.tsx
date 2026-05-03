@@ -150,7 +150,7 @@ const isAnswerCorrect = (user: string, expected: string, level: string): boolean
 const initialPracticeState: PracticeState = {
   p1Answers: {},
   p1Feedback: {},
-  p2ParagraphAnswers: Array(8).fill(""),
+  p2ParagraphAnswers: Array(10).fill(""),
   p2ParagraphFeedback: [],
   p2CohesionAnswers: {},
   p2CohesionFeedback: {},
@@ -164,8 +164,8 @@ const fixP2Band55Data = (rawData: Record<string, ProcessData>): Record<string, P
   Object.keys(copy).forEach((key: string) => {
     const item = copy[key];
     if (!item.p2Band55) return;
-    while (item.p2Band55.answers.length < 8) item.p2Band55.answers.push("");
-    if (item.p2Band55.answers.length > 8) item.p2Band55.answers = item.p2Band55.answers.slice(0, 8);
+    const blankIndexes = item.p2Band55.text.map((chunk: [number, string]) => chunk[0]);
+    item.p2Band55.answers = item.p2Band55.answers.slice(0, blankIndexes.length);
   });
   return copy;
 };
@@ -200,7 +200,7 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band55: {
       text: [
-        [0, " bamboo plants are planted in spring. Bamboo plants are "],
+        [0, ", bamboo plants are planted in spring. Bamboo plants are "],
         [1, " harvested in autumn. "],
         [2, " that, bamboo plants are cut into strips. "],
         [3, " is to crush the strips to make liquid pulp. "],
@@ -209,7 +209,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [6, " spun to make yarn. "],
         [7, ", yarn is woven to make fabric."],
       ],
-      answers: ["first", "then", "after", "the following stage", "next", "next", "then", "finally"],
+      answers: ["First", "then", "After", "The following stage", "Next", "next", "then", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, bamboo plants are planted in spring.", answer: "initial" },
@@ -255,16 +255,15 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band55: {
       text: [
-        [0, " sugar canes are grown for 12-18 months. The sugar canes are "],
+        [0, ", sugar canes are grown for 12-18 months. The sugar canes are "],
         [1, " harvested by workers or machines. "],
         [2, " that, the sugar canes are crushed to make juice. "],
         [3, " is to purify the juice by a limestone filter. "],
         [4, ", the juice is turned into syrup by an evaporator. In the "],
         [5, " stage, sugar crystals are separated from the syrup by a centrifuge. "],
         [6, ", the sugar is dried and cooled by a machine."],
-        [7, ""],
       ],
-      answers: ["first", "then", "after", "the following stage", "next", "next", "finally", ""],
+      answers: ["First", "then", "After", "The following stage", "Next", "next", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, sugar canes are grown for 12-18 months.", answer: "initial" },
@@ -308,7 +307,7 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band55: {
       text: [
-        [0, " flour is transported from storage silos by truck. Flour is "],
+        [0, ", flour is transported from storage silos by truck. Flour is "],
         [1, " mixed with water and oil in a mixer. "],
         [2, " that, the dough is pressed into sheets by rollers. "],
         [3, " is to cut the dough sheets into strips. "],
@@ -317,7 +316,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [6, " put into cups. "],
         [7, ", the cups are labelled and sealed."],
       ],
-      answers: ["first", "then", "after", "the following stage", "next", "next", "then", "finally"],
+      answers: ["First", "then", "After", "The following stage", "Next", "next", "then", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, flour is transported from storage silos by truck.", answer: "initial" },
@@ -368,7 +367,7 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band55: {
       text: [
-        [0, " plastic bottles are placed in recycling bins. The plastic bottles are "],
+        [0, ", plastic bottles are placed in recycling bins. The plastic bottles are "],
         [1, " collected and transported by truck. "],
         [2, " is to sort the plastic bottles in a recycling centre. "],
         [3, ", the plastic bottles are compressed into blocks. "],
@@ -377,7 +376,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [6, ", the pellets are heated to form raw material. "],
         [7, ", end products are produced."],
       ],
-      answers: ["first", "then", "the following stage", "next", "then", "next", "then", "finally"],
+      answers: ["First", "then", "The following stage", "Next", "then", "next", "then", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, plastic bottles are placed in recycling bins.", answer: "initial" },
@@ -546,7 +545,7 @@ export default function IELTSProcessTrainerFullSystem() {
   // PRACTICE 2
   // =====================
 
-  const linkerOptions = ["first", "next", "then", "in the next stage", "the following stage", "after", "finally"];
+  const linkerOptions = ["First", "then", "After", "The following stage", "Next", "next", "Finally"];
 
   const dropToBlank = useCallback(
     (index: number) => {
@@ -562,9 +561,13 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const checkParagraph = useCallback(() => {
     const expected = current.p2Band55.answers;
-    const feedback = practiceState.p2ParagraphAnswers.map((a: string, i: number) => a === expected[i]);
+    const feedback = expected.map((answer: string, i: number) => {
+      return practiceState.p2ParagraphAnswers[i] === answer;
+    });
     setPracticeState((prev) => ({ ...prev, p2ParagraphFeedback: feedback }));
-    if (feedback.every(Boolean)) award("p2");
+    if (feedback.length > 0 && feedback.every(Boolean)) {
+      award("p2");
+    }
   }, [current, practiceState.p2ParagraphAnswers, award]);
 
   const getCohesionTasks = useCallback((): CohesionTask[] => (level === "band6" ? current.p2Band6 : current.p2Band65), [level, current]);
