@@ -865,12 +865,25 @@ export default function IELTSProcessTrainerFullSystem() {
   };
 
   const renderPractice1 = () => (
-    <Card title={level === "band55" ? "Practice 1 - Active to Passive" : "Practice 1 - Passive Voice / Sentence Upgrade"}>
+    <Card
+      title={
+        level === "band55"
+          ? "Practice 1 - Active to Passive"
+          : level === "band6"
+          ? "Practice 1 - Passive Voice"
+          : "Practice 1 - Passive Voice / Sentence Upgrade"
+      }
+    >
+      {level === "band6" && (
+        <p className="mb-4 text-sm text-slate-600">
+          Use the words and the diagram to write a complete passive sentence.
+        </p>
+      )}
       <div className="space-y-4">
         {practice1Tasks.map((task, i) => (
           <div key={i} className="rounded-xl border bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{level === "band55" ? `Stage ${i + 1}` : `Task ${i + 1}`}</p>
-            {level !== "band55" && <p className="mt-1 font-medium">{task.instruction}</p>}
+            {level === "band65" && <p className="mt-1 font-medium">{task.instruction}</p>}
             <p className="mt-2 rounded-lg bg-white p-3">{task.prompt}</p>
             {p1Hint.index === i && p1Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p1Hint.text}</div>}
             <input
