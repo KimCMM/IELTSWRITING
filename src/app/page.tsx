@@ -1139,7 +1139,7 @@ export default function IELTSProcessTrainerFullSystem() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div><p className="text-sm font-semibold uppercase tracking-wide text-blue-600">IELTS Academic Writing Task 1</p><h1 className="mt-1 text-3xl font-bold">Process Writing Training System</h1><p className="mt-2 text-sm text-slate-600">Four process diagrams - three bands - sentence, cohesion and writing training.</p></div>
+            <div><p className="text-sm font-semibold uppercase tracking-wide text-blue-600">IELTS Academic Writing Task 1</p><h1 className="mt-1 text-3xl font-bold">Diagrams Writing Training System</h1></div>
             <div className="flex flex-wrap gap-3">
               <select value={processKey} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleProcessOrLevelChange(e.target.value, level)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"><option value="bamboo">Bamboo fabric</option><option value="sugar">Sugar canes</option><option value="noodles">Instant noodles</option><option value="recycling">Recycling</option></select>
               <select value={level} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleProcessOrLevelChange(processKey, e.target.value)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"><option value="band55">Band 5.5</option><option value="band6">Band 6</option><option value="band65">Band 6.5</option></select>
@@ -1158,7 +1158,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-2xl border bg-white p-4 shadow-sm">
-            <h2 className="mb-3 text-lg font-bold">Process Diagram</h2>
+            <h2 className="mb-3 text-lg font-bold">Diagram</h2>
             <Image
               src={current.image}
               alt={current.title}
