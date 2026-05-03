@@ -209,7 +209,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [6, " spun to make yarn. "],
         [7, ", yarn is woven to make fabric."],
       ],
-      answers: ["First", "then", "Next", "After", "The following stage", "next", "then", "Finally"],
+      answers: ["First", "then", "After", "The following stage", "Next", "next", "then", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, bamboo plants are planted in spring.", answer: "initial" },
