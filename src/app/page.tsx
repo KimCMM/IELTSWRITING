@@ -209,7 +209,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [6, " spun to make yarn. "],
         [7, ", yarn is woven to make fabric."],
       ],
-      answers: ["First", "then", "After", "The following stage", "Next", "next", "then", "Finally"],
+      answers: ["First", "then", "Next", "After", "The following stage", "next", "then", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, bamboo plants are planted in spring.", answer: "initial" },
@@ -263,7 +263,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [5, " stage, sugar crystals are separated from the syrup by a centrifuge. "],
         [6, ", the sugar is dried and cooled by a machine."],
       ],
-      answers: ["First", "then", "After", "The following stage", "Next", "next", "Finally"],
+      answers: ["First", "then", "After", "Next", "next", "The following stage", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, sugar canes are grown for 12-18 months.", answer: "initial" },
@@ -376,7 +376,7 @@ const rawProcessData: Record<string, ProcessData> = {
         [6, ", the pellets are heated to form raw material. "],
         [7, ", end products are produced."],
       ],
-      answers: ["First", "then", "The following stage", "Next", "then", "next", "then", "Finally"],
+      answers: ["First", "After", "The following stage", "Next", "then", "next", "then", "Finally"],
     },
     p2Band6: [
       { type: "fill", sentence: "In the i______ stage, plastic bottles are placed in recycling bins.", answer: "initial" },
@@ -564,7 +564,7 @@ export default function IELTSProcessTrainerFullSystem() {
   // PRACTICE 2
   // =====================
 
-  const linkerOptions = ["First", "then", "After", "The following stage", "Next", "next", "Finally"];
+  const linkerOptions = ["After", "Next", "then", "Finally", "The following stage", "next", "First"];
 
   const dropToBlank = useCallback(
     (index: number) => {
