@@ -457,23 +457,23 @@ export default function IELTSProcessTrainerFullSystem() {
     complexStructure: false,
     stageLogic: false,
   });
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const suggestedSeconds = 20 * 60;
-
-  useEffect(() => {
-    if (!timerRunning) return;
-    const timer = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timerRunning]);
+  const [p3TimerStarted, setP3TimerStarted] = useState(false);
+  const [p3ElapsedSeconds, setP3ElapsedSeconds] = useState(0);
+  const suggestedWritingSeconds = 20 * 60;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
+
+  useEffect(() => {
+    if (!p3TimerStarted) return;
+    const timer = setInterval(() => {
+      setP3ElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [p3TimerStarted]);
 
   const current = processData[processKey];
   const steps = current.steps;
@@ -494,8 +494,8 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setDragItem(null);
-    setTimerRunning(false);
-    setElapsedSeconds(0);
+    setP3TimerStarted(false);
+    setP3ElapsedSeconds(0);
   }, []);
 
   const handleProcessOrLevelChange = useCallback(
@@ -953,29 +953,21 @@ export default function IELTSProcessTrainerFullSystem() {
           <div>
             <p className="font-semibold text-slate-800">Suggested time: within 20 minutes</p>
             <p className="mt-1 text-sm text-slate-600">
-              Timer: {formatTime(elapsedSeconds)} / 20:00
+              Timer: {formatTime(p3ElapsedSeconds)} / 20:00
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTimerRunning(true)}
-              className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
-            >
-              Start Timer
-            </button>
-            <button
-              onClick={() => {
-                setTimerRunning(false);
-                setElapsedSeconds(0);
-              }}
-              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
-            >
-              Reset
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setP3TimerStarted(false);
+              setP3ElapsedSeconds(0);
+            }}
+            className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+          >
+            Reset Timer
+          </button>
         </div>
 
-        {elapsedSeconds > suggestedSeconds && (
+        {p3ElapsedSeconds > suggestedWritingSeconds && (
           <div className="mt-3 rounded-xl border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700">
             You have passed the suggested 20-minute limit. Try to finish and review your paragraph.
           </div>
@@ -1076,7 +1068,11 @@ export default function IELTSProcessTrainerFullSystem() {
       <textarea
         value={practiceState.p3Writing}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          setPracticeState((prev) => ({ ...prev, p3Writing: e.target.value, p3Submitted: false }));
+          const value = e.target.value;
+          setPracticeState((prev) => ({ ...prev, p3Writing: value, p3Submitted: false }));
+          if (!p3TimerStarted && value.trim().length > 0) {
+            setP3TimerStarted(true);
+          }
           if (aiFeedback) setAiFeedback(null);
         }}
         className="h-56 w-full rounded-2xl border p-3"
