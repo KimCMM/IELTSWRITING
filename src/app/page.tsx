@@ -457,6 +457,23 @@ export default function IELTSProcessTrainerFullSystem() {
     complexStructure: false,
     stageLogic: false,
   });
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const suggestedSeconds = 20 * 60;
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const timer = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timerRunning]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
 
   const current = processData[processKey];
   const steps = current.steps;
@@ -477,6 +494,8 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setDragItem(null);
+    setTimerRunning(false);
+    setElapsedSeconds(0);
   }, []);
 
   const handleProcessOrLevelChange = useCallback(
@@ -929,6 +948,39 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const renderPractice3 = () => (
     <Card title="Practice 3 - Timed Writing - Body Paragraph">
+      <div className="mb-4 rounded-2xl border bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-slate-800">Suggested time: within 20 minutes</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Timer: {formatTime(elapsedSeconds)} / 20:00
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTimerRunning(true)}
+              className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
+            >
+              Start Timer
+            </button>
+            <button
+              onClick={() => {
+                setTimerRunning(false);
+                setElapsedSeconds(0);
+              }}
+              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        {elapsedSeconds > suggestedSeconds && (
+          <div className="mt-3 rounded-xl border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700">
+            You have passed the suggested 20-minute limit. Try to finish and review your paragraph.
+          </div>
+        )}
+      </div>
       {level === "band6" && (
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
