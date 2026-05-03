@@ -905,7 +905,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
     const tasks: CohesionTask[] = level === "band6" ? current.p2Band6 : current.p2Band65;
     return (
-      <Card title={level === "band6" ? "Practice 2 - Cohesive Devices" : "Practice 2 - Cohesive Devices"}>
+      <Card title="Practice 2 - COHESIVE DEVICES">
         <div className="space-y-4">
           {tasks.map((task, i) => (
             <div key={i} className="rounded-xl border bg-slate-50 p-4">
