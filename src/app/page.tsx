@@ -654,7 +654,7 @@ export default function IELTSProcessTrainerFullSystem() {
             : "border-slate-600 bg-white"
         } ${currentAnswer ? "cursor-grab" : ""}`}
       >
-        {currentAnswer || "_____"}
+        {currentAnswer || ""}
       </span>
     );
   };
