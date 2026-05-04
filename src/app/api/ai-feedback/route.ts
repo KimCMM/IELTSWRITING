@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { LLMClient, Config, HeaderUtils } from "coze-coding-dev-sdk";
 
 interface AIFeedbackRequest {
   writing: string;
@@ -130,64 +131,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.DOUBAO_API_KEY;
-    if (!apiKey) {
-      console.error("DOUBAO_API_KEY environment variable is not set");
-      return NextResponse.json(
-        { error: "AI service is not configured" },
-        { status: 500 }
-      );
-    }
-
     const prompt = buildPrompt(body);
-    const model = "doubao-seed-1-8-251228";
+    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55000);
+    const config = new Config();
+    const client = new LLMClient(config, customHeaders);
+
+    const messages = [{ role: "user" as const, content: prompt }];
 
     try {
-      const response = await fetch(
-        `https://ark.cn-beijing.volces.com/api/v3/chat/completions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: feedbackMode === "error-types-only" ? 800 : 1500,
-            temperature: 0.3,
-          }),
-          signal: controller.signal,
-        }
-      );
+      const response = await client.invoke(messages, {
+        model: "doubao-seed-1-8-251228",
+        temperature: 0.3,
+      });
 
-      clearTimeout(timeout);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Doubao API error:", response.status, errorText);
-        return NextResponse.json(
-          { error: `AI service returned ${response.status}` },
-          { status: 502 }
-        );
-      }
-
-      const data = (await response.json()) as {
-        choices?: Array<{ message?: { content?: string } }>;
-        error?: { message?: string };
-      };
-
-      if (data.error) {
-        return NextResponse.json(
-          { error: data.error.message || "AI service error" },
-          { status: 502 }
-        );
-      }
-
-      const content = data.choices?.[0]?.message?.content;
+      const content = response.content;
       if (!content) {
         return NextResponse.json(
           { error: "Empty response from AI service" },
@@ -219,14 +177,17 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(result);
     } catch (fetchError) {
-      clearTimeout(timeout);
+      console.error("LLM invocation error:", fetchError);
       if (fetchError instanceof Error && fetchError.name === "AbortError") {
         return NextResponse.json(
           { error: "AI request timed out. Please try again." },
           { status: 504 }
         );
       }
-      throw fetchError;
+      return NextResponse.json(
+        { error: "AI service error. Please try again later." },
+        { status: 502 }
+      );
     }
   } catch (error) {
     console.error("AI feedback route error:", error);
