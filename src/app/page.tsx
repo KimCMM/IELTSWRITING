@@ -494,10 +494,10 @@ const rawProcessData: Record<string, ProcessData> = {
       },
       {
         type: "choice",
-        prompt: "Complete the sentence with 'before' or 'after'. Do not change the sentence order.",
-        parts: ["Plastic bottles are compressed into blocks _____ the blocks are crushed and washed."],
-        options: ["before", "after"],
-        answer: "before",
+        prompt: "Complete the sentence with 'before being' or 'after being'. Do not change the sentence order.",
+        parts: ["Plastic bottles are sorted in a recycling centre _____ compressed into blocks."],
+        options: ["before being", "after being"],
+        answer: "before being",
       },
       {
         type: "combine",
