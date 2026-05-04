@@ -55,7 +55,7 @@ interface ProcessData {
   band65: Band65Task[];
   p2Band55: P2Band55Data;
   p2Band6: CohesionTask[];
-  p2Band65: CombineTask[];
+  p2Band65: CohesionTask[];
 }
 
 interface PracticeState {
@@ -260,6 +260,8 @@ const rawProcessData: Record<string, ProcessData> = {
       },
     ],
     p2Band65: [
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["The strips are crushed into liquid pulp.", "Long fibres are extracted by a filter."], options: ["before being done", "after which", "which is then done"], answer: "after which" },
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["The fibres are spun into yarn.", "The yarn is woven into bamboo fabric."], options: ["after which", "which is then done", "followed by + noun phrase"], answer: "which is then done" },
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Bamboo is harvested manually in autumn.", "It is mechanically cut into narrow strips."], answer: "Once the bamboo has been harvested manually in autumn, it is mechanically cut into narrow strips." },
       { prompt: "Combine using 'before being done'.", parts: ["The fibres are softened.", "They are spun into yarn."], answer: "The fibres are softened before being spun into yarn." },
       { prompt: "Combine using 'after which'.", parts: ["The strips are crushed into liquid pulp.", "Long fibres are extracted by a filter."], answer: "The strips are crushed into liquid pulp, after which long fibres are extracted by a filter." },
@@ -342,6 +344,8 @@ const rawProcessData: Record<string, ProcessData> = {
       },
     ],
     p2Band65: [
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["Sugar canes are grown for 12-18 months.", "They are harvested by workers or machines."], options: ["before being done", "after which", "which are then done"], answer: "before being done" },
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["The juice passes through a limestone filter.", "It is turned into syrup by an evaporator."], options: ["after which", "followed by + noun phrase", "which is then done"], answer: "after which" },
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Sugar canes are harvested by workers or machines.", "They are crushed to produce juice."], answer: "Once the sugar canes have been harvested by workers or machines, they are crushed to produce juice." },
       { prompt: "Combine using 'before being done'.", parts: ["Sugar canes are grown for 12-18 months.", "They are harvested by workers or machines."], answer: "Sugar canes are grown for 12-18 months before being harvested by workers or machines." },
       { prompt: "Combine using 'after which'.", parts: ["The juice passes through a limestone filter.", "It is turned into syrup by an evaporator."], answer: "The juice passes through a limestone filter, after which it is turned into syrup by an evaporator." },
@@ -426,6 +430,8 @@ const rawProcessData: Record<string, ProcessData> = {
       },
     ],
     p2Band65: [
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["The dough is pressed into sheets.", "The sheets are cut into strips."], options: ["which are then done", "before being done", "after which"], answer: "which are then done" },
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["The dough sheets are cut into strips.", "The dough strips are made into noodle discs."], options: ["followed by + noun phrase", "which is then done", "before being done"], answer: "followed by + noun phrase" },
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Flour is transported from storage silos by truck.", "It is mixed with water and oil in a mixer."], answer: "Once the flour has been transported from storage silos by truck, it is mixed with water and oil in a mixer." },
       { prompt: "Combine using 'before being done'.", parts: ["The noodle discs are cooked in oil.", "They are dried."], answer: "The noodle discs are cooked in oil before being dried." },
       { prompt: "Combine using 'after which'.", parts: ["Flour is mixed with water and oil to form dough.", "The dough is pressed into sheets by rollers."], answer: "Flour is mixed with water and oil to form dough, after which it is pressed into sheets by rollers." },
@@ -512,7 +518,10 @@ const rawProcessData: Record<string, ProcessData> = {
         answer: "The raw material is used to produce end products after being packed.",
       },
     ],
-    p2Band65: [      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre." },
+    p2Band65: [
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], options: ["Once ... has/have been done, ...", "after which", "followed by + noun phrase"], answer: "Once ... has/have been done, ..." },
+      { type: "choice", prompt: "Choose the best cohesive device for these two steps.", parts: ["Plastic bottles are sorted in a recycling centre.", "They are compressed into blocks."], options: ["followed by + noun phrase", "before being done", "after which"], answer: "followed by + noun phrase" },
+      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre." },
       { prompt: "Combine using 'before being done'.", parts: ["The raw material is packed.", "It is used to produce end products."], answer: "The raw material is packed before being used to produce end products." },
       { prompt: "Combine using 'after which'.", parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."], answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed." },
       { prompt: "Combine using 'which are then done'.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced, which are then heated to form raw material." },
@@ -1112,6 +1121,11 @@ export default function IELTSProcessTrainerFullSystem() {
         {level === "band6" && (
           <p className="mb-4 text-sm text-slate-600">
             Complete the missing cohesive devices. Use the first letter, capitalisation and sentence position to decide the answer. Then combine the sentence pairs using and then, before doing or after doing.
+          </p>
+        )}
+        {level === "band65" && (
+          <p className="mb-4 text-sm text-slate-600">
+            First choose the most suitable cohesive device. Pay attention to subject reference, step order and whether the second step can be turned into a noun phrase. Then combine the sentence pairs using the target structures.
           </p>
         )}
         <div className="space-y-4">
