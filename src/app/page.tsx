@@ -1610,7 +1610,7 @@ export default function IELTSProcessTrainerFullSystem() {
                 : "bg-green-600 hover:bg-green-700"
             }`}
           >
-            {earned.p3 ? "Submitted - +5 points earned" : "Submit Practice 3"}
+            {earned.p3 ? "Submitted + 5 points earned" : "Submit Practice 3"}
           </button>
         </div>
       )}
