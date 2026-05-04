@@ -239,10 +239,10 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Bamboo is harvested manually in autumn.", "It is mechanically cut into narrow strips."], answer: "Once the bamboo has been harvested manually in autumn, it is mechanically cut into narrow strips." },
-      { prompt: "Combine using before doing.", parts: ["Bamboo is cut into narrow strips.", "It is crushed to make liquid pulp."], answer: "Bamboo is cut into narrow strips before being crushed to make liquid pulp." },
-      { prompt: "Combine using after which.", parts: ["The strips are crushed to make liquid pulp.", "Long fibres are extracted from the remaining liquid by a filter."], answer: "The strips are crushed to make liquid pulp, after which long fibres are extracted from the remaining liquid by a filter." },
-      { prompt: "Combine using which is then done.", parts: ["The fibres are spun into yarn.", "The yarn is woven into bamboo fabric."], answer: "The fibres are spun into yarn, which is then woven into bamboo fabric." },
-      { prompt: "Combine using followed by + noun phrase.", parts: ["The softened fibres are spun into yarn.", "The yarn is woven into fabric."], answer: "The softened fibres are spun into yarn, followed by the weaving of the yarn into fabric." },
+      { prompt: "Combine using 'before being done'.", parts: ["The fibres are softened.", "They are spun into yarn."], answer: "The fibres are softened before being spun into yarn." },
+      { prompt: "Combine using 'after which'.", parts: ["The strips are crushed into liquid pulp.", "Long fibres are extracted by a filter."], answer: "The strips are crushed into liquid pulp, after which long fibres are extracted by a filter." },
+      { prompt: "Combine using 'which is then done'.", parts: ["The fibres are spun into yarn.", "The yarn is woven into bamboo fabric."], answer: "The fibres are spun into yarn, which is then woven into bamboo fabric." },
+      { prompt: "Combine using 'followed by + noun phrase'.", parts: ["The softened fibres are spun into yarn.", "The yarn is woven into fabric."], answer: "The softened fibres are spun into yarn, followed by the weaving of the yarn into fabric." },
     ],
   },
 
@@ -306,11 +306,11 @@ const rawProcessData: Record<string, ProcessData> = {
       },
     ],
     p2Band65: [
-      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Sugar canes are harvested by workers or machines.", "They are crushed to make juice."], answer: "Once the sugar canes have been harvested by workers or machines, they are crushed to make juice." },
-      { prompt: "Combine using before doing.", parts: ["Sugar canes are grown for 12-18 months.", "They are harvested by workers or machines."], answer: "Sugar canes are grown for 12-18 months before being harvested by workers or machines." },
-      { prompt: "Combine using after which.", parts: ["The juice is purified by a limestone filter.", "It is turned into syrup by an evaporator."], answer: "The juice is purified by a limestone filter, after which it is turned into syrup by an evaporator." },
-      { prompt: "Combine using which is then done.", parts: ["The juice is turned into syrup by an evaporator.", "The syrup is processed in a centrifuge."], answer: "The juice is turned into syrup by an evaporator, which is then processed in a centrifuge." },
-      { prompt: "Combine using followed by + noun phrase.", parts: ["The sugar canes are crushed to make juice.", "The juice is purified by a limestone filter."], answer: "The sugar canes are crushed to make juice, followed by the purification of the juice by a limestone filter." },
+      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Sugar canes are harvested by workers or machines.", "They are crushed to produce juice."], answer: "Once the sugar canes have been harvested by workers or machines, they are crushed to produce juice." },
+      { prompt: "Combine using 'before being done'.", parts: ["Sugar canes are grown for 12-18 months.", "They are harvested by workers or machines."], answer: "Sugar canes are grown for 12-18 months before being harvested by workers or machines." },
+      { prompt: "Combine using 'after which'.", parts: ["The juice passes through a limestone filter.", "It is turned into syrup by an evaporator."], answer: "The juice passes through a limestone filter, after which it is turned into syrup by an evaporator." },
+      { prompt: "Combine using 'which are then done'.", parts: ["Sugar crystals are separated from the syrup by a centrifuge.", "The sugar crystals are dried and cooled."], answer: "Sugar crystals are separated from the syrup by a centrifuge, which are then dried and cooled." },
+      { prompt: "Combine using 'followed by + noun phrase'.", parts: ["The sugar canes are crushed to produce juice.", "The juice is purified by a limestone filter."], answer: "The sugar canes are crushed to produce juice, followed by the purification of the juice by a limestone filter." },
     ],
   },
 
@@ -377,10 +377,10 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Flour is transported from storage silos by truck.", "It is mixed with water and oil in a mixer."], answer: "Once the flour has been transported from storage silos by truck, it is mixed with water and oil in a mixer." },
-      { prompt: "Combine using before doing.", parts: ["The noodle discs are cooked in oil.", "They are dried."], answer: "The noodle discs are cooked in oil before being dried." },
-      { prompt: "Combine using after which.", parts: ["Flour is mixed with water and oil in a mixer.", "The dough is pressed into sheets by rollers."], answer: "Flour is mixed with water and oil in a mixer, after which the dough is pressed into sheets by rollers." },
-      { prompt: "Combine using which are then done.", parts: ["The dough is pressed into sheets by rollers.", "The sheets are cut into strips."], answer: "The dough is pressed into sheets by rollers, which are then cut into strips." },
-      { prompt: "Combine using followed by + noun phrase.", parts: ["The dough sheets are cut into strips.", "The dough strips are made into noodle discs."], answer: "The dough sheets are cut into strips, followed by the formation of the strips into noodle discs." },
+      { prompt: "Combine using 'before being done'.", parts: ["The noodle discs are cooked in oil.", "They are dried."], answer: "The noodle discs are cooked in oil before being dried." },
+      { prompt: "Combine using 'after which'.", parts: ["Flour is mixed with water and oil to form dough.", "The dough is pressed into sheets by rollers."], answer: "Flour is mixed with water and oil to form dough, after which it is pressed into sheets by rollers." },
+      { prompt: "Combine using 'which are then done'.", parts: ["The dough is pressed into sheets.", "The sheets are cut into strips."], answer: "The dough is pressed into sheets, which are then cut into strips." },
+      { prompt: "Combine using 'followed by + noun phrase'.", parts: ["The dough sheets are cut into strips.", "The dough strips are made into noodle discs."], answer: "The dough sheets are cut into strips, followed by the formation of the strips into noodle discs." },
     ],
   },
 
@@ -450,10 +450,10 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre." },
-      { prompt: "Combine using before doing.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced before being heated to form raw material." },
-      { prompt: "Combine using after which.", parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."], answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed." },
-      { prompt: "Combine using which are then done.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced, which are then heated to form raw material." },
-      { prompt: "Combine using followed by + noun phrase.", parts: ["Plastic bottles are sorted in a recycling centre.", "They are compressed into blocks."], answer: "Plastic bottles are sorted in a recycling centre, followed by the compression of the bottles into blocks." },
+      { prompt: "Combine using 'before being done'.", parts: ["The raw material is packed.", "It is used to produce end products."], answer: "The raw material is packed before being used to produce end products." },
+      { prompt: "Combine using 'after which'.", parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."], answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed." },
+      { prompt: "Combine using 'which are then done'.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced, which are then heated to form raw material." },
+      { prompt: "Combine using 'followed by + noun phrase'.", parts: ["Plastic bottles are sorted in a recycling centre.", "They are compressed into blocks."], answer: "Plastic bottles are sorted in a recycling centre, followed by the compression of the bottles into blocks." },
     ],
   },
 };
