@@ -32,7 +32,15 @@ interface CombineTask {
   answer: string;
 }
 
-type CohesionTask = FillTask | CombineTask;
+interface ChoiceTask {
+  type: "choice";
+  prompt: string;
+  parts: string[];
+  options: string[];
+  answer: string;
+}
+
+type CohesionTask = FillTask | CombineTask | ChoiceTask;
 
 interface P2Band55Data {
   text: [number, string][];
@@ -236,6 +244,20 @@ const rawProcessData: Record<string, ProcessData> = {
         parts: ["Yarn is woven into fabric.", "The fabric is used to make clothes."],
         answer: "The fabric is used to make clothes after being woven from yarn.",
       },
+      {
+        type: "choice",
+        prompt: "Which pronoun should replace 'Bamboo plants'?",
+        parts: ["Bamboo plants are harvested in autumn.", "Bamboo plants are cut into strips."],
+        options: ["it", "they", "them"],
+        answer: "they",
+      },
+      {
+        type: "choice",
+        prompt: "Can these two steps be combined using 'after being done'?",
+        parts: ["The strips are crushed to make liquid pulp.", "Long fibres are separated from the liquid by a filter."],
+        options: ["Yes, because the subject is the same.", "No, because the subject changes from strips to long fibres."],
+        answer: "No, because the subject changes from strips to long fibres.",
+      },
     ],
     p2Band65: [
       { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Bamboo is harvested manually in autumn.", "It is mechanically cut into narrow strips."], answer: "Once the bamboo has been harvested manually in autumn, it is mechanically cut into narrow strips." },
@@ -303,6 +325,20 @@ const rawProcessData: Record<string, ProcessData> = {
         prompt: "Combine using after doing.",
         parts: ["Sugar crystals are separated from the syrup by a centrifuge.", "Sugar crystals are dried and cooled by a machine."],
         answer: "Sugar crystals are dried and cooled by a machine after being separated from the syrup by a centrifuge.",
+      },
+      {
+        type: "choice",
+        prompt: "Which pronoun should replace 'Sugar canes'?",
+        parts: ["Sugar canes are harvested by workers or machines.", "Sugar canes are crushed to make juice."],
+        options: ["it", "they", "them"],
+        answer: "they",
+      },
+      {
+        type: "choice",
+        prompt: "Which sentence has the correct order?",
+        parts: ["The juice is purified by a limestone filter.", "The juice is turned into syrup by an evaporator."],
+        options: ["The juice is purified by a limestone filter before being turned into syrup by an evaporator.", "The juice is purified by a limestone filter after being turned into syrup by an evaporator."],
+        answer: "The juice is purified by a limestone filter before being turned into syrup by an evaporator.",
       },
     ],
     p2Band65: [
@@ -373,6 +409,20 @@ const rawProcessData: Record<string, ProcessData> = {
         prompt: "Combine using before doing.",
         parts: ["The noodle discs are cooked in oil.", "The noodle discs are dried."],
         answer: "The noodle discs are cooked in oil before being dried.",
+      },
+      {
+        type: "choice",
+        prompt: "Which pronoun should replace 'Flour'?",
+        parts: ["Flour is transported from storage silos by truck.", "Flour is mixed with water and oil in a mixer."],
+        options: ["it", "they", "them"],
+        answer: "it",
+      },
+      {
+        type: "choice",
+        prompt: "Can these two steps be combined using 'after being done'?",
+        parts: ["The dough sheets are cut into strips.", "The dough strips are made into noodle discs."],
+        options: ["Yes, because the subject is exactly the same.", "No, because the subject changes from dough sheets to dough strips."],
+        answer: "No, because the subject changes from dough sheets to dough strips.",
       },
     ],
     p2Band65: [
@@ -447,9 +497,22 @@ const rawProcessData: Record<string, ProcessData> = {
         parts: ["The raw material is packed.", "The raw material is used to produce end products."],
         answer: "The raw material is used to produce end products after being packed.",
       },
+      {
+        type: "choice",
+        prompt: "Which pronoun should replace 'Plastic bottles'?",
+        parts: ["Plastic bottles are placed in recycling bins.", "Plastic bottles are collected and transported by truck."],
+        options: ["it", "they", "them"],
+        answer: "they",
+      },
+      {
+        type: "choice",
+        prompt: "Which sentence has the correct order?",
+        parts: ["Plastic pellets are produced.", "Plastic pellets are heated to form raw material."],
+        options: ["Plastic pellets are produced before being heated to form raw material.", "Plastic pellets are produced after being heated to form raw material."],
+        answer: "Plastic pellets are produced before being heated to form raw material.",
+      },
     ],
-    p2Band65: [
-      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre." },
+    p2Band65: [      { prompt: "Use 'Once ... has/have been done, ...' to connect two steps.", parts: ["Plastic bottles are collected and transported by truck.", "They are sorted in a recycling centre."], answer: "Once the plastic bottles have been collected and transported by truck, they are sorted in a recycling centre." },
       { prompt: "Combine using 'before being done'.", parts: ["The raw material is packed.", "It is used to produce end products."], answer: "The raw material is packed before being used to produce end products." },
       { prompt: "Combine using 'after which'.", parts: ["Plastic bottles are compressed into blocks.", "The blocks are crushed and the pieces are washed."], answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed." },
       { prompt: "Combine using 'which are then done'.", parts: ["Plastic pellets are produced.", "They are heated to form raw material."], answer: "Plastic pellets are produced, which are then heated to form raw material." },
@@ -1055,7 +1118,37 @@ export default function IELTSProcessTrainerFullSystem() {
           {tasks.map((task, i) => (
             <div key={i} className="rounded-xl border bg-slate-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Task {i + 1}</p>
-              {task.type === "fill" ? (
+              {task.type === "choice" ? (
+                <div className="mt-2 rounded-lg bg-white p-3">
+                  <p className="font-semibold">{task.prompt}</p>
+                  {task.parts?.map((part: string, index: number) => (
+                    <p key={index}>{index + 1}. {part}</p>
+                  ))}
+                  <div className="mt-3 space-y-2">
+                    {task.options.map((option: string) => (
+                      <button
+                        key={option}
+                        onClick={() =>
+                          setPracticeState((prev) => ({
+                            ...prev,
+                            p2CohesionAnswers: {
+                              ...prev.p2CohesionAnswers,
+                              [i]: option,
+                            },
+                          }))
+                        }
+                        className={`block w-full rounded-xl border p-2 text-left text-sm ${
+                          practiceState.p2CohesionAnswers[i] === option
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "bg-white"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : task.type === "fill" ? (
                 <p className="mt-2 rounded-lg bg-white p-3">{task.sentence}</p>
               ) : (
                 <div className="mt-2 rounded-lg bg-white p-3">
@@ -1069,12 +1162,14 @@ export default function IELTSProcessTrainerFullSystem() {
                 </div>
               )}
               {p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
-              <input
-                value={practiceState.p2CohesionAnswers[i] || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => ({ ...prev, p2CohesionAnswers: { ...prev.p2CohesionAnswers, [i]: e.target.value } }))}
-                className="mt-3 w-full rounded-xl border p-2"
-                placeholder="Write your answer here..."
-              />
+              {task.type !== "choice" && (
+                <input
+                  value={practiceState.p2CohesionAnswers[i] || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => ({ ...prev, p2CohesionAnswers: { ...prev.p2CohesionAnswers, [i]: e.target.value } }))}
+                  className="mt-3 w-full rounded-xl border p-2"
+                  placeholder="Write your answer here..."
+                />
+              )}
               <div className="mt-3 flex gap-2">
                 <button onClick={() => checkCohesion(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
                 <button onClick={getP2Hint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
