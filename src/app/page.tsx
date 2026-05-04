@@ -582,17 +582,31 @@ export default function IELTSProcessTrainerFullSystem() {
     cohesiveDevices: false,
     correctOrder: false,
   });
+  const [band55Evidence, setBand55Evidence] = useState({
+    passiveVoice: "",
+    cohesiveDevices: "",
+  });
   const [band6SelfCheckVisible, setBand6SelfCheckVisible] = useState(false);
-  const [band6Checklist, setBand6Checklist] = useState<Band6Checklist>({
+  const [band6Checklist, setBand6Checklist] = useState({
+    cohesiveDevices: false,
     pronouns: false,
-    details: false,
     structure: false,
   });
+  const [band6Evidence, setBand6Evidence] = useState({
+    cohesiveDevices: "",
+    pronouns: "",
+    structure: "",
+  });
   const [band65SelfCheckVisible, setBand65SelfCheckVisible] = useState(false);
-  const [band65Checklist, setBand65Checklist] = useState<Band65Checklist>({
+  const [band65Checklist, setBand65Checklist] = useState({
     details: false,
     complexStructure: false,
     stageLogic: false,
+  });
+  const [band65Evidence, setBand65Evidence] = useState({
+    details: "",
+    practice1: "",
+    practice2: "",
   });
   const [p3TimerStarted, setP3TimerStarted] = useState(false);
   const [p3ElapsedSeconds, setP3ElapsedSeconds] = useState(0);
@@ -628,10 +642,13 @@ export default function IELTSProcessTrainerFullSystem() {
     setAiLoading(false);
     setBand55SelfCheckVisible(false);
     setBand55Checklist({ passiveVoice: false, cohesiveDevices: false, correctOrder: false });
+    setBand55Evidence({ passiveVoice: "", cohesiveDevices: "" });
     setBand6SelfCheckVisible(false);
-    setBand6Checklist({ pronouns: false, details: false, structure: false });
+    setBand6Checklist({ cohesiveDevices: false, pronouns: false, structure: false });
+    setBand6Evidence({ cohesiveDevices: "", pronouns: "", structure: "" });
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
+    setBand65Evidence({ details: "", practice1: "", practice2: "" });
     setDragItem(null);
     setP3TimerStarted(false);
     setP3ElapsedSeconds(0);
@@ -826,13 +843,13 @@ export default function IELTSProcessTrainerFullSystem() {
   const aiTaskCount = aiErrors.filter((e: { type: string }) => e.type === "task").length;
   const band55ChecklistComplete =
     level !== "band55" ||
-    (band55Checklist.passiveVoice && band55Checklist.cohesiveDevices && band55Checklist.correctOrder);
+    (band55Checklist.passiveVoice && band55Checklist.cohesiveDevices && band55Checklist.correctOrder && band55Evidence.passiveVoice.trim() && band55Evidence.cohesiveDevices.trim());
   const band6ChecklistComplete =
     level !== "band6" ||
-    (band6Checklist.pronouns && band6Checklist.details && band6Checklist.structure);
+    (band6Checklist.cohesiveDevices && band6Checklist.pronouns && band6Checklist.structure && band6Evidence.cohesiveDevices.trim() && band6Evidence.pronouns.trim() && band6Evidence.structure.trim());
   const band65ChecklistComplete =
     level !== "band65" ||
-    (band65Checklist.details && band65Checklist.complexStructure && band65Checklist.stageLogic);
+    (band65Checklist.details && band65Checklist.complexStructure && band65Checklist.stageLogic && band65Evidence.details.trim() && band65Evidence.practice1.trim() && band65Evidence.practice2.trim());
   const p3Pass = aiChecked && aiErrors.length === 0 && reflectionComplete;
 
   const getWritingHint = useCallback(() => {
@@ -1239,7 +1256,7 @@ export default function IELTSProcessTrainerFullSystem() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-semibold text-slate-800">Before AI Check</p>
-              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully. For some items, copy one example from your paragraph.</p>
             </div>
             <button
               onClick={handleBand55SelfCheck}
@@ -1250,29 +1267,23 @@ export default function IELTSProcessTrainerFullSystem() {
           </div>
 
           {band55SelfCheckVisible && (
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
+            <div className="mt-3 space-y-3 text-sm text-slate-700">
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band55Checklist.passiveVoice} onChange={(e) => setBand55Checklist((prev) => ({ ...prev, passiveVoice: e.target.checked }))} />
+                  <span>Have you used passive voice to describe the process?</span>
+                </label>
+                <input value={band55Evidence.passiveVoice} onChange={(e) => setBand55Evidence((prev) => ({ ...prev, passiveVoice: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example, e.g. Bamboo plants are planted in spring." />
+              </div>
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band55Checklist.cohesiveDevices} onChange={(e) => setBand55Checklist((prev) => ({ ...prev, cohesiveDevices: e.target.checked }))} />
+                  <span>Have you used basic cohesive devices, such as First, then, After that, Next or Finally?</span>
+                </label>
+                <input value={band55Evidence.cohesiveDevices} onChange={(e) => setBand55Evidence((prev) => ({ ...prev, cohesiveDevices: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example, e.g. After that, bamboo plants are cut into strips." />
+              </div>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band55Checklist.passiveVoice}
-                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, passiveVoice: e.target.checked }))}
-                />
-                <span>Have you used passive voice to describe the process?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band55Checklist.cohesiveDevices}
-                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, cohesiveDevices: e.target.checked }))}
-                />
-                <span>Have you used basic cohesive devices, such as First, then, After that, Next or Finally?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band55Checklist.correctOrder}
-                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, correctOrder: e.target.checked }))}
-                />
+                <input type="checkbox" checked={band55Checklist.correctOrder} onChange={(e) => setBand55Checklist((prev) => ({ ...prev, correctOrder: e.target.checked }))} />
                 <span>Have you described the main steps in the correct order?</span>
               </label>
             </div>
@@ -1284,7 +1295,7 @@ export default function IELTSProcessTrainerFullSystem() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-semibold text-slate-800">Before AI Check</p>
-              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully. For some items, copy one example from your paragraph.</p>
             </div>
             <button
               onClick={handleBand6SelfCheck}
@@ -1295,31 +1306,28 @@ export default function IELTSProcessTrainerFullSystem() {
           </div>
 
           {band6SelfCheckVisible && (
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band6Checklist.pronouns}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, pronouns: e.target.checked }))}
-                />
-                <span>Have you used cohesive devices from Practice 2, such as First, then, After that, Afterwards or Subsequently?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band6Checklist.details}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, details: e.target.checked }))}
-                />
-                <span>Have you used pronouns such as it, they or them to avoid repeating the same nouns?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band6Checklist.structure}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, structure: e.target.checked }))}
-                />
-                <span>Have you used at least one sentence-combining structure from Practice 2, such as &quot;and then&quot;, &quot;before being done&quot; or &quot;after being done&quot;?</span>
-              </label>
+            <div className="mt-3 space-y-3 text-sm text-slate-700">
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band6Checklist.cohesiveDevices} onChange={(e) => setBand6Checklist((prev) => ({ ...prev, cohesiveDevices: e.target.checked }))} />
+                  <span>Have you used cohesive devices from Practice 2, such as First, then, After that, Afterwards or Subsequently?</span>
+                </label>
+                <input value={band6Evidence.cohesiveDevices} onChange={(e) => setBand6Evidence((prev) => ({ ...prev, cohesiveDevices: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example, e.g. Afterwards, the juice is purified by a limestone filter." />
+              </div>
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band6Checklist.pronouns} onChange={(e) => setBand6Checklist((prev) => ({ ...prev, pronouns: e.target.checked }))} />
+                  <span>Have you used pronouns such as it, they or them to avoid repeating the same nouns?</span>
+                </label>
+                <input value={band6Evidence.pronouns} onChange={(e) => setBand6Evidence((prev) => ({ ...prev, pronouns: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example, e.g. They are then crushed to make juice." />
+              </div>
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band6Checklist.structure} onChange={(e) => setBand6Checklist((prev) => ({ ...prev, structure: e.target.checked }))} />
+                  <span>Have you used at least one sentence-combining structure from Practice 2, such as &quot;and then&quot;, &quot;before being done&quot; or &quot;after being done&quot;?</span>
+                </label>
+                <input value={band6Evidence.structure} onChange={(e) => setBand6Evidence((prev) => ({ ...prev, structure: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example, e.g. The fibres are softened before being spun into yarn." />
+              </div>
             </div>
           )}
         </div>
@@ -1330,7 +1338,7 @@ export default function IELTSProcessTrainerFullSystem() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-semibold text-slate-800">Before AI Check</p>
-              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully. For some items, copy one example from your paragraph.</p>
             </div>
             <button
               onClick={handleBand65SelfCheck}
@@ -1341,31 +1349,28 @@ export default function IELTSProcessTrainerFullSystem() {
           </div>
 
           {band65SelfCheckVisible && (
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band65Checklist.details}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, details: e.target.checked }))}
-                />
-                <span>Have you included useful diagram details, such as tools, machines, materials, locations or final examples?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band65Checklist.complexStructure}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, complexStructure: e.target.checked }))}
-                />
-                <span>Have you used at least one sentence-upgrade expression from Practice 1, such as &apos;, doing sth&apos;, &apos;which...&apos;, &apos;in order to...&apos;, or &apos;such as...&apos;?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band65Checklist.stageLogic}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, stageLogic: e.target.checked }))}
-                />
-                <span>Have you used at least one cohesive structure from Practice 2, such as &apos;Once ... has/have been done, ...&apos;, &apos;after which&apos;, &apos;which is/are then done&apos;, or &apos;followed by...&apos;?</span>
-              </label>
+            <div className="mt-3 space-y-3 text-sm text-slate-700">
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band65Checklist.details} onChange={(e) => setBand65Checklist((prev) => ({ ...prev, details: e.target.checked }))} />
+                  <span>Have you included useful diagram details, such as tools, machines, materials, locations or final examples?</span>
+                </label>
+                <input value={band65Evidence.details} onChange={(e) => setBand65Evidence((prev) => ({ ...prev, details: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example, e.g. ...by a limestone filter..." />
+              </div>
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band65Checklist.complexStructure} onChange={(e) => setBand65Checklist((prev) => ({ ...prev, complexStructure: e.target.checked }))} />
+                  <span>Have you used at least one sentence-upgrade expression from Practice 1, such as &apos;, doing sth&apos;, &apos;which...&apos;, &apos;in order to...&apos;, or &apos;such as...&apos;?</span>
+                </label>
+                <input value={band65Evidence.practice1} onChange={(e) => setBand65Evidence((prev) => ({ ...prev, practice1: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example from Practice 1 expressions." />
+              </div>
+              <div className="rounded-xl border bg-slate-50 p-3">
+                <label className="flex gap-2">
+                  <input type="checkbox" checked={band65Checklist.stageLogic} onChange={(e) => setBand65Checklist((prev) => ({ ...prev, stageLogic: e.target.checked }))} />
+                  <span>Have you used at least one cohesive structure from Practice 2, such as &apos;Once ... has/have been done, ...&apos;, &apos;after which&apos;, &apos;which is/are then done&apos;, or &apos;followed by...&apos;?</span>
+                </label>
+                <input value={band65Evidence.practice2} onChange={(e) => setBand65Evidence((prev) => ({ ...prev, practice2: e.target.value }))} className="mt-2 w-full rounded-xl border p-2" placeholder="Copy one example from Practice 2 structures." />
+              </div>
             </div>
           )}
         </div>
