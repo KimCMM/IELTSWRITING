@@ -724,29 +724,6 @@ export default function IELTSProcessTrainerFullSystem() {
     [level, practice1Tasks]
   );
 
-  const checkAllP1 = useCallback(() => {
-    const updatedFeedback: Record<number, boolean> = {};
-
-    practice1Tasks.forEach((task, i) => {
-      updatedFeedback[i] = isAnswerCorrect(
-        practiceState.p1Answers[i] || "",
-        task.answer,
-        level
-      );
-    });
-
-    setPracticeState((prev) => ({
-      ...prev,
-      p1Feedback: updatedFeedback,
-    }));
-
-    if (practice1Tasks.every((task, i) =>
-      isAnswerCorrect(practiceState.p1Answers[i] || "", task.answer, level)
-    )) {
-      award("p1");
-    }
-  }, [practice1Tasks, practiceState.p1Answers, level, award]);
-
   // =====================
   // PRACTICE 2
   // =====================
@@ -805,30 +782,6 @@ export default function IELTSProcessTrainerFullSystem() {
     },
     [getCohesionTasks, practiceState.p2CohesionAnswers, practiceState.p2CohesionFeedback, level, award]
   );
-
-  const checkAllCohesion = useCallback(() => {
-    const tasks = getCohesionTasks();
-    const updatedFeedback: Record<number, boolean> = {};
-
-    tasks.forEach((task, i) => {
-      updatedFeedback[i] = isAnswerCorrect(
-        practiceState.p2CohesionAnswers[i] || "",
-        task.answer,
-        level
-      );
-    });
-
-    setPracticeState((prev) => ({
-      ...prev,
-      p2CohesionFeedback: updatedFeedback,
-    }));
-
-    if (tasks.every((task, i) =>
-      isAnswerCorrect(practiceState.p2CohesionAnswers[i] || "", task.answer, level)
-    )) {
-      award("p2");
-    }
-  }, [getCohesionTasks, practiceState.p2CohesionAnswers, level, award]);
 
   const getP2Hint = useCallback(() => {
     if (level === "band55") {
@@ -1129,6 +1082,7 @@ export default function IELTSProcessTrainerFullSystem() {
               aria-label={`Answer for task ${i + 1}`}
             />
             <div className="mt-3 flex gap-2">
+              <button onClick={() => checkP1(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
               <button onClick={() => getP1Hint(i)} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
             </div>
             {practiceState.p1Feedback[i] !== undefined && (
@@ -1138,14 +1092,6 @@ export default function IELTSProcessTrainerFullSystem() {
             )}
           </div>
         ))}
-      </div>
-      <div className="mt-4 flex gap-2">
-        <button
-          onClick={checkAllP1}
-          className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
-        >
-          Check Practice 1
-        </button>
       </div>
     </Card>
   );
@@ -1265,6 +1211,7 @@ export default function IELTSProcessTrainerFullSystem() {
                 />
               )}
               <div className="mt-3 flex gap-2">
+                <button onClick={() => checkCohesion(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
                 <button onClick={getP2Hint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
               </div>
               {practiceState.p2CohesionFeedback[i] !== undefined && (
@@ -1274,14 +1221,6 @@ export default function IELTSProcessTrainerFullSystem() {
               )}
             </div>
           ))}
-        </div>
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={checkAllCohesion}
-            className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
-          >
-            Check Practice 2
-          </button>
         </div>
       </Card>
     );
