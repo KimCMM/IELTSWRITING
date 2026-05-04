@@ -609,11 +609,6 @@ export default function IELTSProcessTrainerFullSystem() {
     practice2: "",
   });
 
-  const [errorReview, setErrorReview] = useState({
-    mainErrorType: "",
-    changeMade: "",
-    nextCheck: "",
-  });
   const [p3TimerStarted, setP3TimerStarted] = useState(false);
   const [p3ElapsedSeconds, setP3ElapsedSeconds] = useState(0);
   const suggestedWritingSeconds = 20 * 60;
@@ -649,14 +644,12 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand55SelfCheckVisible(false);
     setBand55Checklist({ passiveVoice: false, cohesiveDevices: false, correctOrder: false });
     setBand55Evidence({ passiveVoice: "", cohesiveDevices: "" });
-    setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
     setBand6SelfCheckVisible(false);
     setBand6Checklist({ cohesiveDevices: false, pronouns: false, structure: false });
     setBand6Evidence({ cohesiveDevices: "", pronouns: "", structure: "" });
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setBand65Evidence({ details: "", practice1: "", practice2: "" });
-    setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
     setDragItem(null);
     setP3TimerStarted(false);
     setP3ElapsedSeconds(0);
@@ -936,7 +929,6 @@ export default function IELTSProcessTrainerFullSystem() {
   const wordCount = practiceState.p3Writing.trim() ? practiceState.p3Writing.trim().split(/\s+/).filter(Boolean).length : 0;
   const wordRequirement = level === "band55" ? 70 : level === "band6" ? 80 : 100;
   const wordTargetRange = level === "band55" ? "70-80" : level === "band6" ? "80-100" : "100-120";
-  const reflectionComplete = practiceState.p3Reflection.every((item: string) => item.trim().length > 0);
   const aiChecked = Boolean(aiFeedback);
   const aiErrors = Array.isArray(aiFeedback?.errors) ? aiFeedback.errors : [];
   const aiGrammarCount = aiErrors.filter((e: { type: string }) => e.type === "grammar").length;
@@ -953,7 +945,30 @@ export default function IELTSProcessTrainerFullSystem() {
   const band65ChecklistComplete =
     level !== "band65" ||
     (band65Checklist.details && band65Checklist.complexStructure && band65Checklist.stageLogic && band65Evidence.details.trim() && band65Evidence.practice1.trim() && band65Evidence.practice2.trim());
-  const p3Pass = aiChecked && aiErrors.length === 0 && reflectionComplete;
+  const aiHasNoErrors = aiChecked && aiErrors.length === 0;
+
+  const finalReflectionComplete = practiceState.p3Reflection.every(
+    (item: string) => item.trim().length > 0
+  );
+
+  const canFinalSubmit = aiHasNoErrors && finalReflectionComplete;
+
+  const submitPractice3 = useCallback(() => {
+    if (!aiHasNoErrors) {
+      setWritingHint(
+        "Please revise your paragraph and run AI Check again. You can submit only when no language errors are detected."
+      );
+      return;
+    }
+
+    if (!finalReflectionComplete) {
+      setWritingHint("Please complete the Final Reflection before submitting.");
+      return;
+    }
+
+    award("p3");
+    setWritingHint("");
+  }, [aiHasNoErrors, finalReflectionComplete, award]);
 
   const getWritingHint = useCallback(() => {
     if (!practiceState.p3Submitted) {
@@ -972,17 +987,13 @@ export default function IELTSProcessTrainerFullSystem() {
       return;
     }
 
-    if (!reflectionComplete) {
-      setWritingHint("No language errors were detected by AI. Complete all 3 self-reflection points to pass.");
+    if (!finalReflectionComplete) {
+      setWritingHint("No language errors were detected by AI. Complete the Final Reflection and submit Practice 3 to earn points.");
       return;
     }
 
     setWritingHint("Well done. All errors corrected and reflection completed.");
-  }, [practiceState.p3Submitted, level, aiErrors.length, reflectionComplete]);
-
-  useEffect(() => {
-    if (p3Pass && !earned.p3) award("p3");
-  }, [p3Pass, earned.p3, award]);
+  }, [practiceState.p3Submitted, level, aiErrors.length, finalReflectionComplete]);
 
   const handleBand55SelfCheck = useCallback(() => {
     if (!practiceState.p3Writing.trim()) {
@@ -1058,7 +1069,6 @@ export default function IELTSProcessTrainerFullSystem() {
     setAiLoading(true);
     setWritingHint("");
     setAiFeedback(null);
-    setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
 
     try {
       const response = await fetch("/api/ai-feedback", {
@@ -1321,12 +1331,24 @@ export default function IELTSProcessTrainerFullSystem() {
     );
   };
 
-  const reflectionPrompt =
+  const finalReflectionQuestions =
     level === "band55"
-      ? "Write 3 reflection points. You may reflect on: passive voice accuracy, basic cohesive devices such as First/then/After that/Finally, or whether each step is in the correct order."
+      ? [
+          "What passive voice pattern did you check or correct?",
+          "What cohesive device did you use to show the order clearly?",
+          "What will you check first next time?",
+        ]
       : level === "band6"
-      ? "Write 3 reflection points. You may reflect on: passive sentence accuracy, cohesive devices from Practice 2, pronoun use to avoid repetition, or before/after being done structures."
-      : "Write 3 reflection points. You may reflect on: sentence-upgrade expressions from Practice 1, cohesive structures from Practice 2, useful diagram details, or whether your paragraph sounds less mechanical.";
+      ? [
+          "What sentence-combining structure did you use or improve?",
+          "What repeated noun did you replace with a pronoun?",
+          "What will you check first next time?",
+        ]
+      : [
+          "What sentence-upgrade expression did you use or improve?",
+          "What cohesive structure from Practice 2 did you use or improve?",
+          "What will you check first next time?",
+        ];
 
   const renderPractice3 = () => (
     <Card title="Practice 3 - Timed Writing - Body Paragraph">
@@ -1489,7 +1511,6 @@ export default function IELTSProcessTrainerFullSystem() {
             setP3TimerStarted(true);
           }
           if (aiFeedback) setAiFeedback(null);
-          setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
         }}
         className="h-56 w-full rounded-2xl border p-3"
         placeholder="Write your process paragraph here..."
@@ -1532,65 +1553,59 @@ export default function IELTSProcessTrainerFullSystem() {
       )}
 
       {aiChecked && aiErrors.length > 0 && (
-        <div className="mt-4 rounded-2xl border bg-white p-4">
-          <p className="font-bold text-slate-800">Error Review</p>
-          <p className="mt-1 text-sm text-slate-600">
-            Review the AI error labels. Do not copy a correction. Think about what you need to improve.
+        <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+          <p className="font-bold">Revise your paragraph</p>
+          <p className="mt-1">
+            AI has found some language issues. Please revise your paragraph by yourself,
+            then run AI Check again. Corrections are not provided.
           </p>
-          <div className="mt-3 space-y-3">
-            <div>
-              <label className="text-sm font-semibold text-slate-700">My main error type was:</label>
-              <select
-                value={errorReview.mainErrorType}
-                onChange={(e) => setErrorReview((prev) => ({ ...prev, mainErrorType: e.target.value }))}
-                className="mt-1 w-full rounded-xl border p-2"
-              >
-                <option value="">Choose one</option>
-                <option value="grammar">Grammar</option>
-                <option value="lexis">Lexis</option>
-                <option value="spelling">Spelling</option>
-                <option value="cohesion">Cohesion</option>
-                <option value="task">Task</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-slate-700">One change I made:</label>
+        </div>
+      )}
+
+      {aiHasNoErrors && (
+        <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700">
+          No language errors detected by AI. Complete the Final Reflection and submit Practice 3 to earn points.
+        </div>
+      )}
+
+      {aiHasNoErrors && (
+        <div className="mt-5 rounded-2xl border bg-white p-4">
+          <p className="font-semibold">Final Reflection</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Complete the reflection after your paragraph has passed AI Check. Focus on
+            what you checked, revised or improved.
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {practiceState.p3Reflection.map((item, i) => (
               <input
-                value={errorReview.changeMade}
-                onChange={(e) => setErrorReview((prev) => ({ ...prev, changeMade: e.target.value }))}
-                className="mt-1 w-full rounded-xl border p-2"
-                placeholder="Example: I corrected a passive form."
+                key={i}
+                value={item}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => { const copy = [...prev.p3Reflection]; copy[i] = e.target.value; return { ...prev, p3Reflection: copy }; })}
+                className="w-full rounded-xl border p-2"
+                placeholder={finalReflectionQuestions[i]}
               />
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-slate-700">One point I will check next time:</label>
-              <input
-                value={errorReview.nextCheck}
-                onChange={(e) => setErrorReview((prev) => ({ ...prev, nextCheck: e.target.value }))}
-                className="mt-1 w-full rounded-xl border p-2"
-                placeholder="Example: I will check passive forms and cohesive devices."
-              />
-            </div>
+            ))}
           </div>
         </div>
       )}
 
-      {aiChecked && aiErrors.length === 0 && (
-        <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700">
-          No language errors detected by AI. Complete the self-reflection section to pass.
+      {aiHasNoErrors && (
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={submitPractice3}
+            disabled={!canFinalSubmit || earned.p3}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold text-white ${
+              !canFinalSubmit || earned.p3
+                ? "cursor-not-allowed bg-slate-400"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
+          >
+            {earned.p3 ? "Submitted - +5 points earned" : "Submit Practice 3"}
+          </button>
         </div>
       )}
-
-      <div className="mt-5 rounded-2xl border bg-white p-4">
-        <p className="font-semibold">Self-reflection</p>
-        <p className="mt-1 text-sm text-slate-600">{reflectionPrompt}</p>
-        <div className="mt-3 space-y-2">
-          {practiceState.p3Reflection.map((item, i) => (
-            <input key={i} value={item} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => { const copy = [...prev.p3Reflection]; copy[i] = e.target.value; return { ...prev, p3Reflection: copy }; })} className="w-full rounded-xl border p-2" placeholder={`Reflection ${i + 1}`} />
-          ))}
-        </div>
-      </div>
-      {p3Pass && <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-lg font-bold text-green-700">PASS - +5 points</div>}
+      {earned.p3 && <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-lg font-bold text-green-700">PASS - +5 points</div>}
     </Card>
   );
 
