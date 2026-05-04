@@ -1117,7 +1117,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band6Checklist.pronouns}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, pronouns: e.target.checked }))}
                 />
-                <span>Have you replaced repeated nouns with pronouns such as it, they or them?</span>
+                <span>Have you used cohesive devices from Practice 2, such as First, then, After that, Afterwards or Subsequently?</span>
               </label>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
                 <input
@@ -1125,7 +1125,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band6Checklist.details}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, details: e.target.checked }))}
                 />
-                <span>Have you included useful diagram details, such as time, tools, machines, materials or final products?</span>
+                <span>Have you used pronouns such as it, they or them to avoid repeating the same nouns?</span>
               </label>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
                 <input
@@ -1133,7 +1133,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band6Checklist.structure}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand6Checklist((prev) => ({ ...prev, structure: e.target.checked }))}
                 />
-                <span>Have you used at least one structure from Practice 2, such as before/after being done?</span>
+                <span>Have you used at least one sentence-combining structure from Practice 2, such as &quot;and then&quot;, &quot;before being done&quot; or &quot;after being done&quot;?</span>
               </label>
             </div>
           )}
