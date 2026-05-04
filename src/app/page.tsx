@@ -1628,17 +1628,11 @@ export default function IELTSProcessTrainerFullSystem() {
             </div>
             <p className="mt-2 text-lg font-bold text-blue-700">Score: {totalScore} / 10 - {achievement}</p>
             <div className="mt-3 rounded-xl border bg-white p-3 text-sm text-slate-700">
-              <p className="font-semibold text-slate-800">Scoring rules</p>
               <p className="mt-1">
-                Practice 1 = 2 points, Practice 2 = 3 points, Practice 3 = 5 points.
-              </p>
-              <p className="mt-1">
-                Bronze: 0-3 points. Silver: 4-9 points. Gold: 10 points only.
+                Bronze: 0-3 points. Silver: 4-9 points.
               </p>
               <p className="mt-1 text-slate-600">
-                To reach Gold, complete all three practices. Practice 3 points are awarded
-                only after your paragraph passes AI Check, you complete Final Reflection,
-                and you click Submit Practice 3.
+                To reach Gold, complete all three practices.
               </p>
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-sm">
