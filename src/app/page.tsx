@@ -229,7 +229,7 @@ const rawProcessData: Record<string, ProcessData> = {
       {
         type: "choice",
         prompt: "Which pronoun should replace 'Bamboo plants'?",
-        parts: ["Bamboo plants are harvested in autumn.", "Bamboo plants are cut into strips."],
+        parts: ["Bamboo plants are planted in spring.", "Bamboo plants are harvested in autumn."],
         options: ["it", "they", "them"],
         answer: "they",
       },
@@ -313,16 +313,16 @@ const rawProcessData: Record<string, ProcessData> = {
       {
         type: "choice",
         prompt: "Which pronoun should replace 'Sugar canes'?",
-        parts: ["Sugar canes are harvested by workers or machines.", "Sugar canes are crushed to make juice."],
+        parts: ["Sugar canes are grown for 12-18 months.", "Sugar canes are harvested by workers or machines."],
         options: ["it", "they", "them"],
         answer: "they",
       },
       {
         type: "choice",
-        prompt: "Which sentence has the correct order?",
-        parts: ["The juice is purified by a limestone filter.", "The juice is turned into syrup by an evaporator."],
-        options: ["The juice is purified by a limestone filter before being turned into syrup by an evaporator.", "The juice is purified by a limestone filter after being turned into syrup by an evaporator."],
-        answer: "The juice is purified by a limestone filter before being turned into syrup by an evaporator.",
+        prompt: "Complete the sentence with 'before' or 'after'. Do not change the sentence order.",
+        parts: ["Sugar canes are grown for 12-18 months _____ being harvested by workers or machines."],
+        options: ["before", "after"],
+        answer: "before",
       },
       {
         type: "combine",
@@ -398,10 +398,10 @@ const rawProcessData: Record<string, ProcessData> = {
       { type: "fill", sentence: "S__________, the noodle discs are cooked in oil and dried.", answer: "Subsequently" },
       {
         type: "choice",
-        prompt: "Which pronoun should replace 'Flour'?",
-        parts: ["Flour is transported from storage silos by truck.", "Flour is mixed with water and oil in a mixer."],
+        prompt: "Which pronoun should replace 'The cups'?",
+        parts: ["The cups are labelled.", "The cups are sealed."],
         options: ["it", "they", "them"],
-        answer: "it",
+        answer: "they",
       },
       {
         type: "choice",
@@ -487,17 +487,17 @@ const rawProcessData: Record<string, ProcessData> = {
       { type: "fill", sentence: "In the n______ stage, plastic pellets are produced.", answer: "next" },
       {
         type: "choice",
-        prompt: "Which pronoun should replace 'Plastic bottles'?",
-        parts: ["Plastic bottles are placed in recycling bins.", "Plastic bottles are collected and transported by truck."],
+        prompt: "Which pronoun should replace 'The blocks'?",
+        parts: ["The blocks are crushed.", "The blocks are washed."],
         options: ["it", "they", "them"],
         answer: "they",
       },
       {
         type: "choice",
-        prompt: "Which sentence has the correct order?",
-        parts: ["Plastic pellets are produced.", "Plastic pellets are heated to form raw material."],
-        options: ["Plastic pellets are produced before being heated to form raw material.", "Plastic pellets are produced after being heated to form raw material."],
-        answer: "Plastic pellets are produced before being heated to form raw material.",
+        prompt: "Complete the sentence with 'before' or 'after'. Do not change the sentence order.",
+        parts: ["Plastic bottles are compressed into blocks _____ the blocks are crushed and washed."],
+        options: ["before", "after"],
+        answer: "before",
       },
       {
         type: "combine",
