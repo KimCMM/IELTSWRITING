@@ -1060,6 +1060,13 @@ export default function IELTSProcessTrainerFullSystem() {
     );
   };
 
+  const reflectionPrompt =
+    level === "band55"
+      ? "Write 3 reflection points. You may reflect on: passive voice accuracy, basic cohesive devices such as First/then/After that/Finally, or whether each step is in the correct order."
+      : level === "band6"
+      ? "Write 3 reflection points. You may reflect on: passive sentence accuracy, cohesive devices from Practice 2, pronoun use to avoid repetition, or before/after being done structures."
+      : "Write 3 reflection points. You may reflect on: sentence-upgrade expressions from Practice 1, cohesive structures from Practice 2, useful diagram details, or whether your paragraph sounds less mechanical.";
+
   const renderPractice3 = () => (
     <Card title="Practice 3 - Timed Writing - Body Paragraph">
       <div className="mb-4 rounded-2xl border bg-white p-4">
@@ -1237,7 +1244,7 @@ export default function IELTSProcessTrainerFullSystem() {
 
       <div className="mt-5 rounded-2xl border bg-white p-4">
         <p className="font-semibold">Self-reflection</p>
-        <p className="mt-1 text-sm text-slate-600">Write 3 reflection points. You may reflect on: passive forms, basic linkers, advanced linkers, pronoun use, spelling accuracy, or your estimated level.</p>
+        <p className="mt-1 text-sm text-slate-600">{reflectionPrompt}</p>
         <div className="mt-3 space-y-2">
           {practiceState.p3Reflection.map((item, i) => (
             <input key={i} value={item} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => { const copy = [...prev.p3Reflection]; copy[i] = e.target.value; return { ...prev, p3Reflection: copy }; })} className="w-full rounded-xl border p-2" placeholder={`Reflection ${i + 1}`} />
