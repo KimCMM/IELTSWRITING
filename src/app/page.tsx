@@ -1156,7 +1156,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band65Checklist.details}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, details: e.target.checked }))}
                 />
-                <span>Have you included specific diagram details, such as tools, machines, materials, locations or final examples?</span>
+                <span>Have you included useful diagram details, such as tools, machines, materials, locations or final examples?</span>
               </label>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
                 <input
@@ -1164,7 +1164,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band65Checklist.complexStructure}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, complexStructure: e.target.checked }))}
                 />
-                <span>Have you used at least one structure from Practice 2, such as &apos;Once ... has/have been done&apos;, &apos;after which&apos;, or &apos;which is/are then done&apos;?</span>
+                <span>Have you used at least one sentence-upgrade expression from Practice 1, such as &apos;, doing sth&apos;, &apos;which...&apos;, &apos;in order to...&apos;, or &apos;such as...&apos;?</span>
               </label>
               <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
                 <input
@@ -1172,7 +1172,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   checked={band65Checklist.stageLogic}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBand65Checklist((prev) => ({ ...prev, stageLogic: e.target.checked }))}
                 />
-                <span>Have you grouped neighbouring steps logically instead of listing every step mechanically?</span>
+                <span>Have you used at least one cohesive structure from Practice 2, such as &apos;Once ... has/have been done, ...&apos;, &apos;after which&apos;, &apos;which is/are then done&apos;, or &apos;followed by...&apos;?</span>
               </label>
             </div>
           )}
