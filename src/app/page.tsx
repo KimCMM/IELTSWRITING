@@ -68,6 +68,10 @@ interface PracticeState {
   p2ParagraphFeedback: boolean[];
   p2CohesionAnswers: Record<number, string>;
   p2CohesionFeedback: Record<number, boolean>;
+  p2LinkerJudgementAnswers: Record<string, boolean>;
+  p2LinkerJudgementFeedback: Record<string, boolean> | null;
+  p2LinkerJudgementChecked: boolean;
+  p2LinkerJudgementHint: string | null;
   p3Writing: string;
   p3Submitted: boolean;
   p3Reflection: string[];
@@ -168,6 +172,10 @@ const initialPracticeState: PracticeState = {
   p2ParagraphFeedback: [],
   p2CohesionAnswers: {},
   p2CohesionFeedback: {},
+  p2LinkerJudgementAnswers: {},
+  p2LinkerJudgementFeedback: null,
+  p2LinkerJudgementChecked: false,
+  p2LinkerJudgementHint: null,
   p3Writing: "",
   p3Submitted: false,
   p3Reflection: ["", "", ""],
@@ -384,6 +392,92 @@ const band6ProcessCorrectionTasks: Record<string, Array<{ prompt: string; answer
       prompt: "The pieces are washed remove dirt.",
       answer: "The pieces are washed to remove dirt.",
       instruction: "Correct the process sentence.",
+    },
+  ],
+};
+
+const band55LinkerJudgementTasks: Record<string, Array<{ id: string; statement: string; answer: boolean; hint: string }>> = {
+  bamboo: [
+    {
+      id: "bambooThenMiddle",
+      statement: "The fibres are then spun to make yarn.",
+      answer: true,
+      hint: "'Then' can be used in the middle of a passive sentence, usually after the be-verb.",
+    },
+    {
+      id: "bambooAfterThat",
+      statement: "After, bamboo plants are cut into strips.",
+      answer: false,
+      hint: "Use 'After that,' to connect the next step. Do not use 'After,' alone here.",
+    },
+    {
+      id: "bambooFollowingStage",
+      statement: "The following stage is to crush the strips.",
+      answer: true,
+      hint: "After 'is to', use the base form of a verb, such as 'crush'.",
+    },
+  ],
+
+  sugar: [
+    {
+      id: "sugarThenBeginning",
+      statement: "Then, the sugar canes are harvested.",
+      answer: true,
+      hint: "'Then' can be used at the beginning of a sentence to show the next step.",
+    },
+    {
+      id: "sugarInNextStage",
+      statement: "In the next stage, the juice is turned into syrup.",
+      answer: true,
+      hint: "After 'In the next stage,', use a complete sentence.",
+    },
+    {
+      id: "sugarIsToWrongForm",
+      statement: "The following stage is to separated sugar crystals.",
+      answer: false,
+      hint: "After 'is to', use the base verb. Use 'separate', not 'separated'.",
+    },
+  ],
+
+  noodles: [
+    {
+      id: "noodlesThenBothPositions",
+      statement: "Then, the dough is pressed into sheets.",
+      answer: true,
+      hint: "'Then' can be placed at the beginning of a sentence.",
+    },
+    {
+      id: "noodlesAfterThatComplete",
+      statement: "After that, the dough sheets are cut into strips.",
+      answer: true,
+      hint: "'After that,' is a complete linker for moving to the next step.",
+    },
+    {
+      id: "noodlesInNextStageWrong",
+      statement: "In the next stage is to make the dough strips into noodle discs.",
+      answer: false,
+      hint: "Do not mix 'In the next stage, ...' and 'The next stage is to...'.",
+    },
+  ],
+
+  recycling: [
+    {
+      id: "recyclingNextStageComplete",
+      statement: "In the next stage, plastic pellets are produced.",
+      answer: true,
+      hint: "'In the next stage,' should be followed by a complete sentence.",
+    },
+    {
+      id: "recyclingNextStageIsTo",
+      statement: "The next stage is to heat the pellets.",
+      answer: true,
+      hint: "'The next stage is to + base verb' is correct.",
+    },
+    {
+      id: "recyclingAfterWrong",
+      statement: "After, the plastic bottles are compressed into blocks.",
+      answer: false,
+      hint: "Use 'After that,' instead of 'After,' when linking to the next step.",
     },
   ],
 };
@@ -922,6 +1016,9 @@ export default function IELTSProcessTrainerFullSystem() {
     return shuffleArray(sentenceUpgradeReflectionOptions);
   }, [processKey, level]);
 
+  const currentBand55LinkerJudgementTasks =
+    band55LinkerJudgementTasks[processKey] || [];
+
   const checkP1 = useCallback(
     (index: number) => {
       const userAnswer = practiceState.p1Answers[index] || "";
@@ -1049,10 +1146,58 @@ export default function IELTSProcessTrainerFullSystem() {
       return practiceState.p2ParagraphAnswers[i] === answer;
     });
     setPracticeState((prev) => ({ ...prev, p2ParagraphFeedback: feedback }));
-    if (feedback.length > 0 && feedback.every(Boolean)) {
+
+    const paragraphCorrect = feedback.length > 0 && feedback.every(Boolean);
+
+    const judgementTasks = band55LinkerJudgementTasks[processKey] || [];
+
+    const linkerJudgementCorrect =
+      level !== "band55" ||
+      (practiceState.p2LinkerJudgementChecked &&
+        judgementTasks.every((task) => {
+          const selected = practiceState.p2LinkerJudgementAnswers?.[task.id];
+          return selected === task.answer;
+        }));
+
+    if (paragraphCorrect && linkerJudgementCorrect) {
       award("p2");
     }
-  }, [current, practiceState.p2ParagraphAnswers, award]);
+  }, [current, practiceState.p2ParagraphAnswers, practiceState.p2LinkerJudgementChecked, practiceState.p2LinkerJudgementAnswers, processKey, level, award]);
+
+  const checkP2LinkerJudgement = useCallback(() => {
+    const tasks = band55LinkerJudgementTasks[processKey] || [];
+    const feedback: Record<string, boolean> = {};
+
+    tasks.forEach((task) => {
+      const selected = practiceState.p2LinkerJudgementAnswers?.[task.id];
+      feedback[task.id] = selected === task.answer;
+    });
+
+    const judgementCorrect = tasks.every((task) => {
+      const selected = practiceState.p2LinkerJudgementAnswers?.[task.id];
+      return selected === task.answer;
+    });
+
+    const paragraphCorrect =
+      practiceState.p2ParagraphFeedback.length > 0 &&
+      practiceState.p2ParagraphFeedback.every(Boolean);
+
+    setPracticeState((prev) => ({
+      ...prev,
+      p2LinkerJudgementFeedback: feedback,
+      p2LinkerJudgementChecked: true,
+    }));
+
+    if (level === "band55" && paragraphCorrect && judgementCorrect) {
+      award("p2");
+    }
+  }, [
+    processKey,
+    practiceState.p2LinkerJudgementAnswers,
+    practiceState.p2ParagraphFeedback,
+    level,
+    award,
+  ]);
 
   const getCohesionTasks = useCallback((): CohesionTask[] => (level === "band6" ? current.p2Band6 : current.p2Band65), [level, current]);
 
@@ -1725,42 +1870,230 @@ export default function IELTSProcessTrainerFullSystem() {
       return (
         <Card title="Practice 2 - Cohesive Devices">
           <p className="mb-4 text-sm text-slate-600">
-            In the text below some words are missing. Drag words from the box below to the appropriate place in the text. To undo an answer choice, drag the word back to the box below the text.
+            Complete Practice 2 to earn 3 points. Part A asks you to drag cohesive
+            devices into the process paragraph. Part B asks you to judge whether the
+            linker sentences are correct.
           </p>
-          <div className="rounded-2xl border bg-slate-50 p-5">{renderBand55Paragraph()}</div>
-          {p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
-          <div
-            className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4"
-            onDragOver={(e: React.DragEvent) => e.preventDefault()}
-            onDrop={returnBlankToBox}
-          >
-            {linkerOptions.map((option) => (
-              <div
-                key={option}
-                draggable
-                onDragStart={() => setDragItem({ type: "option", value: option })}
-                role="button"
-                tabIndex={0}
-                className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700"
-              >
-                {option}
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex gap-2">
-            <button onClick={() => getP2Hint()} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
-            <button onClick={checkParagraph} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
-            <button onClick={resetAllPracticeStates} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Reset</button>
-          </div>
-          {practiceState.p2ParagraphFeedback.length > 0 && (
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-              {practiceState.p2ParagraphFeedback.map((ok: boolean, i: number) => (
-                <div key={i} className={`rounded-xl border p-3 text-sm ${ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                  Blank {i + 1}: {ok ? "Correct" : "Check again"}
+
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="mb-4 rounded-xl bg-slate-50 p-3">
+              <p className="font-bold text-slate-800">Part A - Drag Cohesive Devices</p>
+              <p className="mt-1 text-sm text-slate-600">
+                In the text below some words are missing. Drag words from the box below
+                to the appropriate place in the text. To undo an answer choice, drag the
+                word back to the box below the text.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-slate-50 p-5">
+              {renderBand55Paragraph()}
+            </div>
+
+            <div
+              className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4"
+              onDragOver={(e: React.DragEvent) => e.preventDefault()}
+              onDrop={returnBlankToBox}
+            >
+              {linkerOptions.map((option: string) => (
+                <div
+                  key={option}
+                  draggable
+                  onDragStart={() => setDragItem({ type: "option", value: option })}
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700"
+                >
+                  {option}
                 </div>
               ))}
             </div>
-          )}
+
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => getP2Hint()}
+                className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+              >
+                Hint
+              </button>
+              <button
+                onClick={checkParagraph}
+                className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
+              >
+                Check Drag Task
+              </button>
+              <button
+                onClick={resetAllPracticeStates}
+                className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+              >
+                Reset
+              </button>
+            </div>
+
+            {p2Hint.text && (
+              <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+                {p2Hint.text}
+              </div>
+            )}
+
+            {practiceState.p2ParagraphFeedback.length > 0 && (
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
+                {practiceState.p2ParagraphFeedback.map((ok: boolean, i: number) => (
+                  <div
+                    key={i}
+                    className={`rounded-xl border p-3 text-sm ${
+                      ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                    }`}
+                  >
+                    Blank {i + 1}: {ok ? "Correct" : "Check again"}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-5 rounded-2xl border bg-white p-4">
+            <div className="mb-4 rounded-xl bg-slate-50 p-3">
+              <p className="font-bold text-slate-800">Part B - Linker Position Check</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Decide whether each sentence is correct. Focus on linker position,
+                &quot;then&quot;, &quot;After that&quot;, and the difference between &quot;In the next stage, ...&quot;
+                and &quot;The next stage is to...&quot;.
+              </p>
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-800">
+              {currentBand55LinkerJudgementTasks.map((task, index) => {
+                const selected =
+                  practiceState.p2LinkerJudgementAnswers?.[task.id];
+                const feedback =
+                  practiceState.p2LinkerJudgementFeedback?.[task.id];
+                const showHint =
+                  practiceState.p2LinkerJudgementHint === task.id;
+
+                return (
+                  <div
+                    key={task.id}
+                    className={`rounded-xl border p-3 ${
+                      feedback === undefined
+                        ? "bg-slate-50"
+                        : feedback
+                        ? "border-green-300 bg-green-50 text-green-800"
+                        : "border-red-300 bg-red-50 text-red-800"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Statement {index + 1}
+                    </p>
+                    <p className="mt-1 rounded-lg bg-white p-3">{task.statement}</p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPracticeState((prev) => ({
+                            ...prev,
+                            p2LinkerJudgementAnswers: {
+                              ...prev.p2LinkerJudgementAnswers,
+                              [task.id]: true,
+                            },
+                            p2LinkerJudgementChecked: false,
+                            p2LinkerJudgementFeedback: null,
+                          }))
+                        }
+                        className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
+                          selected === true
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "bg-white text-slate-700"
+                        }`}
+                      >
+                        True
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPracticeState((prev) => ({
+                            ...prev,
+                            p2LinkerJudgementAnswers: {
+                              ...prev.p2LinkerJudgementAnswers,
+                              [task.id]: false,
+                            },
+                            p2LinkerJudgementChecked: false,
+                            p2LinkerJudgementFeedback: null,
+                          }))
+                        }
+                        className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
+                          selected === false
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "bg-white text-slate-700"
+                        }`}
+                      >
+                        False
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPracticeState((prev) => ({
+                            ...prev,
+                            p2LinkerJudgementHint:
+                              prev.p2LinkerJudgementHint === task.id ? null : task.id,
+                          }))
+                        }
+                        className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+                      >
+                        Hint
+                      </button>
+                    </div>
+
+                    {showHint && (
+                      <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+                        {task.hint}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={checkP2LinkerJudgement}
+                className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
+              >
+                Check Linker Position
+              </button>
+            </div>
+
+            {practiceState.p2LinkerJudgementChecked && (
+              <div
+                className={`mt-3 rounded-xl p-3 text-sm ${
+                  currentBand55LinkerJudgementTasks.every((task) => {
+                    const selected =
+                      practiceState.p2LinkerJudgementAnswers?.[task.id];
+                    return selected === task.answer;
+                  })
+                    ? "bg-green-50 text-green-700"
+                    : "bg-red-50 text-red-700"
+                }`}
+              >
+                {currentBand55LinkerJudgementTasks.every((task) => {
+                  const selected =
+                    practiceState.p2LinkerJudgementAnswers?.[task.id];
+                  return selected === task.answer;
+                })
+                  ? "Correct. You understand the basic positions and structures of process linkers."
+                  : "Check again. Use the hints to review linker position and 'is to + verb'."}
+              </div>
+            )}
+
+            {!earned.p2 && (
+              <p className="mt-3 text-xs text-slate-600">
+                To earn 3 points for Practice 2, complete both Part A and Part B
+                correctly.
+              </p>
+            )}
+          </div>
         </Card>
       );
     }
