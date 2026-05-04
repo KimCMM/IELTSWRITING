@@ -608,6 +608,16 @@ export default function IELTSProcessTrainerFullSystem() {
     practice1: "",
     practice2: "",
   });
+  const [sentenceUpgradeReflection, setSentenceUpgradeReflection] = useState({
+    relativeClause: false,
+    purposePhrase: false,
+    doingResult: false,
+    diagramDetails: false,
+    preciseWords: false,
+    personalOpinions: false,
+    inventSteps: false,
+    complicatedWords: false,
+  });
 
   const [p3TimerStarted, setP3TimerStarted] = useState(false);
   const [p3ElapsedSeconds, setP3ElapsedSeconds] = useState(0);
@@ -650,6 +660,16 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setBand65Evidence({ details: "", practice1: "", practice2: "" });
+    setSentenceUpgradeReflection({
+      relativeClause: false,
+      purposePhrase: false,
+      doingResult: false,
+      diagramDetails: false,
+      preciseWords: false,
+      personalOpinions: false,
+      inventSteps: false,
+      complicatedWords: false,
+    });
     setDragItem(null);
     setP3TimerStarted(false);
     setP3ElapsedSeconds(0);
@@ -1220,6 +1240,57 @@ export default function IELTSProcessTrainerFullSystem() {
           </div>
         ))}
       </div>
+
+      {level === "band65" && (
+        <div className="mt-5 rounded-2xl border bg-purple-50 p-4">
+          <p className="font-bold text-purple-900">Sentence Upgrade Reflection</p>
+          <p className="mt-1 text-sm text-purple-800">
+            Look back at Practice 1. Which methods are useful for upgrading process-diagram sentences? Tick all suitable choices.
+          </p>
+
+          <div className="mt-3 space-y-2 text-sm text-purple-900">
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.relativeClause} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, relativeClause: e.target.checked }))} />
+              <span>Use a relative clause, such as &quot;which...&quot; or &quot;where...&quot;.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.purposePhrase} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, purposePhrase: e.target.checked }))} />
+              <span>Use a purpose phrase, such as &quot;in order to...&quot;.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.doingResult} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, doingResult: e.target.checked }))} />
+              <span>Use &quot;, doing sth&quot; to show the result of an action.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.diagramDetails} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, diagramDetails: e.target.checked }))} />
+              <span>Add useful diagram details, such as tools, machines, materials, locations or final examples.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.preciseWords} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, preciseWords: e.target.checked }))} />
+              <span>Replace basic words with more precise words.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.personalOpinions} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, personalOpinions: e.target.checked }))} />
+              <span>Add many personal opinions about whether the process is good or bad.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.inventSteps} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, inventSteps: e.target.checked }))} />
+              <span>Invent extra steps that are not shown in the diagram.</span>
+            </label>
+
+            <label className="flex gap-2 rounded-xl border bg-white p-3">
+              <input type="checkbox" checked={sentenceUpgradeReflection.complicatedWords} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, complicatedWords: e.target.checked }))} />
+              <span>Use complicated words even if they do not fit the diagram.</span>
+            </label>
+          </div>
+        </div>
+      )}
     </Card>
   );
 
