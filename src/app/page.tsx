@@ -191,12 +191,12 @@ const rawProcessData: Record<string, ProcessData> = {
       { active: "People use fabric to make clothes.", passive: "Fabric is used to make clothes.", prompt6: "fabric / use / clothes" },
     ],
     band65: [
-      { prompt: "Bamboo plants are planted in spring.", task: "Paraphrase 'plant' with a more formal verb.", answer: "Bamboo is cultivated in spring." },
-      { prompt: "Bamboo is harvested in autumn.", task: "Add how the harvesting is shown in the diagram.", answer: "The bamboo is harvested manually in autumn." },
-      { prompt: "Bamboo is cut into strips.", task: "Add an adverb to show machine processing and describe the strips as narrow.", answer: "The harvested bamboo is mechanically cut into narrow strips." },
-      { prompt: "The strips are crushed to make liquid pulp.", task: "Use ', doing sth' to show the result of the previous action.", answer: "The strips are crushed, producing liquid pulp." },
-      { prompt: "Long fibres are separated from the liquid by a filter.", task: "Link liquid pulp to the filter and use a where-clause to describe the extraction of fibres.", answer: "The liquid pulp passes through a filter, where long fibres are extracted from the remaining liquid." },
-      { prompt: "Water and amine oxide are added to soften the fibres.", task: "Use a which-clause to explain how this prepares the fibres for the next stage.", answer: "The fibres are treated with water and amine oxide, which softens them and prepares them for spinning." },
+      { prompt: "Bamboo plants are planted in spring.", task: "Replace 'planted' with a more formal verb.", answer: "Bamboo plants are cultivated in spring." },
+      { prompt: "Bamboo is harvested in autumn.", task: "Add how the harvesting is shown in the diagram.", answer: "Bamboo is harvested manually in autumn." },
+      { prompt: "Bamboo is cut into strips.", task: "Add an adverb to show machine processing and describe the strips as narrow.", answer: "Bamboo is mechanically cut into narrow strips." },
+      { prompt: "The strips are crushed.", task: "Use ', doing sth' to show the result of the action.", answer: "The strips are crushed, producing liquid pulp." },
+      { prompt: "The liquid pulp passes through a filter.", task: "Use a which-clause to explain the function of the filter.", answer: "The liquid pulp passes through a filter, which extracts long fibres from the remaining liquid." },
+      { prompt: "Fabric is made into clothes.", task: "Use 'finished fabric' and add examples from the diagram.", answer: "The finished fabric is made into clothing items such as T-shirts and socks." },
     ],
     p2Band55: {
       text: [
@@ -260,13 +260,12 @@ const rawProcessData: Record<string, ProcessData> = {
       { active: "A machine dries and cools the sugar.", passive: "The sugar is dried and cooled by a machine.", prompt6: "sugar / dry and cool / machine" },
     ],
     band65: [
-      { prompt: "Sugar canes are grown for 12-18 months.", task: "Paraphrase 'grow' with a more formal verb.", answer: "Sugar canes are cultivated for 12-18 months." },
-      { prompt: "The sugar canes are harvested by workers or machines.", task: "Use either...or... and add manually / mechanically to show the two harvesting methods.", answer: "The mature sugar canes are harvested either manually by workers or mechanically by machines." },
-      { prompt: "The sugar canes are crushed to make juice.", task: "Use ', doing sth' to show the result of the previous action.", answer: "The sugar canes are crushed, producing juice." },
-      { prompt: "The juice is purified by a limestone filter.", task: "Add the purpose of the filter using in order to.", answer: "The juice then passes through a limestone filter in order to remove impurities." },
-      { prompt: "The juice is turned into syrup by an evaporator.", task: "Use a where-clause to explain what happens in the evaporator.", answer: "The juice is then heated in an evaporator, where excess water is removed and the liquid is converted into syrup." },
-      { prompt: "Sugar crystals are separated from the syrup by a centrifuge.", task: "Use a which-clause to explain the function of the centrifuge.", answer: "The syrup is then placed in a centrifuge, which separates sugar crystals from the remaining liquid." },
-      { prompt: "The sugar is dried and cooled by a machine.", task: "Add the detail about where the sugar is dried and cooled.", answer: "Finally, the sugar is dried and cooled in a large container." },
+      { prompt: "Sugar canes are grown for 12-18 months.", task: "Replace 'grown' with a more formal verb.", answer: "Sugar canes are cultivated for 12-18 months." },
+      { prompt: "Sugar canes are harvested by workers or machines.", task: "Use 'either...or...' and add the adverbs 'manually' and 'mechanically'.", answer: "Sugar canes are harvested either manually by workers or mechanically by machines." },
+      { prompt: "The sugar canes are crushed.", task: "Use ', doing sth' to show the result of the action.", answer: "The sugar canes are crushed, producing juice." },
+      { prompt: "The juice passes through a limestone filter.", task: "Use 'in order to' to explain the purpose of filtering.", answer: "The juice passes through a limestone filter in order to remove impurities." },
+      { prompt: "The syrup is placed in a centrifuge.", task: "Use a which-clause to explain the function of the centrifuge.", answer: "The syrup is placed in a centrifuge, which separates sugar crystals from the remaining liquid." },
+      { prompt: "The sugar is dried and cooled.", task: "Add the detail about where this happens.", answer: "The sugar is dried and cooled in a large container." },
     ],
     p2Band55: {
       text: [
@@ -331,10 +330,11 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     band65: [
       { prompt: "Flour is transported from storage silos by truck.", task: "Add the destination shown in the diagram.", answer: "Flour is transported from storage silos to the production line by truck." },
-      { prompt: "Flour is mixed with water and oil in a mixer.", task: "Use a where-clause to explain what happens in the mixer.", answer: "The flour is transferred to a mixer, where it is combined with water and oil to form dough." },
-      { prompt: "The dough is pressed into sheets by rollers.", task: "Use pass through and a which-clause to explain the function of the rollers.", answer: "The dough passes through a series of rollers, which press it into thin sheets." },
-      { prompt: "The dough sheets are cut into strips.", task: "Use a more specific verb and a so that-clause to link this step with the next one.", answer: "The dough sheets are sliced into strips so that they can be shaped into noodle discs." },
-      { prompt: "The noodle discs, vegetables and spices are put into cups.", task: "Replace 'put' with a more natural verb and use together with.", answer: "The dried noodle discs are placed into cups together with vegetables and spices." },
+      { prompt: "Flour is mixed with water and oil in a mixer.", task: "Use 'in order to' to explain the purpose of mixing.", answer: "Flour is mixed with water and oil in a mixer in order to form dough." },
+      { prompt: "The dough is pressed into sheets by rollers.", task: "Use 'pass through' and a which-clause to explain the function of the rollers.", answer: "The dough passes through rollers, which press it into sheets." },
+      { prompt: "The dough sheets are cut into strips.", task: "Replace 'cut' with a more precise verb.", answer: "The dough sheets are sliced into strips." },
+      { prompt: "The dough strips are shaped.", task: "Use ', doing sth' to show the result of the action.", answer: "The dough strips are shaped, producing noodle discs." },
+      { prompt: "The noodle discs, vegetables and spices are put into cups.", task: "Replace 'put' with a more natural verb and use 'together with'.", answer: "The noodle discs are placed into cups together with vegetables and spices." },
     ],
     p2Band55: {
       text: [
@@ -401,15 +401,13 @@ const rawProcessData: Record<string, ProcessData> = {
     ],
     band65: [
       { prompt: "Plastic bottles are put in recycling bins.", task: "Replace 'put' with a more natural verb.", answer: "Plastic bottles are placed in recycling bins." },
-      { prompt: "Plastic bottles are collected and transported by truck.", task: "Use a which-clause to show how the bottles are moved to the next location.", answer: "The bins are emptied into a collection truck, which transports the bottles to a recycling centre." },
-      { prompt: "Plastic bottles are sorted in a recycling centre.", task: "Add the conveyor belt detail and use a where-clause with manually and recyclable.", answer: "At the recycling centre, the bottles move along a conveyor belt, where recyclable bottles are manually sorted." },
-      { prompt: "Plastic bottles are compressed into blocks.", task: "Use a so that-clause to explain the purpose of compression.", answer: "The recyclable bottles are compressed into blocks so that they can be handled and processed more easily." },
-      { prompt: "The blocks are crushed into small pieces.", task: "Add the detail about the machine used to crush the blocks.", answer: "The blocks pass through a grinder, where they are crushed into small pieces." },
-      { prompt: "The pieces are washed.", task: "Add the purpose of washing.", answer: "The small pieces are washed to remove dirt and impurities." },
-      { prompt: "Plastic pellets are produced.", task: "Use ', doing sth' to show the result of the previous action.", answer: "The cleaned pieces are processed, producing plastic pellets." },
+      { prompt: "Plastic bottles are collected by a collection truck.", task: "Use a which-clause to show the truck's function.", answer: "Plastic bottles are collected by a collection truck, which transports them to a recycling centre." },
+      { prompt: "Plastic bottles are sorted in a recycling centre.", task: "Use 'conveyor belt', 'manually' and 'recyclable'.", answer: "In a recycling centre, recyclable bottles are manually sorted on a conveyor belt." },
+      { prompt: "The blocks are crushed into small pieces.", task: "Use 'pass through' and add the machine detail from the diagram.", answer: "The blocks pass through a grinder and are crushed into small pieces." },
+      { prompt: "The small pieces are washed.", task: "Add the purpose of washing.", answer: "The small pieces are washed to remove dirt and impurities." },
+      { prompt: "The cleaned pieces are processed.", task: "Use ', doing sth' to show the result of the action.", answer: "The cleaned pieces are processed, producing plastic pellets." },
       { prompt: "The pellets are heated to form raw material.", task: "Replace 'form' with a more formal verb.", answer: "The pellets are heated and converted into raw material." },
-      { prompt: "The raw material is packed.", task: "Add a phrase showing that the material is ready for the next stage.", answer: "The raw material is packed and prepared for manufacturing." },
-      { prompt: "End products are produced.", task: "Use 'end products, including...' and add a final result phrase.", answer: "Finally, end products, including T-shirts, bags, pencils and containers, are manufactured, completing the recycling cycle." },
+      { prompt: "End products are produced.", task: "Use 'end products, including...' and include examples from the diagram.", answer: "End products, including T-shirts, bags, pencils and containers, are produced." },
     ],
     p2Band55: {
       text: [
@@ -932,7 +930,7 @@ export default function IELTSProcessTrainerFullSystem() {
           ? "Practice 1 - Active to Passive"
           : level === "band6"
           ? "Practice 1 - Passive Voice"
-          : "Practice 1 - Passive Voice / Sentence Upgrade"
+          : "Practice 1 - Sentence Upgrade"
       }
     >
       {level === "band6" && (
