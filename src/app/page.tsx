@@ -504,6 +504,12 @@ export default function IELTSProcessTrainerFullSystem() {
   const [writingHint, setWritingHint] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<{ errors?: { type: string; original?: string }[] } | null>(null);
+  const [band55SelfCheckVisible, setBand55SelfCheckVisible] = useState(false);
+  const [band55Checklist, setBand55Checklist] = useState({
+    passiveVoice: false,
+    cohesiveDevices: false,
+    correctOrder: false,
+  });
   const [band6SelfCheckVisible, setBand6SelfCheckVisible] = useState(false);
   const [band6Checklist, setBand6Checklist] = useState<Band6Checklist>({
     pronouns: false,
@@ -548,6 +554,8 @@ export default function IELTSProcessTrainerFullSystem() {
     setWritingHint("");
     setAiFeedback(null);
     setAiLoading(false);
+    setBand55SelfCheckVisible(false);
+    setBand55Checklist({ passiveVoice: false, cohesiveDevices: false, correctOrder: false });
     setBand6SelfCheckVisible(false);
     setBand6Checklist({ pronouns: false, details: false, structure: false });
     setBand65SelfCheckVisible(false);
@@ -744,6 +752,9 @@ export default function IELTSProcessTrainerFullSystem() {
   const aiSpellingCount = aiErrors.filter((e: { type: string }) => e.type === "spelling").length;
   const aiCohesionCount = aiErrors.filter((e: { type: string }) => e.type === "cohesion").length;
   const aiTaskCount = aiErrors.filter((e: { type: string }) => e.type === "task").length;
+  const band55ChecklistComplete =
+    level !== "band55" ||
+    (band55Checklist.passiveVoice && band55Checklist.cohesiveDevices && band55Checklist.correctOrder);
   const band6ChecklistComplete =
     level !== "band6" ||
     (band6Checklist.pronouns && band6Checklist.details && band6Checklist.structure);
@@ -781,6 +792,21 @@ export default function IELTSProcessTrainerFullSystem() {
     if (p3Pass && !earned.p3) award("p3");
   }, [p3Pass, earned.p3, award]);
 
+  const handleBand55SelfCheck = useCallback(() => {
+    if (!practiceState.p3Writing.trim()) {
+      setWritingHint("Please write your paragraph before completing the self-checklist.");
+      return;
+    }
+
+    if (wordCount < wordRequirement) {
+      setWritingHint(`Please write at least ${wordRequirement} words first. Target range: ${wordTargetRange} words. Current: ${wordCount}.`);
+      return;
+    }
+
+    setWritingHint("");
+    setBand55SelfCheckVisible(true);
+  }, [practiceState.p3Writing, wordCount, wordRequirement, wordTargetRange]);
+
   const handleBand6SelfCheck = useCallback(() => {
     if (!practiceState.p3Writing.trim()) {
       setWritingHint("Please write your paragraph before completing the self-checklist.");
@@ -812,6 +838,11 @@ export default function IELTSProcessTrainerFullSystem() {
   }, [practiceState.p3Writing, wordCount, wordRequirement, wordTargetRange]);
 
   const getAIFeedback = useCallback(async () => {
+    if (level === "band55" && !band55ChecklistComplete) {
+      setWritingHint("Complete the self-checklist before using AI Check.");
+      return;
+    }
+
     if (level === "band6" && !band6ChecklistComplete) {
       setWritingHint("Complete the self-checklist before using AI Check.");
       return;
@@ -865,7 +896,7 @@ export default function IELTSProcessTrainerFullSystem() {
     } finally {
       setAiLoading(false);
     }
-  }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange, band6ChecklistComplete, band65ChecklistComplete]);
+  }, [practiceState.p3Writing, current.title, current.task, level, wordCount, wordRequirement, wordTargetRange, band55ChecklistComplete, band6ChecklistComplete, band65ChecklistComplete]);
 
   const p3Band6GuidingQuestions = [
     "Which repeated nouns can be replaced by it, they or them?",
@@ -933,6 +964,51 @@ export default function IELTSProcessTrainerFullSystem() {
           : "Practice 1 - Sentence Upgrade"
       }
     >
+      {level === "band55" && (
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-800">Before AI Check</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+            </div>
+            <button
+              onClick={handleBand55SelfCheck}
+              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+            >
+              Submit for Self-check
+            </button>
+          </div>
+
+          {band55SelfCheckVisible && (
+            <div className="mt-3 space-y-2 text-sm text-slate-700">
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band55Checklist.passiveVoice}
+                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, passiveVoice: e.target.checked }))}
+                />
+                <span>Have you used passive voice to describe the process?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band55Checklist.cohesiveDevices}
+                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, cohesiveDevices: e.target.checked }))}
+                />
+                <span>Have you used basic cohesive devices, such as First, then, After that, Next or Finally?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band55Checklist.correctOrder}
+                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, correctOrder: e.target.checked }))}
+                />
+                <span>Have you described the main steps in the correct order?</span>
+              </label>
+            </div>
+          )}
+        </div>
+      )}
       {level === "band6" && (
         <p className="mb-4 text-sm text-slate-600">
           Use the words and the diagram to write a complete passive sentence.
@@ -1217,8 +1293,8 @@ export default function IELTSProcessTrainerFullSystem() {
       <div className="mt-4 flex gap-2">
         <button
           onClick={getAIFeedback}
-          disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete) || (level === "band65" && !band65ChecklistComplete)}
-          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band6" && !band6ChecklistComplete) || (level === "band65" && !band65ChecklistComplete) ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
+          disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band55" && !band55ChecklistComplete) || (level === "band6" && !band6ChecklistComplete) || (level === "band65" && !band65ChecklistComplete)}
+          className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount < wordRequirement || (level === "band55" && !band55ChecklistComplete) || (level === "band6" && !band6ChecklistComplete) || (level === "band65" && !band65ChecklistComplete) ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}
         >
           {aiLoading ? "Checking..." : "AI Check"}
         </button>
