@@ -632,7 +632,7 @@ export default function IELTSProcessTrainerFullSystem() {
   const scoreKey = `${processKey}-${level}`;
   const earned: ScoreEntry = scoreMap[scoreKey] || { p1: false, p2: false, p3: false };
   const totalScore = (earned.p1 ? 2 : 0) + (earned.p2 ? 3 : 0) + (earned.p3 ? 5 : 0);
-  const achievement = totalScore <= 3 ? "Bronze" : totalScore <= 7 ? "Silver" : "Gold";
+  const achievement = totalScore < 4 ? "Bronze" : totalScore < 10 ? "Silver" : "Gold";
 
   const resetAllPracticeStates = useCallback(() => {
     setPracticeState(initialPracticeState);
@@ -1627,7 +1627,51 @@ export default function IELTSProcessTrainerFullSystem() {
               <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${totalScore * 10}%` }} />
             </div>
             <p className="mt-2 text-lg font-bold text-blue-700">Score: {totalScore} / 10 - {achievement}</p>
-            <p className="text-sm text-slate-500">Practice 1: {earned.p1 ? "+2 earned" : "2 pts"} - Practice 2: {earned.p2 ? "+3 earned" : "3 pts"} - Practice 3: {earned.p3 ? "+5 earned" : "5 pts"}</p>
+            <div className="mt-3 rounded-xl border bg-white p-3 text-sm text-slate-700">
+              <p className="font-semibold text-slate-800">Scoring rules</p>
+              <p className="mt-1">
+                Practice 1 = 2 points, Practice 2 = 3 points, Practice 3 = 5 points.
+              </p>
+              <p className="mt-1">
+                Bronze: 0-3 points. Silver: 4-9 points. Gold: 10 points only.
+              </p>
+              <p className="mt-1 text-slate-600">
+                To reach Gold, complete all three practices. Practice 3 points are awarded
+                only after your paragraph passes AI Check, you complete Final Reflection,
+                and you click Submit Practice 3.
+              </p>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm">
+              <span
+                className={`rounded-full px-3 py-1 font-semibold ${
+                  earned.p1
+                    ? "bg-green-50 text-green-700"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                Practice 1: {earned.p1 ? "+2 earned" : "2 points"}
+              </span>
+
+              <span
+                className={`rounded-full px-3 py-1 font-semibold ${
+                  earned.p2
+                    ? "bg-green-50 text-green-700"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                Practice 2: {earned.p2 ? "+3 earned" : "3 points"}
+              </span>
+
+              <span
+                className={`rounded-full px-3 py-1 font-semibold ${
+                  earned.p3
+                    ? "bg-green-50 text-green-700"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                Practice 3: {earned.p3 ? "+5 earned" : "5 points"}
+              </span>
+            </div>
           </div>
         </div>
 
