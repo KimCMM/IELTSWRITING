@@ -967,7 +967,7 @@ export default function IELTSProcessTrainerFullSystem() {
     }
 
     award("p3");
-    setWritingHint("");
+    setWritingHint("Practice 3 submitted successfully. You earned 5 points.");
   }, [aiHasNoErrors, finalReflectionComplete, award]);
 
   const getWritingHint = useCallback(() => {
@@ -1564,7 +1564,8 @@ export default function IELTSProcessTrainerFullSystem() {
 
       {aiHasNoErrors && (
         <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700">
-          No language errors detected by AI. Complete the Final Reflection and submit Practice 3 to earn points.
+          No language errors detected by AI. Complete the Final Reflection and click
+          Submit Practice 3 to earn 5 points.
         </div>
       )}
 
@@ -1593,10 +1594,11 @@ export default function IELTSProcessTrainerFullSystem() {
       {aiHasNoErrors && (
         <div className="mt-4 flex gap-2">
           <button
+            type="button"
             onClick={submitPractice3}
-            disabled={!canFinalSubmit || earned.p3}
+            disabled={earned.p3}
             className={`rounded-xl px-4 py-2 text-sm font-semibold text-white ${
-              !canFinalSubmit || earned.p3
+              earned.p3
                 ? "cursor-not-allowed bg-slate-400"
                 : "bg-green-600 hover:bg-green-700"
             }`}
@@ -1605,7 +1607,6 @@ export default function IELTSProcessTrainerFullSystem() {
           </button>
         </div>
       )}
-      {earned.p3 && <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-lg font-bold text-green-700">PASS - +5 points</div>}
     </Card>
   );
 
