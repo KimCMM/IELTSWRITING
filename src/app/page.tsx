@@ -783,15 +783,110 @@ export default function IELTSProcessTrainerFullSystem() {
     [getCohesionTasks, practiceState.p2CohesionAnswers, practiceState.p2CohesionFeedback, level, award]
   );
 
-  const getP2Hint = useCallback(() => {
-    if (level === "band55") {
-      setP2Hint({ index: null, text: "Structure: 'then' can go inside a sentence; 'after' goes before 'that'; 'the following stage is to + verb'; 'in the next stage' fits the pattern 'In the ___ stage'." });
-    } else if (level === "band6") {
-      setP2Hint({ index: null, text: "Band 6: For linker fill-ins, pay attention to position. Some linkers go at the beginning of a sentence, while 'then' can go after the be verb in a passive sentence. For combining, use before/after + being + past participle." });
-    } else {
-      setP2Hint({ index: null, text: "Band 6.5: check the target structure: followed by + noun phrase, before/after + being done, or after which + clause." });
-    }
-  }, [level]);
+  const getP2Hint = useCallback(
+    (index: number | null = null) => {
+      if (level === "band55") {
+        setP2Hint({
+          index: null,
+          text: "Look at the position of the blank: sentence beginning, after a be-verb, after 'After', or inside 'In the ___ stage'.",
+        });
+        return;
+      }
+
+      const tasks = getCohesionTasks();
+      const task = tasks[index ?? 0];
+      if (!task) return;
+
+      if (level === "band6") {
+        if (task.type === "fill") {
+          setP2Hint({
+            index,
+            text: "Use the first letter, capitalisation and sentence position. For example, 't______' after a be-verb usually means 'then', while 'A______ that' means 'After that'.",
+          });
+          return;
+        }
+
+        if (task.type === "choice") {
+          const prompt = task.prompt || "";
+          if (prompt.includes("pronoun")) {
+            setP2Hint({
+              index,
+              text: "Check whether the noun is singular or plural. Use 'it' for one thing, 'they' for plural subjects, and 'them' for plural objects.",
+            });
+          } else if (prompt.includes("before") || prompt.includes("after")) {
+            setP2Hint({
+              index,
+              text: "Keep the sentence order unchanged. Choose 'before being' or 'after being' according to which action happens first.",
+            });
+          } else {
+            setP2Hint({
+              index,
+              text: "Check the relationship between the two steps: subject reference, step order and whether the same item continues through both actions.",
+            });
+          }
+          return;
+        }
+
+        const prompt = task.prompt || "";
+        if (prompt.includes("and then")) {
+          setP2Hint({
+            index,
+            text: "Join the two actions with ', and then'. Replace the repeated noun with 'it', 'they' or 'them'.",
+          });
+        } else if (prompt.includes("before doing")) {
+          setP2Hint({
+            index,
+            text: "Use 'before being + past participle' when the first action happens earlier and the same item continues to the next step.",
+          });
+        } else if (prompt.includes("after doing")) {
+          setP2Hint({
+            index,
+            text: "Put the later action in the main clause, then use 'after being + past participle' to show the earlier action.",
+          });
+        } else {
+          setP2Hint({
+            index,
+            text: "Check whether the same subject continues. If it does, you can combine the steps with 'and then', 'before being' or 'after being'.",
+          });
+        }
+        return;
+      }
+
+      const prompt = "prompt" in task ? (task as { prompt?: string }).prompt || "" : "";
+      if (prompt.includes("Once")) {
+        setP2Hint({
+          index,
+          text: "Use 'Once + subject + has/have been + past participle' to show that one step is completed before the next step starts.",
+        });
+      } else if (prompt.includes("before being")) {
+        setP2Hint({
+          index,
+          text: "Use 'before being + past participle' when the same item goes through two actions in order.",
+        });
+      } else if (prompt.includes("after which")) {
+        setP2Hint({
+          index,
+          text: "Use 'after which' when the next action happens after the whole previous step. It is especially useful when the subject changes.",
+        });
+      } else if (prompt.includes("which is") || prompt.includes("which are")) {
+        setP2Hint({
+          index,
+          text: "Use 'which is/are then + past participle' when the result of the first step becomes the thing processed in the next step. Check singular/plural: 'which is' or 'which are'.",
+        });
+      } else if (prompt.includes("followed by")) {
+        setP2Hint({
+          index,
+          text: "After 'followed by', use a noun phrase, such as 'the compression of...' or 'the weaving of...'. Do not use a full clause after it.",
+        });
+      } else {
+        setP2Hint({
+          index,
+          text: "Choose the structure by checking subject reference, step order and whether the second action can be changed into a noun phrase.",
+        });
+      }
+    },
+    [level, getCohesionTasks]
+  );
 
   const renderBlank = (index: number) => {
     const checked = practiceState.p2ParagraphFeedback.length > 0;
@@ -1124,7 +1219,7 @@ export default function IELTSProcessTrainerFullSystem() {
             ))}
           </div>
           <div className="mt-4 flex gap-2">
-            <button onClick={getP2Hint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
+            <button onClick={() => getP2Hint()} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
             <button onClick={checkParagraph} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
             <button onClick={resetAllPracticeStates} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Reset</button>
           </div>
@@ -1201,7 +1296,7 @@ export default function IELTSProcessTrainerFullSystem() {
                   )}
                 </div>
               )}
-              {p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
+              {p2Hint.index === i && p2Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p2Hint.text}</div>}
               {task.type !== "choice" && (
                 <input
                   value={practiceState.p2CohesionAnswers[i] || ""}
@@ -1212,7 +1307,7 @@ export default function IELTSProcessTrainerFullSystem() {
               )}
               <div className="mt-3 flex gap-2">
                 <button onClick={() => checkCohesion(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
-                <button onClick={getP2Hint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
+                <button onClick={() => getP2Hint(i)} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
               </div>
               {practiceState.p2CohesionFeedback[i] !== undefined && (
                 <div className={`mt-3 rounded-xl p-3 text-sm ${practiceState.p2CohesionFeedback[i] ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
