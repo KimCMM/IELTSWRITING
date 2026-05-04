@@ -1,0 +1,855 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">import { memo, useMemo, useState, useCallback, useEffect } from "react";</p>
+<p class="p2"><br></p>
+<p class="p1">// =====================</p>
+<p class="p1">// 1. HELPERS</p>
+<p class="p1">// =====================</p>
+<p class="p2"><br></p>
+<p class="p1">const useLocalStorage = (key, initialValue) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [storedValue, setStoredValue] = useState(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (typeof window === "undefined") return initialValue;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const item = window.localStorage.getItem(key);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return item ? JSON.parse(item) : initialValue;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.error(`LocalStorage error for key ${key}:`, error);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return initialValue;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const setValue = useCallback(</p>
+<p class="p1"><span class="Apple-converted-space">    </span>(valueOrUpdater) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setStoredValue((prev) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const value = typeof valueOrUpdater === "function" ? valueOrUpdater(prev) : valueOrUpdater;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (typeof window !== "undefined") {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.localStorage.setItem(key, JSON.stringify(value));</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>return value;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>console.error("Failed to save to LocalStorage:", error);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>[key]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>return [storedValue, setValue];</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">const normalize = (text) =&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>String(text || "")</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.toLowerCase()</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.replace(/[.,!?;:]/g, "")</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.replace(/[\-–]/g, "")</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.replace(/'/g, "")</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.replace(/\s+/g, " ")</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.trim();</p>
+<p class="p2"><br></p>
+<p class="p1">const fuzzyMatch = (user, expected, tolerance = 0.88) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const userNorm = normalize(user);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const expectedNorm = normalize(expected);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (!userNorm || !expectedNorm) return false;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (userNorm === expectedNorm) return true;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const userWords = userNorm.split(" ");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const expectedWords = expectedNorm.split(" ");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const matchedWords = expectedWords.filter((word) =&gt; userWords.includes(word)).length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return matchedWords / expectedWords.length &gt;= tolerance;</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">const isAnswerCorrect = (user, expected, level) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (level === "band65") return fuzzyMatch(user, expected, 0.82);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return normalize(user) === normalize(expected);</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">const initialPracticeState = {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p1Answers: {},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p1Feedback: {},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p2ParagraphAnswers: Array(8).fill(""),</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p2ParagraphFeedback: [],</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p2CohesionAnswers: {},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p2CohesionFeedback: {},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p3Writing: "",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p3Submitted: false,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>p3Reflection: ["", "", ""],</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">const createErrorRules = (processKey) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const baseRules = [</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "g1",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "grammar",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(are|is)\s+(place|collect|sort|compress|harvest|spin|produce|pack|label|seal|crush|wash|dry|cool)\b(?!\w)/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use passive form: be + past participle, e.g. are placed / are collected.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["are placed", "are collected", "are sorted"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "g2",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "grammar",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(fibres|bottles|pellets|crystals|plants|strips|cups)\s+is\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use a plural verb with plural nouns, e.g. fibres are / bottles are.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["fibres are", "plastic bottles are"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "g3",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "grammar",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(water and amine oxide|vegetables and spices)\s+is\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use 'are' with a compound plural subject.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["water and amine oxide are added", "vegetables and spices are added"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "l1",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "lexis",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(end|final)\s+goods\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use 'end products' instead of 'end/final goods'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["end products"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "l2",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "lexis",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /plastic\s+balls/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use 'plastic pellets', not 'plastic balls'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["plastic pellets"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "l3",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "lexis",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /raw\s+materials\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use 'raw material' as an uncountable noun here.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["raw material"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "l4",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "lexis",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /spinned/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use 'spun', not 'spinned'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["fibres are spun"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp1",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(botles|bottels)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Spelling: use 'bottles'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["bottles"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp2",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(recyling|recylcing)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Spelling: use 'recycling'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["recycling"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp3",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(vegatables|vegetabels)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Spelling: use 'vegetables'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["vegetables"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp4",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(materail|matrial)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Spelling: use 'material'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["material"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp5",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(produts|productions)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Spelling/word choice: use 'products'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["products"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp6",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(fibers|fiberrs|fibreses)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Use the task spelling 'fibres'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["fibres"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id: "sp7",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pattern: /\b(liqued|liqid)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>message: "Spelling: use 'liquid'.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>examples: ["liquid"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const specific = {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>bamboo: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>id: "b1",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>type: "lexis",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pattern: /\bfabric\s+(is\s+)?manufacture\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>message: "Use 'is manufactured' or 'is made', not 'manufacture'.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>examples: ["fabric is manufactured"],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>id: "b2",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pattern: /\b(autum|autemn)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>message: "Spelling: use 'autumn'.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>examples: ["autumn"],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>sugar: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>id: "s1",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>type: "grammar",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pattern: /\bthe sugar cane is harvest\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>message: "Use the past participle: harvested.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>examples: ["The sugar cane is harvested."],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>id: "s2",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pattern: /\b(limeston|limstone)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>message: "Spelling: use 'limestone'.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>examples: ["limestone"],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>noodles: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>id: "n1",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>type: "spelling",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pattern: /\b(noodels|noodls)\b/gi,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>message: "Spelling: use 'noodles'.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>examples: ["noodles"],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>return [...baseRules, ...(specific[processKey] || [])];</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">const fixP2Band55Data = (rawData) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const copy = JSON.parse(JSON.stringify(rawData));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Object.keys(copy).forEach((key) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const item = copy[key];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!item.p2Band55) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>while (item.p2Band55.answers.length &lt; 8) item.p2Band55.answers.push("");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (item.p2Band55.answers.length &gt; 8) item.p2Band55.answers = item.p2Band55.answers.slice(0, 8);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return copy;</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">// =====================</p>
+<p class="p1">// 2. DATA</p>
+<p class="p1">// =====================</p>
+<p class="p2"><br></p>
+<p class="p1">const rawProcessData = {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>bamboo: {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: "Bamboo Fabric",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>task: "The diagram below shows how fabric is manufactured from bamboo.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>image: "https://i0.wp.com/ieltspracticeonline.com/wp-content/uploads/2025/07/Writing-Task-1-BHow-fabric-is-manufactured-from-bamboo.png",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>steps: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "People plant bamboo plants in spring.", passive: "Bamboo plants are planted in spring.", prompt6: "bamboo plants / plant / spring" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "People harvest bamboo plants in autumn.", passive: "Bamboo plants are harvested in autumn.", prompt6: "bamboo plants / harvest / autumn" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "A machine cuts bamboo plants into strips.", passive: "Bamboo plants are cut into strips.", prompt6: "bamboo plants / cut / strips" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "A machine crushes the strips to make liquid pulp.", passive: "The strips are crushed to make liquid pulp.", prompt6: "strips / crush / liquid pulp" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "A filter separates long fibres from the liquid.", passive: "Long fibres are separated from the liquid by a filter.", prompt6: "long fibres / separate / liquid / filter" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "People add water and amine oxide to soften the fibres.", passive: "Water and amine oxide are added to soften the fibres.", prompt6: "water and amine oxide / add / soften fibres" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "People spin fibres to make yarn.", passive: "Fibres are spun to make yarn.", prompt6: "fibres / spin / yarn" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "People weave yarn to make fabric.", passive: "Yarn is woven to make fabric.", prompt6: "yarn / weave / fabric" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ active: "People use fabric to make clothes.", passive: "Fabric is used to make clothes.", prompt6: "fabric / use / clothes" },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>band65: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Bamboo plants are grown in spring.", task: "Upgrade the verb.", answer: "Bamboo plants are cultivated in spring." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Bamboo plants are harvested in autumn.", task: "Combine the time detail naturally.", answer: "They are harvested in autumn." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Bamboo plants are cut into strips.", task: "Use a pronoun to avoid repetition.", answer: "They are then cut into strips." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "The strips are crushed to make liquid pulp.", task: "Use a result structure.", answer: "The strips are crushed, producing liquid pulp." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Long fibres are separated from the liquid by a filter.", task: "Upgrade the verb.", answer: "Long fibres are extracted from the liquid by a filter." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Water and amine oxide are added to soften the fibres.", task: "Use a by + -ing structure.", answer: "The fibres are softened by adding water and amine oxide." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Fibres are spun to make yarn.", task: "Use a more natural result structure.", answer: "The fibres are spun into yarn." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Yarn is woven to make fabric.", task: "Use a more natural result structure.", answer: "The yarn is woven into fabric." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ prompt: "Fabric is used to make clothes.", task: "Add the final examples from the diagram if shown.", answer: "The fabric is used to make clothes and socks." },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>p2Band55: {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>text: [</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[0, " bamboo plants are planted in spring. Bamboo plants are "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[1, " harvested in autumn. "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[2, " that, bamboo plants are cut into strips. "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[3, " is to crush the strips to make liquid pulp. "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[4, ", long fibres are separated from the liquid by a filter. In the "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[5, " stage, water and amine oxide are added to soften the fibres. The fibres are "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[6, " spun to make yarn. "],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>[7, ", yarn is woven to make fabric."],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>answers: ["first", "then", "after", "the following stage", "next", "next", "then", "finally"],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>p2Band6: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// First half of the process: first-letter linker practice</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "fill", sentence: "F______, bamboo plants are planted in spring.", answer: "First" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "fill", sentence: "N______, bamboo plants are harvested in autumn.", answer: "Next" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "fill", sentence: "A______ that, bamboo plants are cut into strips.", answer: "After" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "fill", sentence: "S__________, the strips are crushed to make liquid pulp.", answer: "Subsequently" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// Second half of the process: before/after + being done practice</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "combine", prompt: "Combine using after doing.", parts: ["The strips are crushed to make liquid pulp.", "Long fibres are separated from the liquid by a filter."], answer: "Long fibres are separated from the liquid by a filter after being crushed to make liquid pulp." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "combine", prompt: "Combine using before doing.", parts: ["The fibres are softened.", "They are spun to make yarn."], answer: "The fibres are softened before being spun to make yarn." },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ type: "combine", prompt: "Combine using before doing.", parts: ["Yarn is woven to make fabric.", "It is used to make clothes."], answer: "Yarn is woven to make fabric before being used to make clothes." },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>p2Band65: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using before doing.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Plastic bottles are placed in recycling bins.",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"They are collected and transported by a truck.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "Plastic bottles are placed in recycling bins before being collected and transported by a truck.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using after doing.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Plastic bottles are collected and transported by a truck.",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"They are sorted in a recycling centre.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "They are sorted in a recycling centre after being collected and transported by a truck.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using followed by + noun phrase.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Plastic bottles are sorted in a recycling centre.",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"They are compressed into blocks.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "Plastic bottles are sorted in a recycling centre, followed by the compression of the bottles into blocks.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using after which.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Plastic bottles are compressed into blocks.",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"The blocks are crushed and the pieces are washed.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "Plastic bottles are compressed into blocks, after which the blocks are crushed and the pieces are washed.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using after doing.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"The pieces are washed.",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Plastic pellets are produced.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "Plastic pellets are produced after the pieces are washed.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using before doing.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Plastic pellets are produced.",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"They are heated to form raw material.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "Plastic pellets are produced before being heated to form raw material.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>prompt: "Combine using before doing.",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>parts: ["The raw material is packed.", "End products are produced."],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>answer: "The raw material is packed before end products are produced.",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p1">// =====================</p>
+<p class="p1">// 3. MAIN COMPONENT</p>
+<p class="p1">// =====================</p>
+<p class="p2"><br></p>
+<p class="p1">export default function IELTSProcessTrainerFullSystem() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const processData = useMemo(() =&gt; fixP2Band55Data(rawProcessData), []);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [processKey, setProcessKey] = useState("bamboo");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [level, setLevel] = useState("band55");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [activePractice, setActivePractice] = useState("practice1");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [scoreMap, setScoreMap] = useLocalStorage("ielts-process-scores", {});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [practiceState, setPracticeState] = useState(initialPracticeState);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [dragItem, setDragItem] = useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [p1Hint, setP1Hint] = useState("");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [p2Hint, setP2Hint] = useState("");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [writingHint, setWritingHint] = useState("");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const current = processData[processKey];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const steps = current.steps;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const scoreKey = `${processKey}-${level}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const earned = scoreMap[scoreKey] || { p1: false, p2: false, p3: false };</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const totalScore = (earned.p1 ? 2 : 0) + (earned.p2 ? 3 : 0) + (earned.p3 ? 5 : 0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const achievement = totalScore &lt;= 3 ? "Beginner" : totalScore &lt;= 7 ? "Developing" : "Advanced";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const resetAllPracticeStates = useCallback(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setPracticeState(initialPracticeState);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setP1Hint({ index, text: "Use be + past participle. Check the diagram for prepositions and details." });</p>
+<p class="p1"><span class="Apple-converted-space">      </span>else setP1Hint({ index, text: practice1Tasks[index].instruction });</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>[level, practice1Tasks]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// =====================</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// PRACTICE 2</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// =====================</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const linkerOptions = ["first", "next", "then", "in the next stage", "the following stage", "after", "finally"];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const dropToBlank = useCallback(</p>
+<p class="p1"><span class="Apple-converted-space">    </span>(index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!dragItem) return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setPracticeState((prev) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const copy = [...prev.p2ParagraphAnswers];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>copy[index] = dragItem;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return { ...prev, p2ParagraphAnswers: copy };</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>[dragItem]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const checkParagraph = useCallback(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const expected = current.p2Band55.answers;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const feedback = practiceState.p2ParagraphAnswers.map((a, i) =&gt; a === expected[i]);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setPracticeState((prev) =&gt; ({ ...prev, p2ParagraphFeedback: feedback }));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (feedback.every(Boolean)) award("p2");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [current, practiceState.p2ParagraphAnswers, award]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const getCohesionTasks = useCallback(() =&gt; (level === "band6" ? current.p2Band6 : current.p2Band65), [level, current]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const checkCohesion = useCallback(</p>
+<p class="p1"><span class="Apple-converted-space">    </span>(index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const tasks = getCohesionTasks();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const updatedAnswers = { ...practiceState.p2CohesionAnswers };</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const userAnswer = updatedAnswers[index] || "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const ok = isAnswerCorrect(userAnswer, tasks[index].answer, level);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const updatedFeedback = { ...practiceState.p2CohesionFeedback, [index]: ok };</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>setPracticeState((prev) =&gt; ({ ...prev, p2CohesionFeedback: updatedFeedback }));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const allCorrect = tasks.every((task, i) =&gt; isAnswerCorrect(updatedAnswers[i] || "", task.answer, level));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (allCorrect) award("p2");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>[getCohesionTasks, practiceState.p2CohesionAnswers, practiceState.p2CohesionFeedback, level, award]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const getP2Hint = useCallback(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level === "band55") {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setP2Hint("Structure: 'then' can go inside a sentence; 'after' goes before 'that'; 'the following stage is to + verb'; 'in the next stage' fits the pattern 'In the ___ stage'.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else if (level === "band6") {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setP2Hint("Band 6: first-letter clues include N = Next, A = After, S = Subsequently. For combining, use before/after + being + past participle.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setP2Hint("Band 6.5: check the target structure: followed by + noun phrase, before/after + being done, or after which + clause.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [level]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const renderBlank = (index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const checked = practiceState.p2ParagraphFeedback.length &gt; 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const ok = practiceState.p2ParagraphFeedback[index];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span</p>
+<p class="p1"><span class="Apple-converted-space">        </span>onDragOver={(e) =&gt; e.preventDefault()}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>onDrop={() =&gt; dropToBlank(index)}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>role="textbox"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>aria-label={`Blank ${index + 1} for linker word`}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>aria-readonly="true"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>className={`mx-1 inline-block min-w-[105px] rounded border-b-2 px-2 text-center ${</p>
+<p class="p1"><span class="Apple-converted-space">          </span>checked ? (ok ? "border-green-500 bg-green-50 text-green-700" : "border-red-500 bg-red-50 text-red-700") : "border-slate-600 bg-white"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{practiceState.p2ParagraphAnswers[index] || "_____"}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const renderBand55Paragraph = () =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p className="leading-10"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{current.p2Band55.text.map((chunk, i) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span key={i}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{renderBlank(chunk[0])}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{chunk[1]}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// =====================</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// PRACTICE 3</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// =====================</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const errorRules = useMemo(() =&gt; createErrorRules(processKey), [processKey]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const detectedErrors = useMemo(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!practiceState.p3Submitted) return [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const found = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>errorRules.forEach((rule) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>[...practiceState.p3Writing.matchAll(rule.pattern)].forEach((match) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>found.push({ ...rule, match: match[0], index: match.index });</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return found.sort((a, b) =&gt; a.index - b.index);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [practiceState.p3Submitted, practiceState.p3Writing, errorRules]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const highlightedWriting = useMemo(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!practiceState.p3Submitted || detectedErrors.length === 0) return practiceState.p3Writing;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const output = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let cursor = 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>detectedErrors.forEach((error, index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (error.index &lt; cursor) return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>output.push(practiceState.p3Writing.slice(cursor, error.index));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>output.push(</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;strong</p>
+<p class="p1"><span class="Apple-converted-space">          </span>key={`${error.id}-${index}`}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>className={`rounded px-1 font-bold ${error.type === "grammar" ? "bg-red-100 text-red-700" : error.type === "spelling" ? "bg-purple-100 text-purple-700" : "bg-yellow-100 text-yellow-700"}`}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>aria-label={`${error.type} error: ${error.message}`}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{practiceState.p3Writing.slice(error.index, error.index + error.match.length)}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/strong&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>cursor = error.index + error.match.length;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>output.push(practiceState.p3Writing.slice(cursor));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return output;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [practiceState.p3Submitted, practiceState.p3Writing, detectedErrors]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const wordCount = practiceState.p3Writing.trim() ? practiceState.p3Writing.trim().split(/\s+/).length : 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// Dynamic word requirement by band</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const wordRequirement = level === "band55" ? 70 : level === "band6" ? 80 : 100;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const wordTargetRange = level === "band55" ? "70–80" : level === "band6" ? "80–100" : "100–120";</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const grammarErrorCount = detectedErrors.filter((e) =&gt; e.type === "grammar").length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const lexisErrorCount = detectedErrors.filter((e) =&gt; e.type === "lexis").length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const spellingErrorCount = detectedErrors.filter((e) =&gt; e.type === "spelling").length;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const reflectionComplete = practiceState.p3Reflection.every((item) =&gt; item.trim().length &gt; 0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const canSubmitP3 = wordCount &gt;= wordRequirement;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const p3Pass = practiceState.p3Submitted &amp;&amp; detectedErrors.length === 0 &amp;&amp; reflectionComplete;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const writingDiagnostics = useMemo(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const text = practiceState.p3Writing.toLowerCase();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const passiveMatches = text.match(/\b(is|are)\s+\w+(ed|en)\b|\bare\s+spun\b|\bis\s+woven\b|\bare\s+put\b/gi) || [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const basicLinkers = ["first", "then", "next", "after that", "finally"].filter((w) =&gt; text.includes(w));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const advancedLinkers = ["subsequently", "after which", "followed by", "before being", "after being"].filter((w) =&gt; text.includes(w));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const pronouns = ["it", "they", "them", "this"].filter((w) =&gt; new RegExp(`\\b${w}\\b`).test(text));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>let estimatedBand = "5.5";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level === "band6" &amp;&amp; wordCount &gt;= wordRequirement &amp;&amp; passiveMatches.length &gt;= 4 &amp;&amp; basicLinkers.length &gt;= 2) estimatedBand = "6.0";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level === "band65" &amp;&amp; wordCount &gt;= wordRequirement &amp;&amp; passiveMatches.length &gt;= 5 &amp;&amp; advancedLinkers.length &gt;= 1) estimatedBand = "6.5";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level === "band55" &amp;&amp; wordCount &gt;= wordRequirement &amp;&amp; passiveMatches.length &gt;= 3 &amp;&amp; basicLinkers.length &gt;= 2) estimatedBand = "5.5";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const feedback = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (wordCount &lt; wordRequirement) feedback.push(`Develop the paragraph to at least ${wordRequirement} words.`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (passiveMatches.length &lt; 3) feedback.push("Use more present simple passive forms to describe process steps.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (basicLinkers.length &lt; 2) feedback.push("Add clear sequencing linkers such as first, then, next and finally.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level !== "band55" &amp;&amp; pronouns.length &lt; 1) feedback.push("Use pronouns such as it/they/them to reduce repetition.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level === "band65" &amp;&amp; advancedLinkers.length &lt; 1) feedback.push("Try at least one complex linking structure, such as after which, followed by, or before/after being done.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (feedback.length === 0) feedback.push("Good control of process language for this level. Check spelling and article use before submission.");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>estimatedBand,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>passiveCount: passiveMatches.length,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>basicLinkerCount: basicLinkers.length,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>advancedLinkerCount: advancedLinkers.length,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pronounCount: pronouns.length,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>feedback,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [practiceState.p3Writing, level, wordCount, wordRequirement]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const submitWriting = useCallback(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!canSubmitP3) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setWritingHint(`Please write at least ${wordRequirement} words. Target range: ${wordTargetRange} words. Current: ${wordCount}.`);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setPracticeState((prev) =&gt; ({ ...prev, p3Submitted: true }));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [canSubmitP3, wordCount, wordRequirement, wordTargetRange]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const getWritingHint = useCallback(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!practiceState.p3Submitted) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (level === "band55") {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setWritingHint("Band 5.5: Use present simple passive to describe the process. Add basic linkers such as First, Then, Finally.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} else if (level === "band6") {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setWritingHint("Band 6: Use present simple passive and a range of linkers. Use pronouns (it, they) to avoid repetition.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setWritingHint("Band 6.5: Use present simple passive, include more diagram details, and combine sentences using complex structures.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else if (detectedErrors.length &gt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const first = detectedErrors[0];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const example = first.examples?.[0] ? ` Example: ${first.examples[0]}.` : "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setWritingHint(`Focus on ${first.type.toUpperCase()}: ${first.message}${example}`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else if (!reflectionComplete) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setWritingHint("No language errors remain. Complete all 3 self-reflection points to pass.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setWritingHint("Well done. All errors corrected and reflection completed.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [practiceState.p3Submitted, detectedErrors, reflectionComplete, wordCount, level, wordRequirement]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (p3Pass &amp;&amp; !earned.p3) award("p3");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [p3Pass, earned.p3, award]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const renderPractice1 = () =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;Card title={level === "band55" ? "Practice 1 · Active to Passive" : "Practice 1 · Passive Voice / Sentence Upgrade"}&gt;</p>
+<p class="p2"><span class="Apple-converted-space">      </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{practice1Tasks.map((task, i) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div key={i} className="rounded-xl border bg-slate-50 p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="text-xs font-semibold uppercase tracking-wide text-slate-500"&gt;{level === "band55" ? `Stage ${i + 1}` : `Task ${i + 1}`}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{level !== "band55" &amp;&amp; &lt;p className="mt-1 font-medium"&gt;{task.instruction}&lt;/p&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="mt-2 rounded-lg bg-white p-3"&gt;{task.prompt}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;input</p>
+<p class="p1"><span class="Apple-converted-space">              </span>value={practiceState.p1Answers[i] || ""}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>onChange={(e) =&gt; setPracticeState((prev) =&gt; ({ ...prev, p1Answers: { ...prev.p1Answers, [i]: e.target.value } }))}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>className="mt-3 w-full rounded-xl border p-2"</p>
+<p class="p1"><span class="Apple-converted-space">              </span>placeholder="Write your answer here..."</p>
+<p class="p1"><span class="Apple-converted-space">              </span>aria-label={`Answer for task ${i + 1}`}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="mt-3 flex gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button onClick={() =&gt; checkP1(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"&gt;Check&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button onClick={() =&gt; getP1Hint(i)} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"&gt;Hint&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{practiceState.p1Feedback[i] !== undefined &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className={`mt-3 rounded-xl p-3 text-sm ${practiceState.p1Feedback[i] ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{practiceState.p1Feedback[i] ? "Correct." : `Suggested answer: ${task.answer}`}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{p1Hint &amp;&amp; &lt;div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700"&gt;{p1Hint}&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const renderPractice2 = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (level === "band55") {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;Card title="Practice 2 · Controlled Paragraph Cohesion"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">          </span></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="rounded-2xl border bg-slate-50 p-5"&gt;{renderBand55Paragraph()}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="mt-4 flex flex-wrap gap-2 rounded-2xl border bg-white p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{linkerOptions.map((option) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div key={option} draggable onDragStart={() =&gt; setDragItem(option)} role="button" tabIndex={0} className="cursor-grab rounded-xl border bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{option}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="mt-4 flex gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button onClick={getP2Hint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"&gt;Hint&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button onClick={checkParagraph} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"&gt;Check&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button onClick={resetAllPracticeStates} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"&gt;Reset&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{p2Hint &amp;&amp; &lt;div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700"&gt;{p2Hint}&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{practiceState.p2ParagraphFeedback.length &gt; 0 &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{practiceState.p2ParagraphFeedback.map((ok, i) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div key={i} className={`rounded-xl border p-3 text-sm ${ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>Blank {i + 1}: {ok ? "Correct" : "Check again"}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const tasks = level === "band6" ? current.p2Band6 : current.p2Band65;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;Card title={level === "band6" ? "Practice 2 · Band 6 Cohesion" : "Practice 2 · Band 6.5 Complex Cohesion"}&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{tasks.map((task, i) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div key={i} className="rounded-xl border bg-slate-50 p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;p className="text-xs font-semibold uppercase tracking-wide text-slate-500"&gt;Task {i + 1}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{task.type === "fill" ? (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;p className="mt-2 rounded-lg bg-white p-3"&gt;{task.sentence}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="mt-2 rounded-lg bg-white p-3"&gt;&lt;p className="font-semibold"&gt;{task.prompt}&lt;/p&gt;&lt;p&gt;1. {task.parts[0]}&lt;/p&gt;&lt;p&gt;2. {task.parts[1]}&lt;/p&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;input</p>
+<p class="p1"><span class="Apple-converted-space">                </span>value={practiceState.p2CohesionAnswers[i] || ""}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>onChange={(e) =&gt; setPracticeState((prev) =&gt; ({ ...prev, p2CohesionAnswers: { ...prev.p2CohesionAnswers, [i]: e.target.value } }))}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>className="mt-3 w-full rounded-xl border p-2"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>placeholder="Write your answer here..."</p>
+<p class="p1"><span class="Apple-converted-space">              </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="mt-3 flex gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button onClick={() =&gt; checkCohesion(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"&gt;Check&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button onClick={getP2Hint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"&gt;Hint&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{practiceState.p2CohesionFeedback[i] !== undefined &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className={`mt-3 rounded-xl p-3 text-sm ${practiceState.p2CohesionFeedback[i] ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>{practiceState.p2CohesionFeedback[i] ? "Correct." : `Suggested answer: ${task.answer}`}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{p2Hint &amp;&amp; &lt;div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700"&gt;{p2Hint}&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const p3Band6GuidingQuestions = {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>bamboo: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What is the purpose of crushing the bamboo strips?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What is separated from the liquid by a filter?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"Why are water and amine oxide added?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What final products can be made from the fabric?"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>sugar: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"How long is sugar cane grown before it is harvested?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What is the purpose of crushing the sugar cane?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What is the purpose of the limestone filter?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"Which machines are used in the later stages?"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>noodles: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"Where is the flour stored at the beginning?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What ingredients are mixed with flour?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"How are noodle discs formed before cooking?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What is added to the cups before they are labelled and sealed?"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>recycling: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"Where are plastic bottles placed at the beginning?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What happens to the bottles after they are sorted?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What are the pellets heated to form?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"What examples of final products are shown in the diagram?"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const renderAIErrorMarker = (error, index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const typeColor =</p>
+<p class="p1"><span class="Apple-converted-space">      </span>error.type === "grammar"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>? "bg-red-100 text-red-700 border-red-200"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>: error.type === "spelling"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>? "bg-purple-100 text-purple-700 border-purple-200"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>: error.type === "lexis"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>? "bg-yellow-100 text-yellow-700 border-yellow-200"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>: "bg-blue-100 text-blue-700 border-blue-200";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div key={index} className={`rounded-xl border p-3 ${typeColor}`}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p className="text-xs font-bold uppercase tracking-wide"&gt;{error.type}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p className="mt-1 font-semibold"&gt;{error.original || "A language issue was detected."}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const renderPractice3 = () =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;Card title="Practice 3 · Timed Writing + AI Self-correction"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">      </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{level === "band6" &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;p className="font-semibold"&gt;Planning questions for the body paragraph&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;ul className="mt-2 list-disc space-y-1 pl-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{p3Band6GuidingQuestions.map((question, index) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;li key={index}&gt;{question}&lt;/li&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/ul&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{level === "band65" &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mb-4 rounded-2xl border border-purple-100 bg-purple-50 p-4 text-sm text-purple-900"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;p className="font-semibold"&gt;Useful diagram details to consider&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;ul className="mt-2 list-disc space-y-1 pl-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{p3Band65DiagramDetails[processKey].map((detail, index) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;li key={index}&gt;{detail}&lt;/li&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/ul&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;textarea</p>
+<p class="p1"><span class="Apple-converted-space">        </span>value={practiceState.p3Writing}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>onChange={(e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>setPracticeState((prev) =&gt; ({ ...prev, p3Writing: e.target.value, p3Submitted: false }));</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (aiFeedback) setAiFeedback(null);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>className="h-56 w-full rounded-2xl border p-3"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>placeholder="Write your process paragraph here..."</p>
+<p class="p1"><span class="Apple-converted-space">      </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span&gt;Word count: &lt;strong&gt;{wordCount}&lt;/strong&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;span&gt;Target: &lt;strong&gt;{wordTargetRange} words&lt;/strong&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{aiChecked &amp;&amp; &lt;span&gt;AI check: &lt;strong&gt;{aiErrors.length === 0 ? "No language errors detected" : `${aiErrors.length} issue(s)`}&lt;/strong&gt;&lt;/span&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{aiChecked &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mt-3 flex flex-wrap gap-2 text-xs"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span className="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700"&gt;Grammar: {aiGrammarCount}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span className="rounded-full bg-yellow-50 px-3 py-1 font-semibold text-yellow-700"&gt;Lexis: {aiLexisCount}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span className="rounded-full bg-purple-50 px-3 py-1 font-semibold text-purple-700"&gt;Spelling: {aiSpellingCount}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700"&gt;Cohesion: {aiCohesionCount}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700"&gt;Task: {aiTaskCount}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="mt-4 flex gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">          </span>onClick={getAIFeedback}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>disabled={aiLoading || !practiceState.p3Writing.trim() || wordCount &lt; wordRequirement}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${aiLoading || !practiceState.p3Writing.trim() || wordCount &lt; wordRequirement ? "bg-slate-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"}`}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{aiLoading ? "Checking..." : "AI Check"}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button onClick={getWritingHint} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"&gt;Hint&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{writingHint &amp;&amp; &lt;div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700"&gt;{writingHint}&lt;/div&gt;}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{aiChecked &amp;&amp; aiErrors.length &gt; 0 &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mt-4 rounded-2xl border bg-white p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;p className="font-bold text-slate-800"&gt;AI language error labels&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;p className="mt-1 text-sm text-slate-600"&gt;Only error types are shown. No corrections are provided, so revise the paragraph by yourself and run AI Check again.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="mt-3 grid gap-2 sm:grid-cols-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{aiErrors.map((error, index) =&gt; renderAIErrorMarker(error, index))}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{aiChecked &amp;&amp; aiErrors.length === 0 &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>No language errors detected by AI. Complete the self-reflection section to pass.</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="mt-5 rounded-2xl border bg-white p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p className="font-semibold"&gt;Self-reflection&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p className="mt-1 text-sm text-slate-600"&gt;Write 3 reflection points. You may reflect on: passive forms, basic linkers, advanced linkers, pronoun use, spelling accuracy, or your estimated level.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mt-3 space-y-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{practiceState.p3Reflection.map((item, i) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;input key={i} value={item} onChange={(e) =&gt; setPracticeState((prev) =&gt; { const copy = [...prev.p3Reflection]; copy[i] = e.target.value; return { ...prev, p3Reflection: copy }; })} className="w-full rounded-xl border p-2" placeholder={`Reflection ${i + 1}`} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{p3Pass &amp;&amp; &lt;div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-lg font-bold text-green-700"&gt;PASS · +5 points&lt;/div&gt;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div className="min-h-screen bg-slate-50 p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="mx-auto max-w-7xl space-y-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="rounded-2xl border bg-white p-5 shadow-sm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex flex-wrap items-center justify-between gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;&lt;p className="text-sm font-semibold uppercase tracking-wide text-blue-600"&gt;IELTS Academic Writing Task 1&lt;/p&gt;&lt;h1 className="mt-1 text-3xl font-bold"&gt;Process Writing Training System&lt;/h1&gt;&lt;p className="mt-2 text-sm text-slate-600"&gt;Four process diagrams · three bands · sentence, cohesion and writing training.&lt;/p&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex flex-wrap gap-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;select value={processKey} onChange={(e) =&gt; handleProcessOrLevelChange(e.target.value, level)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"&gt;&lt;option value="bamboo"&gt;Bamboo fabric&lt;/option&gt;&lt;option value="sugar"&gt;Sugar cane&lt;/option&gt;&lt;option value="noodles"&gt;Instant noodles&lt;/option&gt;&lt;option value="recycling"&gt;Recycling&lt;/option&gt;&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;select value={level} onChange={(e) =&gt; handleProcessOrLevelChange(processKey, e.target.value)} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold"&gt;&lt;option value="band55"&gt;Band 5.5&lt;/option&gt;&lt;option value="band6"&gt;Band 6&lt;/option&gt;&lt;option value="band65"&gt;Band 6.5&lt;/option&gt;&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="mt-4 rounded-xl border bg-slate-50 p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="font-semibold"&gt;{current.title}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="text-sm text-slate-600"&gt;{current.task}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${totalScore * 10}%` }} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="mt-2 text-lg font-bold text-blue-700"&gt;Score: {totalScore} / 10 · {achievement}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="text-sm text-slate-500"&gt;Practice 1: {earned.p1 ? "+2 earned" : "2 pts"} · Practice 2: {earned.p2 ? "+3 earned" : "3 pts"} · Practice 3: {earned.p3 ? "+5 earned" : "5 pts"}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="rounded-2xl border bg-white p-4 shadow-sm"&gt;&lt;h2 className="mb-3 text-lg font-bold"&gt;Process Diagram&lt;/h2&gt;&lt;img src={current.image} alt={current.title} className="w-full rounded-xl border object-contain" onError={(e) =&gt; { e.currentTarget.src = "https://via.placeholder.com/400?text=Image+Not+Found"; }} /&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="space-y-4"&gt;&lt;div className="flex flex-wrap gap-2" role="tablist"&gt;&lt;Tab value="practice1" label="Practice 1" activePractice={activePractice} onSelect={setActivePractice} /&gt;&lt;Tab value="practice2" label="Practice 2" activePractice={activePractice} onSelect={setActivePractice} /&gt;&lt;Tab value="practice3" label="Practice 3" activePractice={activePractice} onSelect={setActivePractice} /&gt;&lt;/div&gt;{activePractice === "practice1" &amp;&amp; renderPractice1()}{activePractice === "practice2" &amp;&amp; renderPractice2()}{activePractice === "practice3" &amp;&amp; renderPractice3()}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p1">}</p>
+</body>
+</html>
