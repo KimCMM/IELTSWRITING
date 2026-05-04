@@ -61,6 +61,9 @@ interface ProcessData {
 interface PracticeState {
   p1Answers: Record<number, string>;
   p1Feedback: Record<number, boolean>;
+  p1ReflectionAnswers: Record<string, boolean>;
+  p1ReflectionFeedback: Record<string, boolean> | null;
+  p1ReflectionChecked: boolean;
   p2ParagraphAnswers: string[];
   p2ParagraphFeedback: boolean[];
   p2CohesionAnswers: Record<number, string>;
@@ -158,6 +161,9 @@ const isAnswerCorrect = (user: string, expected: string, level: string): boolean
 const initialPracticeState: PracticeState = {
   p1Answers: {},
   p1Feedback: {},
+  p1ReflectionAnswers: {},
+  p1ReflectionFeedback: null,
+  p1ReflectionChecked: false,
   p2ParagraphAnswers: Array(10).fill(""),
   p2ParagraphFeedback: [],
   p2CohesionAnswers: {},
@@ -181,6 +187,58 @@ const fixP2Band55Data = (rawData: Record<string, ProcessData>): Record<string, P
 // =====================
 // 3. DATA
 // =====================
+
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+const sentenceUpgradeReflectionOptions = [
+  {
+    id: "relativeClause",
+    text: 'Use a relative clause, such as "which..." or "where...".',
+    correct: true,
+  },
+  {
+    id: "purposePhrase",
+    text: 'Use a purpose phrase, such as "in order to...".',
+    correct: true,
+  },
+  {
+    id: "participleResult",
+    text: 'Use ", doing sth" to show the result of an action.',
+    correct: true,
+  },
+  {
+    id: "diagramDetails",
+    text: "Add useful diagram details, such as tools, machines, materials, locations or final examples.",
+    correct: true,
+  },
+  {
+    id: "preciseWords",
+    text: "Replace basic words with more precise words.",
+    correct: true,
+  },
+  {
+    id: "personalOpinions",
+    text: "Add personal opinions about whether the process is good or bad.",
+    correct: false,
+  },
+  {
+    id: "inventSteps",
+    text: "Invent extra steps that are not shown in the diagram.",
+    correct: false,
+  },
+  {
+    id: "complicatedWords",
+    text: "Use complicated words even if they do not fit the diagram.",
+    correct: false,
+  },
+];
 
 const rawProcessData: Record<string, ProcessData> = {
   bamboo: {
@@ -608,17 +666,6 @@ export default function IELTSProcessTrainerFullSystem() {
     practice1: "",
     practice2: "",
   });
-  const [sentenceUpgradeReflection, setSentenceUpgradeReflection] = useState({
-    relativeClause: false,
-    purposePhrase: false,
-    doingResult: false,
-    diagramDetails: false,
-    preciseWords: false,
-    personalOpinions: false,
-    inventSteps: false,
-    complicatedWords: false,
-  });
-
   const [p3TimerStarted, setP3TimerStarted] = useState(false);
   const [p3ElapsedSeconds, setP3ElapsedSeconds] = useState(0);
   const suggestedWritingSeconds = 20 * 60;
@@ -660,16 +707,6 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setBand65Evidence({ details: "", practice1: "", practice2: "" });
-    setSentenceUpgradeReflection({
-      relativeClause: false,
-      purposePhrase: false,
-      doingResult: false,
-      diagramDetails: false,
-      preciseWords: false,
-      personalOpinions: false,
-      inventSteps: false,
-      complicatedWords: false,
-    });
     setDragItem(null);
     setP3TimerStarted(false);
     setP3ElapsedSeconds(0);
@@ -716,20 +753,68 @@ export default function IELTSProcessTrainerFullSystem() {
     return current.band65.map((s: Band65Task) => ({ prompt: s.prompt, answer: s.answer, instruction: s.task }));
   }, [level, current, steps]);
 
+  const p1ReflectionOptions = useMemo(() => {
+    if (level !== "band65") return [];
+    return shuffleArray(sentenceUpgradeReflectionOptions);
+  }, [processKey, level]);
+
   const checkP1 = useCallback(
     (index: number) => {
-      const updatedAnswers = { ...practiceState.p1Answers };
-      const userAnswer = updatedAnswers[index] || "";
+      const userAnswer = practiceState.p1Answers[index] || "";
       const ok = isAnswerCorrect(userAnswer, practice1Tasks[index].answer, level);
+
       const updatedFeedback = { ...practiceState.p1Feedback, [index]: ok };
 
       setPracticeState((prev) => ({ ...prev, p1Feedback: updatedFeedback }));
 
-      const allCorrect = practice1Tasks.every((task, i) => isAnswerCorrect(updatedAnswers[i] || "", task.answer, level));
-      if (allCorrect) award("p1");
+      const allSentencesCorrect = practice1Tasks.every((task, i) =>
+        isAnswerCorrect(practiceState.p1Answers[i] || "", task.answer, level)
+      );
+
+      const reflectionCorrect =
+        level !== "band65" ||
+        (
+          practiceState.p1ReflectionChecked &&
+          sentenceUpgradeReflectionOptions.every((option) => {
+            const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+            return selected === option.correct;
+          })
+        );
+
+      if (allSentencesCorrect && reflectionCorrect) {
+        award("p1");
+      }
     },
-    [practiceState.p1Answers, practiceState.p1Feedback, practice1Tasks, level, award]
+    [practiceState.p1Answers, practiceState.p1Feedback, practiceState.p1ReflectionAnswers, practiceState.p1ReflectionChecked, practice1Tasks, level, award]
   );
+
+  const checkP1Reflection = useCallback(() => {
+    const feedback: Record<string, boolean> = {};
+
+    sentenceUpgradeReflectionOptions.forEach((option) => {
+      const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+      feedback[option.id] = selected === option.correct;
+    });
+
+    const reflectionCorrect = sentenceUpgradeReflectionOptions.every((option) => {
+      const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+      return selected === option.correct;
+    });
+
+    const allSentencesCorrect = practice1Tasks.every((task, i) =>
+      isAnswerCorrect(practiceState.p1Answers[i] || "", task.answer, level)
+    );
+
+    setPracticeState((prev) => ({
+      ...prev,
+      p1ReflectionFeedback: feedback,
+      p1ReflectionChecked: true,
+    }));
+
+    if (level === "band65" && reflectionCorrect && allSentencesCorrect) {
+      award("p1");
+    }
+  }, [practiceState.p1ReflectionAnswers, practiceState.p1Answers, practice1Tasks, level, award]);
 
   const getP1Hint = useCallback(
     (index: number) => {
@@ -1245,50 +1330,82 @@ export default function IELTSProcessTrainerFullSystem() {
         <div className="mt-5 rounded-2xl border bg-purple-50 p-4">
           <p className="font-bold text-purple-900">Sentence Upgrade Reflection</p>
           <p className="mt-1 text-sm text-purple-800">
-            Look back at Practice 1. Which methods are useful for upgrading process-diagram sentences? Tick all suitable choices.
+            Look back at Practice 1. Which methods are useful for upgrading
+            process-diagram sentences? Tick all suitable choices.
           </p>
 
           <div className="mt-3 space-y-2 text-sm text-purple-900">
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.relativeClause} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, relativeClause: e.target.checked }))} />
-              <span>Use a relative clause, such as &quot;which...&quot; or &quot;where...&quot;.</span>
-            </label>
+            {p1ReflectionOptions.map((option) => {
+              const checked = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+              const feedback = practiceState.p1ReflectionFeedback?.[option.id];
 
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.purposePhrase} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, purposePhrase: e.target.checked }))} />
-              <span>Use a purpose phrase, such as &quot;in order to...&quot;.</span>
-            </label>
-
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.doingResult} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, doingResult: e.target.checked }))} />
-              <span>Use &quot;, doing sth&quot; to show the result of an action.</span>
-            </label>
-
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.diagramDetails} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, diagramDetails: e.target.checked }))} />
-              <span>Add useful diagram details, such as tools, machines, materials, locations or final examples.</span>
-            </label>
-
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.preciseWords} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, preciseWords: e.target.checked }))} />
-              <span>Replace basic words with more precise words.</span>
-            </label>
-
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.personalOpinions} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, personalOpinions: e.target.checked }))} />
-              <span>Add many personal opinions about whether the process is good or bad.</span>
-            </label>
-
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.inventSteps} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, inventSteps: e.target.checked }))} />
-              <span>Invent extra steps that are not shown in the diagram.</span>
-            </label>
-
-            <label className="flex gap-2 rounded-xl border bg-white p-3">
-              <input type="checkbox" checked={sentenceUpgradeReflection.complicatedWords} onChange={(e) => setSentenceUpgradeReflection((prev) => ({ ...prev, complicatedWords: e.target.checked }))} />
-              <span>Use complicated words even if they do not fit the diagram.</span>
-            </label>
+              return (
+                <label
+                  key={option.id}
+                  className={`flex gap-2 rounded-xl border p-3 ${
+                    feedback === undefined
+                      ? "bg-white"
+                      : feedback
+                      ? "border-green-300 bg-green-50 text-green-800"
+                      : "border-red-300 bg-red-50 text-red-800"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) =>
+                      setPracticeState((prev) => ({
+                        ...prev,
+                        p1ReflectionAnswers: {
+                          ...prev.p1ReflectionAnswers,
+                          [option.id]: e.target.checked,
+                        },
+                        p1ReflectionChecked: false,
+                        p1ReflectionFeedback: null,
+                      }))
+                    }
+                  />
+                  <span>{option.text}</span>
+                </label>
+              );
+            })}
           </div>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={checkP1Reflection}
+              className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
+            >
+              Check Reflection
+            </button>
+          </div>
+
+          {practiceState.p1ReflectionChecked && (
+            <div
+              className={`mt-3 rounded-xl p-3 text-sm ${
+                sentenceUpgradeReflectionOptions.every((option) => {
+                  const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+                  return selected === option.correct;
+                })
+                  ? "bg-green-50 text-green-700"
+                  : "bg-red-50 text-red-700"
+              }`}
+            >
+              {sentenceUpgradeReflectionOptions.every((option) => {
+                const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+                return selected === option.correct;
+              })
+                ? "Correct. These are suitable ways to upgrade process-diagram sentences."
+                : "Check again. Some options are not suitable for IELTS process diagrams."}
+            </div>
+          )}
+
+          {level === "band65" && !earned.p1 && (
+            <p className="mt-3 text-xs text-purple-800">
+              To earn 2 points for Practice 1, complete all sentence-upgrade tasks
+              correctly and pass this reflection check.
+            </p>
+          )}
         </div>
       )}
     </Card>
