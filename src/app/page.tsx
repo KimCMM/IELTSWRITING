@@ -964,51 +964,6 @@ export default function IELTSProcessTrainerFullSystem() {
           : "Practice 1 - Sentence Upgrade"
       }
     >
-      {level === "band55" && (
-        <div className="mt-4 rounded-2xl border bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold text-slate-800">Before AI Check</p>
-              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
-            </div>
-            <button
-              onClick={handleBand55SelfCheck}
-              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
-            >
-              Submit for Self-check
-            </button>
-          </div>
-
-          {band55SelfCheckVisible && (
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band55Checklist.passiveVoice}
-                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, passiveVoice: e.target.checked }))}
-                />
-                <span>Have you used passive voice to describe the process?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band55Checklist.cohesiveDevices}
-                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, cohesiveDevices: e.target.checked }))}
-                />
-                <span>Have you used basic cohesive devices, such as First, then, After that, Next or Finally?</span>
-              </label>
-              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
-                <input
-                  type="checkbox"
-                  checked={band55Checklist.correctOrder}
-                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, correctOrder: e.target.checked }))}
-                />
-                <span>Have you described the main steps in the correct order?</span>
-              </label>
-            </div>
-          )}
-        </div>
-      )}
       {level === "band6" && (
         <p className="mb-4 text-sm text-slate-600">
           Use the words and the diagram to write a complete passive sentence.
@@ -1170,6 +1125,51 @@ export default function IELTSProcessTrainerFullSystem() {
           </div>
         )}
       </div>
+      {level === "band55" && (
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-800">Before AI Check</p>
+              <p className="mt-1 text-sm text-slate-600">Tick the boxes only if you have checked your paragraph carefully.</p>
+            </div>
+            <button
+              onClick={handleBand55SelfCheck}
+              className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+            >
+              Submit for Self-check
+            </button>
+          </div>
+
+          {band55SelfCheckVisible && (
+            <div className="mt-3 space-y-2 text-sm text-slate-700">
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band55Checklist.passiveVoice}
+                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, passiveVoice: e.target.checked }))}
+                />
+                <span>Have you used passive voice to describe the process?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band55Checklist.cohesiveDevices}
+                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, cohesiveDevices: e.target.checked }))}
+                />
+                <span>Have you used basic cohesive devices, such as First, then, After that, Next or Finally?</span>
+              </label>
+              <label className="flex gap-2 rounded-xl border bg-slate-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={band55Checklist.correctOrder}
+                  onChange={(e) => setBand55Checklist((prev) => ({ ...prev, correctOrder: e.target.checked }))}
+                />
+                <span>Have you described the main steps in the correct order?</span>
+              </label>
+            </div>
+          )}
+        </div>
+      )}
       {level === "band6" && (
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
