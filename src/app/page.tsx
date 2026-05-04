@@ -608,6 +608,12 @@ export default function IELTSProcessTrainerFullSystem() {
     practice1: "",
     practice2: "",
   });
+
+  const [errorReview, setErrorReview] = useState({
+    mainErrorType: "",
+    changeMade: "",
+    nextCheck: "",
+  });
   const [p3TimerStarted, setP3TimerStarted] = useState(false);
   const [p3ElapsedSeconds, setP3ElapsedSeconds] = useState(0);
   const suggestedWritingSeconds = 20 * 60;
@@ -643,12 +649,14 @@ export default function IELTSProcessTrainerFullSystem() {
     setBand55SelfCheckVisible(false);
     setBand55Checklist({ passiveVoice: false, cohesiveDevices: false, correctOrder: false });
     setBand55Evidence({ passiveVoice: "", cohesiveDevices: "" });
+    setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
     setBand6SelfCheckVisible(false);
     setBand6Checklist({ cohesiveDevices: false, pronouns: false, structure: false });
     setBand6Evidence({ cohesiveDevices: "", pronouns: "", structure: "" });
     setBand65SelfCheckVisible(false);
     setBand65Checklist({ details: false, complexStructure: false, stageLogic: false });
     setBand65Evidence({ details: "", practice1: "", practice2: "" });
+    setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
     setDragItem(null);
     setP3TimerStarted(false);
     setP3ElapsedSeconds(0);
@@ -955,6 +963,7 @@ export default function IELTSProcessTrainerFullSystem() {
     setAiLoading(true);
     setWritingHint("");
     setAiFeedback(null);
+    setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
 
     try {
       const response = await fetch("/api/ai-feedback", {
@@ -1385,6 +1394,7 @@ export default function IELTSProcessTrainerFullSystem() {
             setP3TimerStarted(true);
           }
           if (aiFeedback) setAiFeedback(null);
+          setErrorReview({ mainErrorType: "", changeMade: "", nextCheck: "" });
         }}
         className="h-56 w-full rounded-2xl border p-3"
         placeholder="Write your process paragraph here..."
@@ -1422,6 +1432,50 @@ export default function IELTSProcessTrainerFullSystem() {
           <p className="mt-1 text-sm text-slate-600">Only error types are shown. No corrections are provided, so revise the paragraph by yourself and run AI Check again.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {aiErrors.map((error, index) => renderAIErrorMarker(error, index))}
+          </div>
+        </div>
+      )}
+
+      {aiChecked && aiErrors.length > 0 && (
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <p className="font-bold text-slate-800">Error Review</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Review the AI error labels. Do not copy a correction. Think about what you need to improve.
+          </p>
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="text-sm font-semibold text-slate-700">My main error type was:</label>
+              <select
+                value={errorReview.mainErrorType}
+                onChange={(e) => setErrorReview((prev) => ({ ...prev, mainErrorType: e.target.value }))}
+                className="mt-1 w-full rounded-xl border p-2"
+              >
+                <option value="">Choose one</option>
+                <option value="grammar">Grammar</option>
+                <option value="lexis">Lexis</option>
+                <option value="spelling">Spelling</option>
+                <option value="cohesion">Cohesion</option>
+                <option value="task">Task</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-slate-700">One change I made:</label>
+              <input
+                value={errorReview.changeMade}
+                onChange={(e) => setErrorReview((prev) => ({ ...prev, changeMade: e.target.value }))}
+                className="mt-1 w-full rounded-xl border p-2"
+                placeholder="Example: I corrected a passive form."
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-slate-700">One point I will check next time:</label>
+              <input
+                value={errorReview.nextCheck}
+                onChange={(e) => setErrorReview((prev) => ({ ...prev, nextCheck: e.target.value }))}
+                className="mt-1 w-full rounded-xl border p-2"
+                placeholder="Example: I will check passive forms and cohesive devices."
+              />
+            </div>
           </div>
         </div>
       )}
