@@ -314,6 +314,80 @@ const band55PassiveCorrectionTasks: Record<string, Array<{ prompt: string; answe
   ],
 };
 
+const band6ProcessCorrectionTasks: Record<string, Array<{ prompt: string; answer: string; instruction: string }>> = {
+  bamboo: [
+    {
+      prompt: "Bamboo plants are harvest in autumn.",
+      answer: "Bamboo plants are harvested in autumn.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "The strips is crushed to make liquid pulp.",
+      answer: "The strips are crushed to make liquid pulp.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "Water and amine oxide are added soften the fibres.",
+      answer: "Water and amine oxide are added to soften the fibres.",
+      instruction: "Correct the process sentence.",
+    },
+  ],
+
+  sugar: [
+    {
+      prompt: "Sugar canes are grow for 12-18 months.",
+      answer: "Sugar canes are grown for 12-18 months.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "The juice are purified by a limestone filter.",
+      answer: "The juice is purified by a limestone filter.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "The sugar is dried and cooling by a machine.",
+      answer: "The sugar is dried and cooled by a machine.",
+      instruction: "Correct the process sentence.",
+    },
+  ],
+
+  noodles: [
+    {
+      prompt: "Flour is transported from storage silos by a truck.",
+      answer: "Flour is transported from storage silos by truck.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "Flour is mixed water and oil in a mixer.",
+      answer: "Flour is mixed with water and oil in a mixer.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "The noodle discs are cook in oil and dried.",
+      answer: "The noodle discs are cooked in oil and dried.",
+      instruction: "Correct the process sentence.",
+    },
+  ],
+
+  recycling: [
+    {
+      prompt: "Plastic pellets is produced.",
+      answer: "Plastic pellets are produced.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "Plastic bottles are collect and transported by truck.",
+      answer: "Plastic bottles are collected and transported by truck.",
+      instruction: "Correct the process sentence.",
+    },
+    {
+      prompt: "The pieces are washed remove dirt.",
+      answer: "The pieces are washed to remove dirt.",
+      instruction: "Correct the process sentence.",
+    },
+  ],
+};
+
 const rawProcessData: Record<string, ProcessData> = {
   bamboo: {
     title: "Bamboo Fabric",
@@ -828,11 +902,13 @@ export default function IELTSProcessTrainerFullSystem() {
       return [...correctionTasks, ...remainingPassiveTasks];
     }
     if (level === "band6") {
-      return steps.map((s: StepType) => ({
+      const correctionTasks = band6ProcessCorrectionTasks[processKey] || [];
+      const remainingPromptTasks = steps.slice(3).map((s: StepType) => ({
         prompt: s.prompt6,
         answer: s.passive,
         instruction: "Use the words and the diagram to write a complete passive sentence.",
       }));
+      return [...correctionTasks, ...remainingPromptTasks];
     }
     return current.band65.map((s: Band65Task) => ({
       prompt: s.prompt,
@@ -919,12 +995,19 @@ export default function IELTSProcessTrainerFullSystem() {
           });
         }
       } else if (level === "band6") {
-        setP1Hint({
-          index,
-          text: `Task ${index + 1}: Use be + past participle. Check the diagram for time, tools, materials and prepositions.`,
-        });
+        if (index < 3) {
+          setP1Hint({
+            index,
+            text: `Task ${index + 1}: Check the passive form, subject-verb agreement, verb patterns and common prepositions such as by, with and to.`,
+          });
+        } else {
+          setP1Hint({
+            index,
+            text: `Task ${index + 1}: Use be + past participle. Add useful information from the keywords, such as time, tools, materials, results and prepositions.`,
+          });
+        }
       } else {
-        setP1Hint({ index, text: practice1Tasks[index].instruction });
+        setP1Hint({ index, text: `Task ${index + 1}: ${practice1Tasks[index].instruction}` });
       }
     },
     [level, practice1Tasks]
@@ -1385,142 +1468,257 @@ export default function IELTSProcessTrainerFullSystem() {
     );
   };
 
-  const renderPractice1 = () => (
-    <Card
-      title={
-        level === "band55"
-          ? "Practice 1 - Active to Passive"
-          : level === "band6"
-          ? "Practice 1 - Passive Voice"
-          : "Practice 1 - Sentence Upgrade"
-      }
-    >
-      <p className="mb-4 text-sm text-slate-600">
-        Complete Practice 1 to earn 2 points.
-        {level === "band55" &&
-          " Tasks 1-3 ask you to correct common passive voice errors. The remaining tasks ask you to rewrite active sentences in the passive voice."}
-        {level === "band6" &&
-          " Use the words and the diagram to write a complete passive sentence."}
-        {level === "band65" &&
-          " You also need to pass the Sentence Upgrade Reflection."}
-      </p>
-      <div className="space-y-4">
-        {practice1Tasks.map((task, i) => (
-          <div key={i} className="rounded-xl border bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {level === "band55" && i < 3
-                ? `Correction Task ${i + 1}`
-                : level === "band55"
-                ? `Passive Task ${i + 1}`
-                : `Task ${i + 1}`}
-            </p>
-            {level === "band65" && <p className="mt-1 font-medium">{task.instruction}</p>}
-            <p className="mt-2 rounded-lg bg-white p-3">{task.prompt}</p>
-            {p1Hint.index === i && p1Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p1Hint.text}</div>}
-            <input
-              value={practiceState.p1Answers[i] || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPracticeState((prev) => ({ ...prev, p1Answers: { ...prev.p1Answers, [i]: e.target.value } }))}
-              className="mt-3 w-full rounded-xl border p-2"
-              placeholder="Write your answer here..."
-              aria-label={`Answer for task ${i + 1}`}
-            />
-            <div className="mt-3 flex gap-2">
-              <button onClick={() => checkP1(i)} className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white">Check</button>
-              <button onClick={() => getP1Hint(i)} className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold">Hint</button>
-            </div>
-            {practiceState.p1Feedback[i] !== undefined && (
-              <div className={`mt-3 rounded-xl p-3 text-sm ${practiceState.p1Feedback[i] ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                {practiceState.p1Feedback[i] ? "Correct." : `Suggested answer: ${task.answer}`}
+  const getPractice1Sections = () => {
+    if (level === "band55") {
+      return [
+        {
+          title: "Part A - Correct Passive Voice Errors",
+          description:
+            "Tasks 1-3 help you notice common passive voice errors, such as missing be-verbs, wrong past participles and subject-verb agreement problems.",
+          tasks: practice1Tasks.slice(0, 3),
+          startIndex: 0,
+        },
+        {
+          title: "Part B - Rewrite Active Sentences in the Passive Voice",
+          description:
+            "Rewrite the remaining active sentences in the passive voice. Keep useful details such as time, tools, materials and results.",
+          tasks: practice1Tasks.slice(3),
+          startIndex: 3,
+        },
+      ];
+    }
+
+    if (level === "band6") {
+      return [
+        {
+          title: "Part A - Correct Process Sentence Errors",
+          description:
+            "Tasks 1-3 help you notice common process-sentence errors, such as passive form, subject-verb agreement, verb patterns and prepositions.",
+          tasks: practice1Tasks.slice(0, 3),
+          startIndex: 0,
+        },
+        {
+          title: "Part B - Write Complete Passive Sentences",
+          description:
+            "Use the keywords and the diagram to write complete passive sentences. Pay attention to tools, materials, results and prepositions.",
+          tasks: practice1Tasks.slice(3),
+          startIndex: 3,
+        },
+      ];
+    }
+
+    return [
+      {
+        title: "Sentence Upgrade Tasks",
+        description:
+          "Upgrade the basic sentences by using more precise words, useful diagram details, relative clauses, purpose phrases or result structures.",
+        tasks: practice1Tasks,
+        startIndex: 0,
+      },
+    ];
+  };
+
+  const renderPractice1 = () => {
+    const practice1Sections = getPractice1Sections();
+
+    return (
+      <Card
+        title={
+          level === "band55"
+            ? "Practice 1 - Active to Passive"
+            : level === "band6"
+            ? "Practice 1 - Passive Voice"
+            : "Practice 1 - Sentence Upgrade"
+        }
+      >
+        <p className="mb-4 text-sm text-slate-600">
+          Complete Practice 1 to earn 2 points.
+          {level === "band55" &&
+            " First correct passive voice errors, then rewrite active sentences in the passive voice."}
+          {level === "band6" &&
+            " First correct process-sentence errors, then use the words and the diagram to write complete passive sentences."}
+          {level === "band65" &&
+            " You also need to pass the Sentence Upgrade Reflection."}
+        </p>
+
+        <div className="space-y-6">
+          {practice1Sections.map((section) => (
+            <div key={section.title} className="rounded-2xl border bg-white p-4">
+              <div className="mb-4 rounded-xl bg-slate-50 p-3">
+                <p className="font-bold text-slate-800">{section.title}</p>
+                <p className="mt-1 text-sm text-slate-600">{section.description}</p>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
 
-      {level === "band65" && (
-        <div className="mt-5 rounded-2xl border bg-purple-50 p-4">
-          <p className="font-bold text-purple-900">Sentence Upgrade Reflection</p>
-          <p className="mt-1 text-sm text-purple-800">
-            Look back at Practice 1. Which methods are useful for upgrading
-            process-diagram sentences? Tick all suitable choices.
-          </p>
+              <div className="space-y-4">
+                {section.tasks.map((task, localIndex) => {
+                  const i = section.startIndex + localIndex;
 
-          <div className="mt-3 space-y-2 text-sm text-purple-900">
-            {p1ReflectionOptions.map((option) => {
-              const checked = Boolean(practiceState.p1ReflectionAnswers[option.id]);
-              const feedback = practiceState.p1ReflectionFeedback?.[option.id];
+                  return (
+                    <div key={i} className="rounded-xl border bg-slate-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        {level === "band55" && i < 3
+                          ? `Correction Task ${i + 1}`
+                          : level === "band55"
+                          ? `Passive Task ${i + 1}`
+                          : level === "band6" && i < 3
+                          ? `Correction Task ${i + 1}`
+                          : level === "band6"
+                          ? `Passive Sentence Task ${i + 1}`
+                          : `Task ${i + 1}`}
+                      </p>
 
-              return (
-                <label
-                  key={option.id}
-                  className={`flex gap-2 rounded-xl border p-3 ${
-                    feedback === undefined
-                      ? "bg-white"
-                      : feedback
-                      ? "border-green-300 bg-green-50 text-green-800"
-                      : "border-red-300 bg-red-50 text-red-800"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) =>
-                      setPracticeState((prev) => ({
-                        ...prev,
-                        p1ReflectionAnswers: {
-                          ...prev.p1ReflectionAnswers,
-                          [option.id]: e.target.checked,
-                        },
-                        p1ReflectionChecked: false,
-                        p1ReflectionFeedback: null,
-                      }))
-                    }
-                  />
-                  <span>{option.text}</span>
-                </label>
-              );
-            })}
-          </div>
+                      <p className="mt-1 text-sm font-semibold text-slate-700">
+                        {task.instruction}
+                      </p>
 
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={checkP1Reflection}
-              className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
-            >
-              Check Reflection
-            </button>
-          </div>
+                      <p className="mt-2 rounded-lg bg-white p-3">{task.prompt}</p>
 
-          {practiceState.p1ReflectionChecked && (
-            <div
-              className={`mt-3 rounded-xl p-3 text-sm ${
-                sentenceUpgradeReflectionOptions.every((option) => {
-                  const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
+                      {p1Hint.index === i && p1Hint.text && (
+                        <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+                          {p1Hint.text}
+                        </div>
+                      )}
+
+                      <input
+                        value={practiceState.p1Answers[i] || ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setPracticeState((prev) => ({
+                            ...prev,
+                            p1Answers: { ...prev.p1Answers, [i]: e.target.value },
+                          }))
+                        }
+                        className="mt-3 w-full rounded-xl border p-2"
+                        placeholder="Write your answer here..."
+                        aria-label={`Answer for task ${i + 1}`}
+                      />
+
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() => checkP1(i)}
+                          className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
+                        >
+                          Check
+                        </button>
+                        <button
+                          onClick={() => getP1Hint(i)}
+                          className="rounded-xl border bg-white px-3 py-2 text-sm font-semibold"
+                        >
+                          Hint
+                        </button>
+                      </div>
+
+                      {practiceState.p1Feedback[i] !== undefined && (
+                        <div
+                          className={`mt-3 rounded-xl p-3 text-sm ${
+                            practiceState.p1Feedback[i]
+                              ? "bg-green-50 text-green-700"
+                              : "bg-red-50 text-red-700"
+                          }`}
+                        >
+                          {practiceState.p1Feedback[i]
+                            ? "Correct."
+                            : `Suggested answer: ${task.answer}`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {level === "band65" && (
+          <div className="mt-5 rounded-2xl border bg-purple-50 p-4">
+            <p className="font-bold text-purple-900">Sentence Upgrade Reflection</p>
+            <p className="mt-1 text-sm text-purple-800">
+              Look back at Practice 1. Which methods are useful for upgrading
+              process-diagram sentences? Tick all suitable choices.
+            </p>
+
+            <div className="mt-3 space-y-2 text-sm text-purple-900">
+              {p1ReflectionOptions.map((option) => {
+                const checked = Boolean(practiceState.p1ReflectionAnswers?.[option.id]);
+                const feedback = practiceState.p1ReflectionFeedback?.[option.id];
+
+                return (
+                  <label
+                    key={option.id}
+                    className={`flex gap-2 rounded-xl border p-3 ${
+                      feedback === undefined
+                        ? "bg-white"
+                        : feedback
+                        ? "border-green-300 bg-green-50 text-green-800"
+                        : "border-red-300 bg-red-50 text-red-800"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        setPracticeState((prev) => ({
+                          ...prev,
+                          p1ReflectionAnswers: {
+                            ...prev.p1ReflectionAnswers,
+                            [option.id]: e.target.checked,
+                          },
+                          p1ReflectionChecked: false,
+                          p1ReflectionFeedback: null,
+                        }))
+                      }
+                    />
+                    <span>{option.text}</span>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={checkP1Reflection}
+                className="rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white"
+              >
+                Check Reflection
+              </button>
+            </div>
+
+            {practiceState.p1ReflectionChecked && (
+              <div
+                className={`mt-3 rounded-xl p-3 text-sm ${
+                  sentenceUpgradeReflectionOptions.every((option) => {
+                    const selected = Boolean(practiceState.p1ReflectionAnswers?.[option.id]);
+                    return selected === option.correct;
+                  })
+                    ? "bg-green-50 text-green-700"
+                    : "bg-red-50 text-red-700"
+                }`}
+              >
+                {sentenceUpgradeReflectionOptions.every((option) => {
+                  const selected = Boolean(practiceState.p1ReflectionAnswers?.[option.id]);
                   return selected === option.correct;
                 })
-                  ? "bg-green-50 text-green-700"
-                  : "bg-red-50 text-red-700"
-              }`}
-            >
-              {sentenceUpgradeReflectionOptions.every((option) => {
-                const selected = Boolean(practiceState.p1ReflectionAnswers[option.id]);
-                return selected === option.correct;
-              })
-                ? "Correct. These are suitable ways to upgrade process-diagram sentences."
-                : "Check again. Some options are not suitable for IELTS process diagrams."}
-            </div>
-          )}
+                  ? "Correct. These are suitable ways to upgrade process-diagram sentences."
+                  : "Check again. Some options are not suitable for IELTS process diagrams."}
+              </div>
+            )}
 
-          {level === "band65" && !earned.p1 && (
-            <p className="mt-3 text-xs text-purple-800">
-              To earn 2 points for Practice 1, complete all sentence-upgrade tasks
-              correctly and pass this reflection check.
-            </p>
-          )}
-        </div>
-      )}
-    </Card>
-  );
+            {!earned.p1 && (
+              <p className="mt-3 text-xs text-purple-800">
+                To earn 2 points for Practice 1, complete all sentence-upgrade
+                tasks correctly and pass this reflection check.
+              </p>
+            )}
+          </div>
+        )}
+
+        {p1Hint.text && p1Hint.index === null && (
+          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+            {p1Hint.text}
+          </div>
+        )}
+      </Card>
+    );
+  };
 
   const renderPractice2 = () => {
     if (level === "band55") {
