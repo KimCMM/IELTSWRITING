@@ -240,6 +240,80 @@ const sentenceUpgradeReflectionOptions = [
   },
 ];
 
+const band55PassiveCorrectionTasks: Record<string, Array<{ prompt: string; answer: string; instruction: string }>> = {
+  bamboo: [
+    {
+      prompt: "Bamboo plants planted in spring.",
+      answer: "Bamboo plants are planted in spring.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "Bamboo plants are harvest in autumn.",
+      answer: "Bamboo plants are harvested in autumn.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "The strips is crushed to make liquid pulp.",
+      answer: "The strips are crushed to make liquid pulp.",
+      instruction: "Correct the passive sentence.",
+    },
+  ],
+
+  sugar: [
+    {
+      prompt: "Sugar canes are grow for 12-18 months.",
+      answer: "Sugar canes are grown for 12-18 months.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "The sugar canes harvested by workers or machines.",
+      answer: "The sugar canes are harvested by workers or machines.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "Sugar crystals is separated from the syrup by a centrifuge.",
+      answer: "Sugar crystals are separated from the syrup by a centrifuge.",
+      instruction: "Correct the passive sentence.",
+    },
+  ],
+
+  noodles: [
+    {
+      prompt: "Flour transported from storage silos by truck.",
+      answer: "Flour is transported from storage silos by truck.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "The dough sheets is cut into strips.",
+      answer: "The dough sheets are cut into strips.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "The noodle discs are cook in oil and dried.",
+      answer: "The noodle discs are cooked in oil and dried.",
+      instruction: "Correct the passive sentence.",
+    },
+  ],
+
+  recycling: [
+    {
+      prompt: "Plastic pellets is produced.",
+      answer: "Plastic pellets are produced.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "Plastic bottles are collect and transported by truck.",
+      answer: "Plastic bottles are collected and transported by truck.",
+      instruction: "Correct the passive sentence.",
+    },
+    {
+      prompt: "End products produced.",
+      answer: "End products are produced.",
+      instruction: "Correct the passive sentence.",
+    },
+  ],
+};
+
 const rawProcessData: Record<string, ProcessData> = {
   bamboo: {
     title: "Bamboo Fabric",
@@ -745,13 +819,27 @@ export default function IELTSProcessTrainerFullSystem() {
 
   const practice1Tasks = useMemo(() => {
     if (level === "band55") {
-      return steps.map((s: StepType) => ({ prompt: s.active, answer: s.passive, instruction: "Rewrite the active sentence in the passive voice." }));
+      const correctionTasks = band55PassiveCorrectionTasks[processKey] || [];
+      const remainingPassiveTasks = steps.slice(3).map((s: StepType) => ({
+        prompt: s.active,
+        answer: s.passive,
+        instruction: "Rewrite the active sentence in the passive voice.",
+      }));
+      return [...correctionTasks, ...remainingPassiveTasks];
     }
     if (level === "band6") {
-      return steps.map((s: StepType) => ({ prompt: s.prompt6, answer: s.passive, instruction: "Use the words and the diagram to write a complete passive sentence." }));
+      return steps.map((s: StepType) => ({
+        prompt: s.prompt6,
+        answer: s.passive,
+        instruction: "Use the words and the diagram to write a complete passive sentence.",
+      }));
     }
-    return current.band65.map((s: Band65Task) => ({ prompt: s.prompt, answer: s.answer, instruction: s.task }));
-  }, [level, current, steps]);
+    return current.band65.map((s: Band65Task) => ({
+      prompt: s.prompt,
+      answer: s.answer,
+      instruction: s.task,
+    }));
+  }, [level, current, steps, processKey]);
 
   const p1ReflectionOptions = useMemo(() => {
     if (level !== "band65") return [];
@@ -819,9 +907,22 @@ export default function IELTSProcessTrainerFullSystem() {
   const getP1Hint = useCallback(
     (index: number) => {
       if (level === "band55") {
-        setP1Hint({ index, text: "Move the object to the subject position and use be + past participle." });
+        if (index < 3) {
+          setP1Hint({
+            index,
+            text: `Task ${index + 1}: Check the passive form carefully: subject + be + past participle. Also check subject-verb agreement.`,
+          });
+        } else {
+          setP1Hint({
+            index,
+            text: `Task ${index + 1}: Move the object to the subject position and use be + past participle. Keep useful details such as time, tools or materials.`,
+          });
+        }
       } else if (level === "band6") {
-        setP1Hint({ index, text: "Use be + past participle. Check the diagram for prepositions and details." });
+        setP1Hint({
+          index,
+          text: `Task ${index + 1}: Use be + past participle. Check the diagram for time, tools, materials and prepositions.`,
+        });
       } else {
         setP1Hint({ index, text: practice1Tasks[index].instruction });
       }
@@ -1294,15 +1395,25 @@ export default function IELTSProcessTrainerFullSystem() {
           : "Practice 1 - Sentence Upgrade"
       }
     >
-      {level === "band6" && (
-        <p className="mb-4 text-sm text-slate-600">
-          Use the words and the diagram to write a complete passive sentence.
-        </p>
-      )}
+      <p className="mb-4 text-sm text-slate-600">
+        Complete Practice 1 to earn 2 points.
+        {level === "band55" &&
+          " Tasks 1-3 ask you to correct common passive voice errors. The remaining tasks ask you to rewrite active sentences in the passive voice."}
+        {level === "band6" &&
+          " Use the words and the diagram to write a complete passive sentence."}
+        {level === "band65" &&
+          " You also need to pass the Sentence Upgrade Reflection."}
+      </p>
       <div className="space-y-4">
         {practice1Tasks.map((task, i) => (
           <div key={i} className="rounded-xl border bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{level === "band55" ? `Stage ${i + 1}` : `Task ${i + 1}`}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {level === "band55" && i < 3
+                ? `Correction Task ${i + 1}`
+                : level === "band55"
+                ? `Passive Task ${i + 1}`
+                : `Task ${i + 1}`}
+            </p>
             {level === "band65" && <p className="mt-1 font-medium">{task.instruction}</p>}
             <p className="mt-2 rounded-lg bg-white p-3">{task.prompt}</p>
             {p1Hint.index === i && p1Hint.text && <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{p1Hint.text}</div>}
