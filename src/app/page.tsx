@@ -807,7 +807,7 @@ export default function IELTSProcessTrainerFullSystem() {
         }
 
         if (task.type === "choice") {
-          const prompt = task.prompt || "";
+          const prompt = (task as { prompt?: string }).prompt || "";
           if (prompt.includes("pronoun")) {
             setP2Hint({
               index,
@@ -852,36 +852,51 @@ export default function IELTSProcessTrainerFullSystem() {
         return;
       }
 
-      const prompt = "prompt" in task ? (task as { prompt?: string }).prompt || "" : "";
+      if (task.type === "choice") {
+        setP2Hint({
+          index,
+          text:
+            "Choose the best structure by checking the grammar relationship. 'After which' refers to the whole previous step. 'Which is/are then done' refers to the result or product from the first step. 'Followed by + noun phrase' means the second action should become a noun phrase, not a full sentence.",
+        });
+        return;
+      }
+
+      const prompt = (task as { prompt?: string }).prompt || "";
       if (prompt.includes("Once")) {
         setP2Hint({
           index,
-          text: "Use 'Once + subject + has/have been + past participle' to show that one step is completed before the next step starts.",
+          text:
+            "Use 'Once + subject + has/have been + past participle' to show that one step is completed before the next step starts.",
         });
       } else if (prompt.includes("before being")) {
         setP2Hint({
           index,
-          text: "Use 'before being + past participle' when the same item goes through two actions in order.",
+          text:
+            "Use 'before being + past participle' when the same item goes through two actions in order.",
         });
       } else if (prompt.includes("after which")) {
         setP2Hint({
           index,
-          text: "Use 'after which' when the next action happens after the whole previous step. It is especially useful when the subject changes.",
+          text:
+            "Use 'after which' when the next action happens after the whole previous step. It is especially useful when the subject changes.",
         });
       } else if (prompt.includes("which is") || prompt.includes("which are")) {
         setP2Hint({
           index,
-          text: "Use 'which is/are then + past participle' when the result of the first step becomes the thing processed in the next step. Check singular/plural: 'which is' or 'which are'.",
+          text:
+            "Use 'which is/are then + past participle' when the result of the first step becomes the thing processed in the next step. Check singular/plural: 'which is' or 'which are'.",
         });
       } else if (prompt.includes("followed by")) {
         setP2Hint({
           index,
-          text: "After 'followed by', use a noun phrase, such as 'the compression of...' or 'the weaving of...'. Do not use a full clause after it.",
+          text:
+            "After 'followed by', use a noun phrase, such as 'the compression of...' or 'the weaving of...'. Do not use a full clause after it.",
         });
       } else {
         setP2Hint({
           index,
-          text: "Choose the structure by checking subject reference, step order and whether the second action can be changed into a noun phrase.",
+          text:
+            "Choose the structure by checking subject reference, step order and whether the second action can be changed into a noun phrase.",
         });
       }
     },
