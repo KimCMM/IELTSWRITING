@@ -653,7 +653,14 @@ export default function IELTSProcessTrainerFullSystem() {
     setDragItem(null);
     setP3TimerStarted(false);
     setP3ElapsedSeconds(0);
-  }, []);
+    // Reset scores for current process-level combination so old localStorage
+    // data does not keep buttons disabled after switching.
+    setScoreMap((prev) => {
+      const current = prev[scoreKey];
+      if (!current) return prev;
+      return { ...prev, [scoreKey]: { p1: false, p2: false, p3: false } };
+    });
+  }, [scoreKey, setScoreMap]);
 
   const handleProcessOrLevelChange = useCallback(
     (newProcess: string, newLevel: string) => {
